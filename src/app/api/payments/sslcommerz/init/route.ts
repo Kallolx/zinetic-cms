@@ -3,8 +3,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createSslcommerzSession } from "@/lib/sslcommerz";
 
-const MIN_TOPUP = 100;
-const MAX_TOPUP = 50000;
+const MIN_TOPUP_USD = 5;
+const MAX_TOPUP_USD = 1000;
+const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 120);
 
 export async function POST(request: Request) {
   const { user, profile } = await getDashboardSession();
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
   }
 
   const { amount, agreedToPolicies } = await request.json();
-  const value = Number(amount);
+  const usdAmount = Number(amount);
 
   if (!agreedToPolicies) {
     return NextResponse.json(
@@ -21,12 +22,16 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  if (!Number.isFinite(value) || value < MIN_TOPUP || value > MAX_TOPUP) {
+  if (!Number.isFinite(usdAmount) || usdAmount < MIN_TOPUP_USD || usdAmount > MAX_TOPUP_USD) {
     return NextResponse.json(
-      { error: `Enter an amount between ${MIN_TOPUP} and ${MAX_TOPUP} BDT.` },
+      { error: `Enter an amount between $${MIN_TOPUP_USD} and $${MAX_TOPUP_USD}.` },
       { status: 400 }
     );
   }
+
+  // SSLCommerz only settles in BDT, the wallet stays in USD, so convert
+  // just the amount actually charged through the gateway
+  const bdtAmount = Math.round(usdAmount * USD_TO_BDT_RATE * 100) / 100;
 
   const admin = createAdminClient();
   const tranId = `zc_${user.id.slice(0, 8)}_${Date.now()}`;
@@ -34,7 +39,8 @@ export async function POST(request: Request) {
   const { error: insertError } = await admin.from("payment_sessions").insert({
     user_id: user.id,
     tran_id: tranId,
-    amount: value,
+    amount: bdtAmount,
+    usd_amount: usdAmount,
     status: "pending",
   });
 
@@ -44,7 +50,7 @@ export async function POST(request: Request) {
 
   const result = await createSslcommerzSession({
     tranId,
-    amount: value,
+    amount: bdtAmount,
     customerName: profile.full_name ?? profile.email,
     customerEmail: profile.email,
   });

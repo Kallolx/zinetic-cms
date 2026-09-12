@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
   const { data: session, error: sessionError } = await admin
     .from("payment_sessions")
-    .select("id, user_id, amount, status")
+    .select("id, user_id, amount, usd_amount, status")
     .eq("tran_id", tranId)
     .single();
 
@@ -72,14 +72,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "User not found." }, { status: 404 });
   }
 
-  const newBalance = Number(profile.wallet_balance) + Number(session.amount);
+  const usdCredit = Number(session.usd_amount ?? session.amount);
+  const newBalance = Number(profile.wallet_balance) + usdCredit;
 
   await admin.from("profiles").update({ wallet_balance: newBalance }).eq("id", session.user_id);
   await admin.from("wallet_transactions").insert({
     user_id: session.user_id,
     type: "topup",
-    amount: Number(session.amount),
-    note: `SSLCommerz top-up (${tranId})`,
+    amount: usdCredit,
+    note: `SSLCommerz top-up: $${usdCredit.toFixed(2)} (${Number(session.amount).toFixed(2)} BDT paid, ${tranId})`,
   });
   await admin
     .from("payment_sessions")

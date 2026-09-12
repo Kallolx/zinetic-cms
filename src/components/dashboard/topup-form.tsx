@@ -17,13 +17,16 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LuWallet, LuLoaderCircle } from "react-icons/lu";
 
-const QUICK_AMOUNTS = [500, 1000, 2500, 5000];
+const QUICK_AMOUNTS = [10, 25, 50, 100];
+const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 120);
 
 export function TopUpForm() {
   const [open, setOpen] = React.useState(false);
-  const [amount, setAmount] = React.useState("1000");
+  const [amount, setAmount] = React.useState("25");
   const [agreed, setAgreed] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
+
+  const bdtPreview = Number(amount) > 0 ? Number(amount) * USD_TO_BDT_RATE : 0;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,12 +72,12 @@ export function TopUpForm() {
 
           <div className="flex flex-col gap-4 py-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="topup-amount">Amount (BDT)</Label>
+              <Label htmlFor="topup-amount">Amount (USD)</Label>
               <Input
                 id="topup-amount"
                 type="number"
-                min="100"
-                max="50000"
+                min="5"
+                max="1000"
                 step="1"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -89,10 +92,16 @@ export function TopUpForm() {
                     size="sm"
                     onClick={() => setAmount(String(a))}
                   >
-                    {a}
+                    ${a}
                   </Button>
                 ))}
               </div>
+              {bdtPreview > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  You&apos;ll be charged &#2547;{bdtPreview.toLocaleString()} BDT via SSLCommerz
+                  (&#2547;{USD_TO_BDT_RATE} = $1).
+                </p>
+              )}
             </div>
 
             <label className="flex items-start gap-2.5 text-sm">
