@@ -12,6 +12,51 @@ function extractChannelId(input: string) {
   return trimmed.replace(/^https?:\/\/(www\.)?youtube\.com\//, "").replace(/^@/, "");
 }
 
+/**
+ * The real amnhacso API only accepts a channel's actual UC... ID, but users
+ * naturally paste a @handle or a full youtube.com/@handle URL. Resolve that
+ * to the real channel ID by reading YouTube's public page before ever
+ * calling the paid API — otherwise every handle-based check would 404 (and
+ * still get charged, since a lookup did run).
+ */
+async function resolveYouTubeChannelId(input: string): Promise<string | null> {
+  const trimmed = input.trim();
+  const direct = trimmed.match(/UC[\w-]{22}/);
+  if (direct) return direct[0];
+
+  const handle = trimmed
+    .replace(/^https?:\/\/(www\.)?youtube\.com\//i, "")
+    .replace(/^@/, "")
+    .split(/[/?#]/)[0];
+  if (!handle) return null;
+
+  try {
+    const res = await fetch(`https://www.youtube.com/@${encodeURIComponent(handle)}`, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    const canonical = html.match(/<link rel="canonical" href="[^"]*\/channel\/(UC[\w-]{22})"/);
+    if (canonical) return canonical[1];
+
+    const externalId = html.match(/"externalId":"(UC[\w-]{22})"/);
+    if (externalId) return externalId[1];
+
+    const link = html.match(/youtube\.com\/channel\/(UC[\w-]{22})/);
+    if (link) return link[1];
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 const MOCK_NETWORKS = [
   { network: "Zinetic Music Network", email: "claims@zineticmusic.com" },
   { network: "Sony Music Entertainment", email: "partners@sonymusic.com" },
@@ -141,14 +186,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const channelId = extractChannelId(channelInput);
   const apiBase = process.env.MCN_API_BASE_URL ?? "https://api.amnhacso.com";
   const apiKey = process.env.MCN_API_KEY;
+  const isMock = process.env.MCN_API_MOCK === "true";
 
   let status: "success" | "not_found" | "error" = "success";
   let result: Record<string, unknown> = {};
+  let channelId = extractChannelId(channelInput);
 
-  if (process.env.MCN_API_MOCK === "true") {
+  if (isMock) {
     const mocked = mockMcnLookup(channelInput, channelId);
     status = mocked.status;
     result = mocked.result;
@@ -156,13 +202,48 @@ export async function POST(request: Request) {
     try {
       if (!apiKey) throw new Error("MCN_API_KEY is not configured.");
 
-      const res = await fetch(`${apiBase}/api/v1/channels/${encodeURIComponent(channelId)}`, {
-        headers: { Authorization: `Bearer ${apiKey}` },
+      // resolve @handles / custom URLs to a real UC... ID first — their
+      // API only recognizes real channel IDs
+      const resolvedId = await resolveYouTubeChannelId(channelInput);
+      if (!resolvedId) {
+        return NextResponse.json(
+          { error: "Couldn't find that YouTube channel. Check the link and try again." },
+          { status: 400 }
+        );
+      }
+      channelId = resolvedId;
+
+      const authHeader = { Authorization: `Bearer ${apiKey}` };
+      let res = await fetch(`${apiBase}/api/v1/channels/${encodeURIComponent(channelId)}`, {
+        headers: authHeader,
         cache: "no-store",
       });
 
       if (res.status === 404) {
-        status = "not_found";
+        // not in their database yet — register it, then fetch it
+        const addRes = await fetch(`${apiBase}/api/v1/channels`, {
+          method: "POST",
+          headers: { ...authHeader, "Content-Type": "application/json" },
+          body: JSON.stringify({ channels: [channelId] }),
+        });
+
+        if (addRes.status === 402) {
+          status = "error";
+        } else if (addRes.ok) {
+          res = await fetch(`${apiBase}/api/v1/channels/${encodeURIComponent(channelId)}`, {
+            headers: authHeader,
+            cache: "no-store",
+          });
+          if (res.status === 404) {
+            status = "not_found";
+          } else if (!res.ok) {
+            status = "error";
+          } else {
+            result = await res.json();
+          }
+        } else {
+          status = "error";
+        }
       } else if (!res.ok) {
         status = "error";
       } else {
