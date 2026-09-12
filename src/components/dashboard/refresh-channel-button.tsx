@@ -25,6 +25,8 @@ export function RefreshChannelButton({ checkId }: { checkId: string }) {
       }
       if (data.check?.network) {
         toast.success("Network data found and updated.");
+      } else if (data.check?.raw_response?.status === "updated") {
+        toast.info("Confirmed: this channel has no MCN network on file.");
       } else {
         toast.info("Still no network data yet. Try again in a few minutes.");
       }

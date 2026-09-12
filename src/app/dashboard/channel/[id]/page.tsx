@@ -50,6 +50,9 @@ type RawResponse = {
   date_of_creation?: string;
   videos?: MockVideo[];
   reports?: MockReports;
+  // the provider's own internal processing state for this channel,
+  // "pending" while they're still crawling it, "updated" once final
+  status?: string;
 };
 
 function fmt(n: number | null | undefined) {
@@ -88,6 +91,7 @@ export default async function ChannelDetailPage({
 
   const raw = (channel.raw_response ?? {}) as RawResponse;
   const hasOwner = Boolean(channel.network || channel.network_contact_email);
+  const isConfirmedFinal = raw.status === "updated";
   // eslint-disable-next-line react-hooks/purity -- server component, evaluated fresh per request
   const isRecentCheck = Date.now() - new Date(channel.created_at).getTime() < 60 * 60 * 1000;
   const videos = raw.videos ?? [];
@@ -177,7 +181,7 @@ export default async function ChannelDetailPage({
               <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Owner &amp; contact
               </p>
-              {!channel.network && channel.channel_id && (
+              {!channel.network && !isConfirmedFinal && channel.channel_id && (
                 <RefreshChannelButton checkId={channel.id} />
               )}
             </CardHeader>
@@ -201,8 +205,9 @@ export default async function ChannelDetailPage({
               </div>
               {!channel.network && (
                 <p className="text-xs text-muted-foreground">
-                  Network data may take a few minutes to appear for newly added channels.
-                  {isRecentCheck ? " Use Refresh to check again, free of charge." : null}
+                  {isConfirmedFinal
+                    ? "Confirmed: this channel has no MCN network on file."
+                    : "Network data may take a few minutes to appear for newly added channels. Use Refresh to check again, free of charge."}
                 </p>
               )}
             </CardContent>
@@ -295,10 +300,14 @@ export default async function ChannelDetailPage({
                 ) : (
                   <div className="flex flex-col items-center gap-1 py-8 text-center text-sm text-muted-foreground">
                     <p>No network or ownership data found for this channel.</p>
-                    {isRecentCheck && (
-                      <p className="text-xs">
-                        Network data may take a few minutes to appear for newly added channels.
-                      </p>
+                    {isConfirmedFinal ? (
+                      <p className="text-xs">Confirmed: this channel has no MCN network on file.</p>
+                    ) : (
+                      isRecentCheck && (
+                        <p className="text-xs">
+                          Network data may take a few minutes to appear for newly added channels.
+                        </p>
+                      )
                     )}
                   </div>
                 )}
