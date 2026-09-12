@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/logo";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { HeroScannerBg } from "@/components/hero-scanner-bg";
 import { LandingNavbar } from "@/components/landing-navbar";
@@ -369,7 +368,7 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
             {/* Column 1: Brand Info (4 cols) */}
-            <div className="space-y-6 lg:col-span-4">
+            <div className="space-y-6 lg:col-span-3">
               <Logo size={36} />
               <p className="text-sm leading-relaxed text-neutral-400 max-w-sm">
                 YouTube MCN Checker &amp; Copyright Management portal built for creators, record labels, and digital rights managers.
@@ -400,6 +399,17 @@ export default async function Home() {
                 <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
                 <li><a href="#support" className="hover:text-white transition-colors">Support</a></li>
                 <li><Link href="/login" className="hover:text-white transition-colors">Sign In</Link></li>
+              </ul>
+            </div>
+
+            {/* Column 2b: Legal (1 col) */}
+            <div className="lg:col-span-1">
+              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-5">LEGAL</h4>
+              <ul className="space-y-3 text-sm text-neutral-400">
+                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/refund-policy" className="hover:text-white transition-colors">Refund Policy</Link></li>
               </ul>
             </div>
 
@@ -446,10 +456,30 @@ export default async function Home() {
             </div>
           </div>
 
+          {/* Payment methods */}
+          <div className="mt-12 border-t border-neutral-900 pt-8">
+            <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-4">
+              WE ACCEPT
+            </h4>
+            {/* TODO: replace with the payment banner image provided by the client (attached to their SSLCommerz onboarding email) */}
+            <div className="flex h-14 w-full max-w-md items-center justify-center rounded-lg border border-dashed border-neutral-700 bg-neutral-900/50 text-xs text-neutral-500">
+              Payment banner image pending
+            </div>
+          </div>
+
           {/* Bottom Row Bar */}
-          <div className="mt-16 border-t border-neutral-900 pt-8 flex flex-col lg:flex-row items-center justify-between gap-6 text-xs text-neutral-500">
-            <div>
-              © Copyright 2026 | Zinetic Music Limited | All Right Reserved | <a href="#" className="hover:text-neutral-300">Privacy Policy</a> | <a href="#" className="hover:text-neutral-300">Terms and Conditions</a>
+          <div className="mt-8 border-t border-neutral-900 pt-8 flex flex-col lg:flex-row items-center justify-between gap-6 text-xs text-neutral-500">
+            <div className="flex flex-col gap-1.5">
+              <div>
+                © Copyright 2026 | Zinetic Music Limited | All Right Reserved |{" "}
+                <Link href="/privacy" className="hover:text-neutral-300">Privacy Policy</Link> |{" "}
+                <Link href="/terms" className="hover:text-neutral-300">Terms and Conditions</Link> |{" "}
+                <Link href="/refund-policy" className="hover:text-neutral-300">Refund Policy</Link> |{" "}
+                <Link href="/about" className="hover:text-neutral-300">About Us</Link>
+              </div>
+              <div className="text-neutral-600">
+                Trade License No.: [to be added] &middot; TIN: [to be added]
+              </div>
             </div>
 
             <div className="flex items-center gap-6">
