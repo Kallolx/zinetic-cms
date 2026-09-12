@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createSslcommerzSession } from "@/lib/sslcommerz";
 
-const MIN_TOPUP_USD = 5;
+const MIN_TOPUP_USD = Number(process.env.NEXT_PUBLIC_CHECK_PRICE ?? 15);
 const MAX_TOPUP_USD = 1000;
 const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 120);
 

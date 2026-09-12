@@ -17,12 +17,13 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LuWallet, LuLoaderCircle } from "react-icons/lu";
 
-const QUICK_AMOUNTS = [10, 25, 50, 100];
+const CHECK_PRICE = Number(process.env.NEXT_PUBLIC_CHECK_PRICE ?? 15);
+const QUICK_AMOUNTS = [CHECK_PRICE, CHECK_PRICE * 2, CHECK_PRICE * 4, CHECK_PRICE * 8];
 const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 120);
 
 export function TopUpForm() {
   const [open, setOpen] = React.useState(false);
-  const [amount, setAmount] = React.useState("25");
+  const [amount, setAmount] = React.useState(String(CHECK_PRICE));
   const [agreed, setAgreed] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -76,7 +77,7 @@ export function TopUpForm() {
               <Input
                 id="topup-amount"
                 type="number"
-                min="5"
+                min={CHECK_PRICE}
                 max="1000"
                 step="1"
                 value={amount}
