@@ -1,18 +1,15 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signUp } from "@/app/actions/auth";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LuLoaderCircle, LuTriangleAlert, LuArrowRight } from "react-icons/lu";
-import { SocialAuthRow } from "@/components/social-auth-row";
 import { PasswordInput } from "@/components/password-input";
+import { LuLoaderCircle, LuTriangleAlert, LuArrowRight } from "react-icons/lu";
 
-export default function RegisterPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -20,23 +17,39 @@ export default function RegisterPage() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setPending(true);
+
     const formData = new FormData(e.currentTarget);
-    const result = await signUp(formData);
-    setPending(false);
-    if (result.error) {
-      setError(result.error);
+    const password = String(formData.get("password") ?? "");
+    const confirm = String(formData.get("confirm") ?? "");
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
-    router.push("/pending");
+    if (password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
+
+    setPending(true);
+    const supabase = createClient();
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    setPending(false);
+
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+
+    router.push("/login");
   }
 
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-bold">Create an account</h1>
+        <h1 className="font-heading text-3xl font-bold">Set a new password</h1>
         <p className="text-[0.95rem] text-muted-foreground">
-          Registrations are reviewed by an admin before you can sign in.
+          Choose a new password for your account.
         </p>
       </div>
 
@@ -48,29 +61,7 @@ export default function RegisterPage() {
           </Alert>
         )}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="fullName">Full name</Label>
-          <Input
-            id="fullName"
-            name="fullName"
-            placeholder="Jane Doe"
-            required
-            className="h-12 text-base"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            required
-            autoComplete="email"
-            className="h-12 text-base"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">New password</Label>
           <PasswordInput
             id="password"
             name="password"
@@ -79,7 +70,17 @@ export default function RegisterPage() {
             autoComplete="new-password"
             className="h-12 text-base"
           />
-          <p className="text-xs text-muted-foreground">At least 8 characters.</p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="confirm">Confirm password</Label>
+          <PasswordInput
+            id="confirm"
+            name="confirm"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            className="h-12 text-base"
+          />
         </div>
 
         <Button type="submit" size="lg" className="mt-2 w-full gap-2" disabled={pending}>
@@ -88,20 +89,9 @@ export default function RegisterPage() {
           ) : (
             <LuArrowRight className="size-4" />
           )}
-          Create account
+          Update password
         </Button>
       </form>
-
-      <div className="mt-5">
-        <SocialAuthRow />
-      </div>
-
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
-          Sign in
-        </Link>
-      </p>
     </div>
   );
 }

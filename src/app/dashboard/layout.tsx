@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionProfile } from "@/lib/supabase/session";
 import { AppShell, type NavItem } from "@/components/app-shell";
 import {
   LuShieldCheck,
@@ -33,19 +33,9 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, profile } = await getSessionProfile();
 
   if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, status, role, wallet_balance")
-    .eq("id", user.id)
-    .single();
-
   if (!profile) redirect("/login");
   if (profile.role === "admin") redirect("/admin");
   if (profile.status !== "approved") redirect("/pending");

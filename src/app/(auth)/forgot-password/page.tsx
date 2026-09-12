@@ -2,41 +2,58 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signUp } from "@/app/actions/auth";
+import { requestPasswordReset } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LuLoaderCircle, LuTriangleAlert, LuArrowRight } from "react-icons/lu";
-import { SocialAuthRow } from "@/components/social-auth-row";
-import { PasswordInput } from "@/components/password-input";
+import { LuLoaderCircle, LuTriangleAlert, LuArrowRight, LuMailCheck, LuArrowLeft } from "react-icons/lu";
 
-export default function RegisterPage() {
-  const router = useRouter();
+export default function ForgotPasswordPage() {
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [sent, setSent] = React.useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setPending(true);
     const formData = new FormData(e.currentTarget);
-    const result = await signUp(formData);
+    const result = await requestPasswordReset(formData);
     setPending(false);
     if (result.error) {
       setError(result.error);
       return;
     }
-    router.push("/pending");
+    setSent(true);
+  }
+
+  if (sent) {
+    return (
+      <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
+        <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <LuMailCheck className="size-7" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <h1 className="font-heading text-2xl font-bold">Check your email</h1>
+          <p className="text-[0.925rem] text-muted-foreground">
+            If an account exists for that email, we&apos;ve sent a link to reset your password.
+          </p>
+        </div>
+        <Link href="/login" className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+          <LuArrowLeft className="size-4" />
+          Back to login
+        </Link>
+      </div>
+    );
   }
 
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-bold">Create an account</h1>
+        <h1 className="font-heading text-3xl font-bold">Forgot password?</h1>
         <p className="text-[0.95rem] text-muted-foreground">
-          Registrations are reviewed by an admin before you can sign in.
+          Enter your email and we&apos;ll send you a reset link.
         </p>
       </div>
 
@@ -47,16 +64,6 @@ export default function RegisterPage() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="fullName">Full name</Label>
-          <Input
-            id="fullName"
-            name="fullName"
-            placeholder="Jane Doe"
-            required
-            className="h-12 text-base"
-          />
-        </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -69,18 +76,6 @@ export default function RegisterPage() {
             className="h-12 text-base"
           />
         </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Password</Label>
-          <PasswordInput
-            id="password"
-            name="password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-            className="h-12 text-base"
-          />
-          <p className="text-xs text-muted-foreground">At least 8 characters.</p>
-        </div>
 
         <Button type="submit" size="lg" className="mt-2 w-full gap-2" disabled={pending}>
           {pending ? (
@@ -88,20 +83,16 @@ export default function RegisterPage() {
           ) : (
             <LuArrowRight className="size-4" />
           )}
-          Create account
+          Send reset link
         </Button>
       </form>
 
-      <div className="mt-5">
-        <SocialAuthRow />
-      </div>
-
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
-          Sign in
+      <div className="mt-6 text-center text-sm">
+        <Link href="/login" className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline">
+          <LuArrowLeft className="size-4" />
+          Back to login
         </Link>
-      </p>
+      </div>
     </div>
   );
 }

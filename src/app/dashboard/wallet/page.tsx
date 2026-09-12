@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionProfile } from "@/lib/supabase/session";
 import {
   Card,
   CardContent,
@@ -26,18 +27,10 @@ const typeLabel: Record<string, string> = {
 };
 
 export default async function WalletPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, profile } = await getSessionProfile();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("wallet_balance")
-    .eq("id", user.id)
-    .single();
-
+  const supabase = await createClient();
   const { data: transactions } = await supabase
     .from("wallet_transactions")
     .select("*")

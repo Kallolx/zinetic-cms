@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthResult = { error: string } | { error: null };
@@ -61,6 +62,27 @@ export async function signIn(formData: FormData): Promise<AuthResult> {
     redirect("/pending");
   }
   redirect("/dashboard");
+}
+
+export async function requestPasswordReset(formData: FormData): Promise<AuthResult> {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) return { error: "Enter your email address." };
+
+  const supabase = await createClient();
+  const headerList = await headers();
+  const origin =
+    headerList.get("origin") ??
+    `https://${headerList.get("host") ?? "localhost:3000"}`;
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/reset-password`,
+  });
+
+  // don't leak whether the email exists — always report success
+  if (error && error.status && error.status >= 500) {
+    return { error: "Something went wrong. Please try again." };
+  }
+  return { error: null };
 }
 
 export async function signOut() {

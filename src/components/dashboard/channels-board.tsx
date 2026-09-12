@@ -70,10 +70,12 @@ export function ChannelsBoard({
   channels,
   walletBalance,
   initialQuery = "",
+  onDataChange,
 }: {
   channels: McnCheck[];
   walletBalance: number;
   initialQuery?: string;
+  onDataChange?: () => void;
 }) {
   const router = useRouter();
   const [query, setQuery] = React.useState(initialQuery);
@@ -148,7 +150,7 @@ export function ChannelsBoard({
             <LuDownload className="size-4" />
             Export Excel
           </Button>
-          <AddChannelDialog walletBalance={walletBalance} />
+          <AddChannelDialog walletBalance={walletBalance} onSuccess={onDataChange} />
         </div>
       </div>
 

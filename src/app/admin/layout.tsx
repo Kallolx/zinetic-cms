@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionProfile } from "@/lib/supabase/session";
 import { AppShell, type NavItem } from "@/components/app-shell";
 import { LuGauge, LuUsers, LuHistory } from "react-icons/lu";
 
@@ -12,19 +12,9 @@ const navItems: NavItem[] = [
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, profile } = await getSessionProfile();
 
   if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, role")
-    .eq("id", user.id)
-    .single();
-
   if (!profile || profile.role !== "admin") redirect("/dashboard");
 
   return (

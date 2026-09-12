@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -26,8 +25,13 @@ type QueuedEntry = {
 
 const checkPrice = Number(process.env.NEXT_PUBLIC_CHECK_PRICE ?? 15);
 
-export function AddChannelDialog({ walletBalance }: { walletBalance: number }) {
-  const router = useRouter();
+export function AddChannelDialog({
+  walletBalance,
+  onSuccess,
+}: {
+  walletBalance: number;
+  onSuccess?: () => void;
+}) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
   const [queue, setQueue] = React.useState<QueuedEntry[]>([]);
@@ -72,8 +76,8 @@ export function AddChannelDialog({ walletBalance }: { walletBalance: number }) {
         );
         // let the success state show briefly, then close and go back to the list
         setTimeout(() => onOpenChange(false), 900);
+        onSuccess?.();
       }
-      router.refresh();
     } catch {
       setQueue((q) => q.filter((e) => e.id !== id));
       toast.error("Network error. Please try again.");
