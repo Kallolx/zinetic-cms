@@ -47,7 +47,9 @@ export function LandingNavbar({ navLinks }: { navLinks: NavLink[] }) {
               <div className="flex flex-col gap-6">
                 <SheetHeader className="p-0 text-left border-b pb-4">
                   <SheetTitle>
-                    <Logo size={32} />
+                    <Link href="/" onClick={() => setOpen(false)} className="transition-opacity hover:opacity-90 inline-block">
+                      <Logo size={32} />
+                    </Link>
                   </SheetTitle>
                 </SheetHeader>
 
@@ -97,8 +99,10 @@ export function LandingNavbar({ navLinks }: { navLinks: NavLink[] }) {
             </SheetContent>
           </Sheet>
 
-          {/* Full Logo */}
-          <Logo size={34} className="shrink-0" />
+          {/* Full Logo clickable link */}
+          <Link href="/" className="transition-opacity hover:opacity-90">
+            <Logo size={34} className="shrink-0" />
+          </Link>
         </div>
 
         {/* Desktop Navigation Links */}

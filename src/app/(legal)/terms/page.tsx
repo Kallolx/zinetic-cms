@@ -52,7 +52,18 @@ export default function TermsPage() {
         </p>
       </Section>
 
-      <Section title="6. Limitation of liability">
+      <Section title="6. Third-party advertisements and data sharing">
+        <p>
+          We do not run or permit third-party advertisements on the Service. If a user or merchant
+          independently integrates or allows any third-party advertisement on their own channel,
+          content, or account, that is entirely their own responsibility and not ours. Likewise, if
+          a user shares any customer or personal information with a third party outside of the
+          Service, that sharing and its consequences are the sharing party&apos;s sole
+          responsibility.
+        </p>
+      </Section>
+
+      <Section title="7. Limitation of liability">
         <p>
           The Service is provided &quot;as is&quot;. To the extent permitted by law, Zinetic Music
           Limited is not liable for indirect, incidental, or consequential damages arising from
@@ -60,14 +71,14 @@ export default function TermsPage() {
         </p>
       </Section>
 
-      <Section title="7. Changes to these terms">
+      <Section title="8. Changes to these terms">
         <p>
           We may update these Terms from time to time. Continued use of the Service after changes
           are posted constitutes acceptance of the revised Terms.
         </p>
       </Section>
 
-      <Section title="8. Contact">
+      <Section title="9. Contact">
         <p>
           Questions about these Terms can be sent to{" "}
           <a href="mailto:info@zineticmusic.com" className="text-primary underline underline-offset-4">

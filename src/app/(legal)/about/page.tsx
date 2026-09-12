@@ -16,11 +16,12 @@ export default function AboutPage() {
         </p>
       </Section>
 
-      <Section title="Digital service, no physical shipping">
+      <Section title="Service activation time">
         <p>
-          Zinetic Music is a fully digital, online-only service. There are no physical products,
-          shipping, or delivery involved, channel checks and wallet top-ups are delivered
-          instantly to your account.
+          Zinetic Music is a fully digital, subscription-style service with no physical goods, so
+          delivery time and stock quantity do not apply. Wallet top-ups are credited to your
+          account within a few minutes of a successful payment, and channel/network checks return
+          a result instantly. There is nothing to ship and nothing to wait days for.
         </p>
       </Section>
 

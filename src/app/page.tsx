@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { HeroScannerBg } from "@/components/hero-scanner-bg";
 import { LandingNavbar } from "@/components/landing-navbar";
+import { SiteFooter } from "@/components/site-footer";
 import {
   LuArrowRight,
   LuCircleCheck,
@@ -14,21 +14,7 @@ import {
   LuChartBar,
   LuCheck,
   LuCircleHelp,
-  LuMapPin,
-  LuPhone,
 } from "react-icons/lu";
-import {
-  FaFacebookF,
-  FaWhatsapp,
-  FaLinkedinIn,
-  FaYoutube,
-  FaInstagram,
-  FaXTwitter,
-  FaSoundcloud,
-  FaSpotify,
-  FaTiktok,
-  FaStar,
-} from "react-icons/fa6";
 
 export const dynamic = "force-dynamic";
 
@@ -363,154 +349,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Styled Footer matching user reference image */}
-      <footer className="relative z-10 border-t border-neutral-800 bg-[#080808] text-white pt-16 pb-8 px-6">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-            {/* Column 1: Brand Info (4 cols) */}
-            <div className="space-y-6 lg:col-span-3">
-              <Logo size={36} />
-              <p className="text-sm leading-relaxed text-neutral-400 max-w-sm">
-                YouTube MCN Checker &amp; Copyright Management portal built for creators, record labels, and digital rights managers.
-              </p>
-              <div className="flex items-center gap-3">
-                <a href="#" className="flex size-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white">
-                  <FaFacebookF className="size-4" />
-                </a>
-                <a href="#" className="flex size-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white">
-                  <FaWhatsapp className="size-4" />
-                </a>
-                <a href="#" className="flex size-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white">
-                  <FaLinkedinIn className="size-4" />
-                </a>
-                <a href="#" className="flex size-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white">
-                  <FaYoutube className="size-4" />
-                </a>
-              </div>
-            </div>
-
-            {/* Column 2: Quick Links (2 cols) */}
-            <div className="lg:col-span-2">
-              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-5">QUICK LINKS</h4>
-              <ul className="space-y-3 text-sm text-neutral-400">
-                <li><a href="#mcn-checker" className="hover:text-white transition-colors">MCN Checker</a></li>
-                <li><a href="#copyright-hub" className="hover:text-white transition-colors">Copyright Hub</a></li>
-                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#support" className="hover:text-white transition-colors">Support</a></li>
-                <li><Link href="/login" className="hover:text-white transition-colors">Sign In</Link></li>
-              </ul>
-            </div>
-
-            {/* Column 2b: Legal (1 col) */}
-            <div className="lg:col-span-1">
-              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-5">LEGAL</h4>
-              <ul className="space-y-3 text-sm text-neutral-400">
-                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link></li>
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/refund-policy" className="hover:text-white transition-colors">Refund Policy</Link></li>
-              </ul>
-            </div>
-
-            {/* Column 3: United Kingdom (3 cols) */}
-            <div className="lg:col-span-3">
-              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-5 flex items-center gap-2">
-                <span>🇬🇧</span> UNITED KINGDOM
-              </h4>
-              <ul className="space-y-3.5 text-sm text-neutral-400">
-                <li className="flex items-start gap-3">
-                  <LuMapPin className="size-4 mt-0.5 shrink-0 text-neutral-500" />
-                  <span>71-75 Shelton Street, Covent Garden, London, WC2H 9JQ</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <LuPhone className="size-4 shrink-0 text-neutral-500" />
-                  <span>+44 7307 601 744</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <LuMail className="size-4 shrink-0 text-neutral-500" />
-                  <a href="mailto:contact@zineticmusic.com" className="hover:text-white transition-colors">contact@zineticmusic.com</a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Column 4: Bangladesh (3 cols) */}
-            <div className="lg:col-span-3">
-              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-5 flex items-center gap-2">
-                <span>🇧🇩</span> BANGLADESH
-              </h4>
-              <ul className="space-y-3.5 text-sm text-neutral-400">
-                <li className="flex items-start gap-3">
-                  <LuMapPin className="size-4 mt-0.5 shrink-0 text-neutral-500" />
-                  <span>Batar Goli, Boro Moghbazar, Ramna, Dhaka, 1217</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <LuPhone className="size-4 shrink-0 text-neutral-500" />
-                  <span>+880 9696 797 267</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <LuMail className="size-4 shrink-0 text-neutral-500" />
-                  <a href="mailto:info@zineticmusic.com" className="hover:text-white transition-colors">info@zineticmusic.com</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Payment methods */}
-          <div className="mt-12 border-t border-neutral-900 pt-8">
-            <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-4">
-              WE ACCEPT
-            </h4>
-            {/* TODO: replace with the payment banner image provided by the client (attached to their SSLCommerz onboarding email) */}
-            <div className="flex h-14 w-full max-w-md items-center justify-center rounded-lg border border-dashed border-neutral-700 bg-neutral-900/50 text-xs text-neutral-500">
-              Payment banner image pending
-            </div>
-          </div>
-
-          {/* Bottom Row Bar */}
-          <div className="mt-8 border-t border-neutral-900 pt-8 flex flex-col lg:flex-row items-center justify-between gap-6 text-xs text-neutral-500">
-            <div className="flex flex-col gap-1.5">
-              <div>
-                © Copyright 2026 | Zinetic Music Limited | All Right Reserved |{" "}
-                <Link href="/privacy" className="hover:text-neutral-300">Privacy Policy</Link> |{" "}
-                <Link href="/terms" className="hover:text-neutral-300">Terms and Conditions</Link> |{" "}
-                <Link href="/refund-policy" className="hover:text-neutral-300">Refund Policy</Link> |{" "}
-                <Link href="/about" className="hover:text-neutral-300">About Us</Link>
-              </div>
-              <div className="text-neutral-600">
-                Trade License No.: [to be added] &middot; TIN: [to be added]
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6">
-              {/* Trustpilot Branding */}
-              <div className="flex items-center gap-1.5 font-bold text-white text-sm">
-                <FaStar className="size-4 text-[#00b67a] fill-[#00b67a]" />
-                <span>Trustpilot</span>
-              </div>
-
-              {/* Small Circular Social Icons */}
-              <div className="flex items-center gap-2">
-                <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                  <FaInstagram className="size-3.5" />
-                </a>
-                <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                  <FaXTwitter className="size-3.5" />
-                </a>
-                <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                  <FaSoundcloud className="size-3.5" />
-                </a>
-                <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                  <FaSpotify className="size-3.5" />
-                </a>
-                <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                  <FaTiktok className="size-3.5" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

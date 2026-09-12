@@ -1,23 +1,20 @@
-import Link from "next/link";
-import { Logo } from "@/components/logo";
-import { LuArrowLeft } from "react-icons/lu";
+import { LandingNavbar } from "@/components/landing-navbar";
+import { SiteFooter } from "@/components/site-footer";
+
+const navLinks = [
+  { label: "Features", href: "/#features" },
+  { label: "MCN Checker", href: "/#mcn-checker" },
+  { label: "Copyright Hub", href: "/#copyright-hub" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "Support", href: "/#support" },
+];
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between border-b px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Logo size={28} />
-        </Link>
-        <Link
-          href="/"
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <LuArrowLeft className="size-4" />
-          Back to home
-        </Link>
-      </header>
-      <main className="mx-auto max-w-3xl px-6 py-12">{children}</main>
+    <div className="flex min-h-screen flex-col bg-background">
+      <LandingNavbar navLinks={navLinks} />
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">{children}</main>
+      <SiteFooter />
     </div>
   );
 }
