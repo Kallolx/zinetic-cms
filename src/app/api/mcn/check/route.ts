@@ -263,12 +263,13 @@ export async function POST(request: Request) {
 
   // charge the wallet regardless of a not_found result (a real lookup ran);
   // don't charge on an upstream/config error.
+  let walletBalance = Number(profile.wallet_balance);
   if (status !== "error") {
-    const newBalance = Number(profile.wallet_balance) - CHECK_PRICE;
+    walletBalance = Number(profile.wallet_balance) - CHECK_PRICE;
 
     const { error: debitError } = await admin
       .from("profiles")
-      .update({ wallet_balance: newBalance })
+      .update({ wallet_balance: walletBalance })
       .eq("id", user.id);
 
     if (!debitError) {
@@ -311,5 +312,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Could not save the check result." }, { status: 500 });
   }
 
-  return NextResponse.json({ check: inserted });
+  return NextResponse.json({ check: inserted, walletBalance });
 }

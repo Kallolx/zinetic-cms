@@ -4,7 +4,11 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/supabase/session";
 import { ExpandableText } from "@/components/dashboard/expandable-text";
-import { RefreshChannelButton } from "@/components/dashboard/refresh-channel-button";
+import {
+  ChannelNetworkProvider,
+  OwnerContactCardBody,
+  CopyrightOwnershipBody,
+} from "@/components/dashboard/channel-network-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,7 +24,6 @@ import {
   LuUsers,
   LuEye,
   LuVideo,
-  LuMail,
   LuArrowLeft,
   LuCircleCheck,
   LuCircleAlert,
@@ -90,14 +93,17 @@ export default async function ChannelDetailPage({
   if (!channel) notFound();
 
   const raw = (channel.raw_response ?? {}) as RawResponse;
-  const hasOwner = Boolean(channel.network || channel.network_contact_email);
   const isConfirmedFinal = raw.status === "updated";
-  // eslint-disable-next-line react-hooks/purity -- server component, evaluated fresh per request
-  const isRecentCheck = Date.now() - new Date(channel.created_at).getTime() < 60 * 60 * 1000;
   const videos = raw.videos ?? [];
   const reports = raw.reports;
 
   return (
+    <ChannelNetworkProvider
+      checkId={channel.id}
+      initialNetwork={channel.network}
+      initialContactEmail={channel.network_contact_email}
+      initialIsConfirmedFinal={isConfirmedFinal}
+    >
     <div className="flex flex-col gap-6">
       <nav className="flex items-center gap-1.5 text-sm">
         <Link
@@ -177,39 +183,13 @@ export default async function ChannelDetailPage({
           </div>
 
           <Card size="sm" className="w-full shrink-0 bg-muted/40 sm:w-64">
-            <CardHeader className="flex flex-row items-center justify-between gap-2 pb-1">
+            <CardHeader className="pb-1">
               <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Owner &amp; contact
               </p>
-              {!channel.network && !isConfirmedFinal && channel.channel_id && (
-                <RefreshChannelButton checkId={channel.id} />
-              )}
             </CardHeader>
-            <CardContent className="flex flex-col gap-2 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground">Network</p>
-                <p className="font-medium">{channel.network ?? "Independent"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Contact email</p>
-                {channel.network_contact_email ? (
-                  <a
-                    href={`mailto:${channel.network_contact_email}`}
-                    className="font-medium text-primary underline underline-offset-4"
-                  >
-                    {channel.network_contact_email}
-                  </a>
-                ) : (
-                  <p className="font-medium text-muted-foreground">Not available</p>
-                )}
-              </div>
-              {!channel.network && (
-                <p className="text-xs text-muted-foreground">
-                  {isConfirmedFinal
-                    ? "Confirmed: this channel has no MCN network on file."
-                    : "Network data may take a few minutes to appear for newly added channels. Use Refresh to check again, free of charge."}
-                </p>
-              )}
+            <CardContent>
+              <OwnerContactCardBody />
             </CardContent>
           </Card>
         </CardContent>
@@ -282,35 +262,7 @@ export default async function ChannelDetailPage({
                 <CardTitle className="text-base">Copyright information</CardTitle>
               </CardHeader>
               <CardContent>
-                {hasOwner ? (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="rounded-lg border p-4">
-                      <p className="text-xs text-muted-foreground">Content owner</p>
-                      <p className="mt-1 font-medium">{channel.network}</p>
-                    </div>
-                    <div className="rounded-lg border p-4">
-                      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <LuMail className="size-3.5" /> Contact email
-                      </p>
-                      <p className="mt-1 font-medium">
-                        {channel.network_contact_email ?? "Not available"}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1 py-8 text-center text-sm text-muted-foreground">
-                    <p>No network or ownership data found for this channel.</p>
-                    {isConfirmedFinal ? (
-                      <p className="text-xs">Confirmed: this channel has no MCN network on file.</p>
-                    ) : (
-                      isRecentCheck && (
-                        <p className="text-xs">
-                          Network data may take a few minutes to appear for newly added channels.
-                        </p>
-                      )
-                    )}
-                  </div>
-                )}
+                <CopyrightOwnershipBody />
               </CardContent>
             </Card>
           </TabsContent>
@@ -413,6 +365,7 @@ export default async function ChannelDetailPage({
         </Tabs>
       </div>
     </div>
+    </ChannelNetworkProvider>
   );
 }
 

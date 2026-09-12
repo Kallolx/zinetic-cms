@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { LuPlus, LuLoaderCircle, LuCircleCheck, LuCircleX } from "react-icons/lu";
+import { emitWalletBalance } from "@/lib/wallet-store";
 
 type QueuedEntry = {
   id: string;
@@ -74,6 +75,9 @@ export function AddChannelDialog({
               : e
           )
         );
+        if (typeof data.walletBalance === "number") {
+          emitWalletBalance(data.walletBalance);
+        }
         // let the success state show briefly, then close and go back to the list
         setTimeout(() => onOpenChange(false), 900);
         onSuccess?.();

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LuMenu, LuLogOut, LuWallet, LuSearch, LuCircleHelp, LuChevronsUpDown } from "react-icons/lu";
 import { signOut } from "@/app/actions/auth";
+import { onWalletBalance } from "@/lib/wallet-store";
 
 export type NavItem = {
   href: string;
@@ -129,6 +130,9 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = React.useState(false);
+  const [balance, setBalance] = React.useState(walletBalance);
+
+  React.useEffect(() => onWalletBalance(setBalance), []);
 
   const sidebarContent = (collapsedMode: boolean) => (
     <div className="flex h-full flex-col gap-6 overflow-y-auto p-4">
@@ -160,21 +164,21 @@ export function AppShell({
         {secondaryNavItems && secondaryNavItems.length > 0 && (
           <NavLinks items={secondaryNavItems} pathname={pathname} collapsed={collapsedMode} />
         )}
-        {typeof walletBalance === "number" && (
+        {typeof balance === "number" && (
           <Link
             href="/dashboard/wallet"
             className={cn(
               "flex items-center justify-between rounded-xl border bg-muted/40 px-3 py-3 transition-colors hover:bg-accent",
               collapsedMode && "justify-center px-2"
             )}
-            title={collapsedMode ? `Wallet: $${walletBalance.toFixed(2)}` : undefined}
+            title={collapsedMode ? `Wallet: $${balance.toFixed(2)}` : undefined}
           >
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <LuWallet className="size-5" />
               {!collapsedMode && "Wallet"}
             </div>
             {!collapsedMode && (
-              <span className="font-heading font-semibold">${walletBalance.toFixed(2)}</span>
+              <span className="font-heading font-semibold">${balance.toFixed(2)}</span>
             )}
           </Link>
         )}
@@ -228,13 +232,13 @@ export function AppShell({
         </div>
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          {typeof walletBalance === "number" && (
+          {typeof balance === "number" && (
             <Link href="/dashboard/wallet" className="hidden sm:block">
               <Badge
                 variant="secondary"
                 className="h-9 gap-1.5 rounded-full px-3 text-sm transition-colors hover:bg-secondary/70"
               >
-                <LuWallet className="size-4" />${walletBalance.toFixed(2)}
+                <LuWallet className="size-4" />${balance.toFixed(2)}
               </Badge>
             </Link>
           )}
