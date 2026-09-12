@@ -18,7 +18,11 @@ import {
 } from "@/components/ui/table";
 import { LuSearch, LuDownload } from "react-icons/lu";
 import { AddChannelDialog } from "@/components/dashboard/add-channel-dialog";
+import { TablePagination } from "@/components/dashboard/table-pagination";
+import { usePagination } from "@/hooks/use-pagination";
 import type { McnCheck } from "@/lib/types";
+
+const PAGE_SIZE = 15;
 
 function StatusDot({ status }: { status: McnCheck["status"] }) {
   const label =
@@ -98,6 +102,8 @@ export function ChannelsBoard({
       c.network?.toLowerCase().includes(q)
     );
   });
+
+  const { page, setPage, pageCount, pageItems } = usePagination(filtered, PAGE_SIZE);
 
   const allSelected = filtered.length > 0 && filtered.every((c) => selected.has(c.id));
 
@@ -180,7 +186,7 @@ export function ChannelsBoard({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((c) => (
+              {pageItems.map((c) => (
                 <TableRow
                   key={c.id}
                   className="group cursor-pointer"
@@ -238,6 +244,8 @@ export function ChannelsBoard({
           </Table>
         </div>
       )}
+
+      <TablePagination page={page} pageCount={pageCount} onPageChange={setPage} />
     </div>
   );
 }

@@ -37,7 +37,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { LuCheck, LuX, LuWalletCards, LuLoaderCircle, LuTrash2 } from "react-icons/lu";
+import { TablePagination } from "@/components/dashboard/table-pagination";
+import { usePagination } from "@/hooks/use-pagination";
 import type { Profile } from "@/lib/types";
+
+const PAGE_SIZE = 15;
 
 function StatusBadge({ status }: { status: Profile["status"] }) {
   if (status === "approved")
@@ -174,6 +178,7 @@ export function UsersTable({
 }) {
   const router = useRouter();
   const [pendingId, setPendingId] = React.useState<string | null>(null);
+  const { page, setPage, pageCount, pageItems } = usePagination(users, PAGE_SIZE);
 
   async function onReview(userId: string, decision: "approved" | "rejected") {
     setPendingId(userId);
@@ -188,6 +193,7 @@ export function UsersTable({
   }
 
   return (
+    <div className="flex flex-col gap-4">
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
@@ -201,7 +207,7 @@ export function UsersTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((u) => (
+          {pageItems.map((u) => (
             <TableRow key={u.id}>
               <TableCell className="font-medium">{u.full_name ?? "N/A"}</TableCell>
               <TableCell className="text-muted-foreground">{u.email}</TableCell>
@@ -259,6 +265,8 @@ export function UsersTable({
           ))}
         </TableBody>
       </Table>
+    </div>
+      <TablePagination page={page} pageCount={pageCount} onPageChange={setPage} />
     </div>
   );
 }
