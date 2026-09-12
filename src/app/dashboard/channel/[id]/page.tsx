@@ -4,6 +4,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/supabase/session";
 import { ExpandableText } from "@/components/dashboard/expandable-text";
+import { RefreshChannelButton } from "@/components/dashboard/refresh-channel-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -172,10 +173,13 @@ export default async function ChannelDetailPage({
           </div>
 
           <Card size="sm" className="w-full shrink-0 bg-muted/40 sm:w-64">
-            <CardHeader className="gap-1 pb-1">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 pb-1">
               <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Owner &amp; contact
               </p>
+              {!channel.network && channel.channel_id && (
+                <RefreshChannelButton checkId={channel.id} />
+              )}
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
               <div>
@@ -195,9 +199,10 @@ export default async function ChannelDetailPage({
                   <p className="font-medium text-muted-foreground">Not available</p>
                 )}
               </div>
-              {!channel.network && isRecentCheck && (
+              {!channel.network && (
                 <p className="text-xs text-muted-foreground">
                   Network data may take a few minutes to appear for newly added channels.
+                  {isRecentCheck ? " Use Refresh to check again, free of charge." : null}
                 </p>
               )}
             </CardContent>
