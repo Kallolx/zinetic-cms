@@ -1,0 +1,225 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+const CHECK_PRICE = Number(process.env.NEXT_PUBLIC_CHECK_PRICE ?? 15);
+
+function extractChannelId(input: string) {
+  const trimmed = input.trim();
+  const match = trimmed.match(/UC[\w-]{22}/);
+  if (match) return match[0];
+  // otherwise treat as a handle/custom URL/raw ID, pass through
+  return trimmed.replace(/^https?:\/\/(www\.)?youtube\.com\//, "").replace(/^@/, "");
+}
+
+const MOCK_NETWORKS = [
+  { network: "Zinetic Music Network", email: "claims@zineticmusic.com" },
+  { network: "Sony Music Entertainment", email: "partners@sonymusic.com" },
+  { network: "WMG - Wall Music Group", email: "network@wallmusicgroup.com" },
+  { network: null, email: null }, // independent, no MCN
+];
+
+const MOCK_COUNTRIES = ["US", "BD", "GB", "IN", "CA"];
+const MOCK_LANGUAGES = ["English", "Bengali", "English", "Hindi", "English"];
+const MOCK_TOPICS = [
+  "music",
+  "entertainment",
+  "vlog",
+  "gaming",
+  "news & commentary",
+];
+
+function seededRandom(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 1103515245 + 12345) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+/**
+ * Deterministic fake response so the same input always looks the same in
+ * demos. Type "notfound" anywhere in the input to preview the not_found
+ * state. Toggle with MCN_API_MOCK=true, swap back to false once the real
+ * API key's usage is worth spending on.
+ */
+function mockMcnLookup(channelInput: string, channelId: string) {
+  if (channelInput.toLowerCase().includes("notfound")) {
+    return { status: "not_found" as const, result: {} };
+  }
+
+  let hash = 0;
+  for (const char of channelId) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  const rand = seededRandom(hash || 1);
+  const pick = MOCK_NETWORKS[hash % MOCK_NETWORKS.length];
+  const topic = MOCK_TOPICS[hash % MOCK_TOPICS.length];
+  const channelName = `Demo Channel ${(hash % 999) + 1}`;
+  const handle = `@${channelName.toLowerCase().replace(/\s+/g, "")}`;
+  const videoCount = (hash % 800) + 1;
+  const subscriberCount = (hash % 5_000_000) + 1000;
+  const totalViews = (hash % 500_000_000) + 10_000;
+
+  const createdYear = 2012 + (hash % 13);
+  const createdMonth = (hash % 12) + 1;
+  const createdDay = (hash % 27) + 1;
+
+  const videos = Array.from({ length: 5 }, (_, i) => {
+    const vr = rand();
+    const daysAgo = Math.floor(vr * 400) + i * 3;
+    const publishedAt = new Date(Date.now() - daysAgo * 86_400_000).toISOString();
+    return {
+      title: `${channelName}, Episode ${videoCount - i}`,
+      views: Math.floor(vr * (totalViews / 20)) + 500,
+      published_at: publishedAt,
+      claim_status: vr > 0.75 ? "claimed" : "clear",
+    };
+  });
+
+  const monthlyViews = Math.floor(totalViews / 24);
+  const estRevenue = Math.round((monthlyViews / 1000) * (1.5 + rand()));
+
+  return {
+    status: "success" as const,
+    result: {
+      channel_id: channelId,
+      channel_name: channelName,
+      custom_url: handle,
+      description: `${channelName} is a ${topic} channel sharing regular uploads with its community. This is demo data generated for testing. No real channel data was fetched.`,
+      country_code: MOCK_COUNTRIES[hash % MOCK_COUNTRIES.length],
+      language: MOCK_LANGUAGES[hash % MOCK_LANGUAGES.length],
+      date_of_creation: `${createdYear}-${String(createdMonth).padStart(2, "0")}-${String(createdDay).padStart(2, "0")}`,
+      network: pick.network,
+      network_contact_email: pick.email,
+      subscriber_count: subscriberCount,
+      total_views: totalViews,
+      video_count: videoCount,
+      avatar: null,
+      videos,
+      reports: {
+        monthly_views: monthlyViews,
+        estimated_revenue_usd: estRevenue,
+        claims_this_month: videos.filter((v) => v.claim_status === "claimed").length,
+        released_claims: Math.max(0, (hash % 4) - 1),
+      },
+    },
+  };
+}
+
+export async function POST(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
+  const { channelInput } = await request.json();
+  if (!channelInput || typeof channelInput !== "string") {
+    return NextResponse.json({ error: "Missing channel link or ID." }, { status: 400 });
+  }
+
+  const admin = createAdminClient();
+
+  const { data: profile, error: profileError } = await admin
+    .from("profiles")
+    .select("wallet_balance, status")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError || !profile) {
+    return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+  }
+  if (profile.status !== "approved") {
+    return NextResponse.json({ error: "Account is not approved yet." }, { status: 403 });
+  }
+  if (Number(profile.wallet_balance) < CHECK_PRICE) {
+    return NextResponse.json(
+      { error: `Insufficient balance. This check costs $${CHECK_PRICE.toFixed(2)}.` },
+      { status: 402 }
+    );
+  }
+
+  const channelId = extractChannelId(channelInput);
+  const apiBase = process.env.MCN_API_BASE_URL ?? "https://api.amnhacso.com";
+  const apiKey = process.env.MCN_API_KEY;
+
+  let status: "success" | "not_found" | "error" = "success";
+  let result: Record<string, unknown> = {};
+
+  if (process.env.MCN_API_MOCK === "true") {
+    const mocked = mockMcnLookup(channelInput, channelId);
+    status = mocked.status;
+    result = mocked.result;
+  } else {
+    try {
+      if (!apiKey) throw new Error("MCN_API_KEY is not configured.");
+
+      const res = await fetch(`${apiBase}/api/v1/channels/${encodeURIComponent(channelId)}`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+        cache: "no-store",
+      });
+
+      if (res.status === 404) {
+        status = "not_found";
+      } else if (!res.ok) {
+        status = "error";
+      } else {
+        result = await res.json();
+      }
+    } catch {
+      status = "error";
+    }
+  }
+
+  // charge the wallet regardless of a not_found result (a real lookup ran);
+  // don't charge on an upstream/config error.
+  if (status !== "error") {
+    const newBalance = Number(profile.wallet_balance) - CHECK_PRICE;
+
+    const { error: debitError } = await admin
+      .from("profiles")
+      .update({ wallet_balance: newBalance })
+      .eq("id", user.id);
+
+    if (!debitError) {
+      await admin.from("wallet_transactions").insert({
+        user_id: user.id,
+        type: "check_charge",
+        amount: -CHECK_PRICE,
+        note: `MCN check: ${channelInput}`,
+      });
+    }
+  }
+
+  const record = {
+    user_id: user.id,
+    channel_input: channelInput,
+    channel_id: (result.channel_id as string) ?? (status === "success" ? channelId : null),
+    channel_name: (result.channel_name as string) ?? null,
+    // confirmed against a real API call: the live endpoint returns
+    // "network_name" and "email_cms", not "network" / "contact_email"
+    network: (result.network_name as string) ?? null,
+    network_contact_email: (result.email_cms as string) ?? null,
+    subscriber_count: (result.subscriber_count as number) ?? null,
+    total_views: (result.total_views as number) ?? null,
+    video_count: (result.video_count as number) ?? null,
+    avatar_url: (result.avatar as string) ?? null,
+    status,
+    cost: status === "error" ? 0 : CHECK_PRICE,
+    raw_response: result,
+  };
+
+  const { data: inserted, error: insertError } = await admin
+    .from("mcn_checks")
+    .insert(record)
+    .select()
+    .single();
+
+  if (insertError) {
+    return NextResponse.json({ error: "Could not save the check result." }, { status: 500 });
+  }
+
+  return NextResponse.json({ check: inserted });
+}
