@@ -14,14 +14,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="grid min-h-screen md:grid-cols-2">
       <div className="relative hidden flex-col justify-between overflow-hidden bg-[#0f0f0f] p-10 text-white md:flex">
-        <HeroScannerBg />
-        <div
-          className="pointer-events-none absolute inset-0 opacity-40 z-0"
-          style={{
-            backgroundImage:
-              "radial-gradient(ellipse 60% 50% at 20% 10%, oklch(0.55 0.25 15 / 35%), transparent 60%), radial-gradient(ellipse 50% 40% at 90% 90%, oklch(0.65 0.2 47.604 / 45%), transparent 60%)",
-          }}
-        />
+        <HeroScannerBg className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-60 dark:opacity-75 transition-opacity duration-500" />
         <Link href="/" className="relative z-10 flex items-center gap-2.5">
           <Image
             src="/brand/logo.png"
@@ -64,7 +57,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </p>
       </div>
 
-      <div className="flex flex-col bg-muted/40">
+      <div className="flex flex-col bg-background dark:bg-zinc-950">
         <header className="flex items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
             <Link
@@ -86,7 +79,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <ThemeToggle />
         </header>
         <main className="flex flex-1 items-center justify-center px-6 pb-16">
-          <div className="w-full max-w-sm rounded-2xl border bg-card p-8 shadow-lg">{children}</div>
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-xl">{children}</div>
         </main>
       </div>
     </div>

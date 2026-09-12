@@ -5,6 +5,7 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { HeroScannerBg } from "@/components/hero-scanner-bg";
+import { LandingNavbar } from "@/components/landing-navbar";
 import {
   LuArrowRight,
   LuCircleCheck,
@@ -49,9 +50,12 @@ export default async function Home() {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background text-foreground scroll-smooth">
-      {/* Background Ambient Glow FX */}
+      {/* Fixed Scanner WebGL Animated Background locked across the entire site */}
+      <HeroScannerBg />
+
+      {/* Fixed Ambient Glow Overlay */}
       <div
-        className="pointer-events-none absolute inset-0 z-0 opacity-40 dark:opacity-30"
+        className="pointer-events-none fixed inset-0 z-0 opacity-40 dark:opacity-30"
         style={{
           backgroundImage:
             "radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.55 0.25 15 / 35%), transparent 70%), radial-gradient(ellipse 60% 40% at 80% 80%, oklch(0.6 0.2 260 / 20%), transparent 70%)",
@@ -59,51 +63,11 @@ export default async function Home() {
       />
 
       {/* Header / Navbar */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 dark:bg-card/80 shadow-sm backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Logo size={36} />
-
-          {/* Navigation Links */}
-          <nav className="hidden items-center gap-8 md:flex">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Right Header Actions */}
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Button
-              variant="ghost"
-              nativeButton={false}
-              render={<Link href="/login">Sign in</Link>}
-            />
-            <Button
-              className="shadow-md"
-              nativeButton={false}
-              render={
-                <Link href="/register" className="flex items-center gap-1.5">
-                  Get started
-                  <LuArrowRight className="size-4" />
-                </Link>
-              }
-            />
-          </div>
-        </div>
-      </header>
+      <LandingNavbar navLinks={navLinks} />
 
       {/* Hero Section */}
-      <main className="relative flex flex-1 flex-col items-center justify-center px-6 py-16 sm:py-24 overflow-hidden">
-        {/* Scanner WebGL Background */}
-        <HeroScannerBg />
-
-        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center">
+      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-16 sm:py-24">
+        <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-primary shadow-sm backdrop-blur-md">
             <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none">
@@ -130,24 +94,17 @@ export default async function Home() {
           </p>
 
           {/* Action Buttons */}
-          <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-4">
+          <div className="mt-8 flex justify-center">
             <Button
               size="lg"
               className="h-12 px-8 text-base shadow-lg shadow-primary/20"
               nativeButton={false}
               render={
-                <Link href="/register" className="flex items-center gap-2 font-semibold">
-                  Get Started Free
+                <Link href="/login" className="flex items-center gap-2 font-semibold">
+                  <span>Sign in to Dashboard</span>
                   <LuArrowRight className="size-5" />
                 </Link>
               }
-            />
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-12 px-8 text-base backdrop-blur-sm"
-              nativeButton={false}
-              render={<Link href="/login">Sign in to Dashboard</Link>}
             />
           </div>
 
@@ -170,7 +127,7 @@ export default async function Home() {
       </main>
 
       {/* Section 1: Features */}
-      <section id="features" className="relative z-10 border-t border-border/40 py-20 px-6 bg-card/30">
+      <section id="features" className="relative z-10 py-20 px-6 bg-transparent">
         <div className="mx-auto max-w-7xl">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
@@ -182,7 +139,7 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+            <div className="rounded-2xl border border-border/50 bg-card/70 backdrop-blur-md p-6 shadow-sm">
               <div className="flex size-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500 mb-4">
                 <LuSearch className="size-6" />
               </div>
@@ -192,7 +149,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+            <div className="rounded-2xl border border-border/50 bg-card/70 backdrop-blur-md p-6 shadow-sm">
               <div className="flex size-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 mb-4">
                 <LuMail className="size-6" />
               </div>
@@ -202,7 +159,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+            <div className="rounded-2xl border border-border/50 bg-card/70 backdrop-blur-md p-6 shadow-sm">
               <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 mb-4">
                 <LuShieldCheck className="size-6" />
               </div>
@@ -212,7 +169,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+            <div className="rounded-2xl border border-border/50 bg-card/70 backdrop-blur-md p-6 shadow-sm">
               <div className="flex size-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 mb-4">
                 <LuChartBar className="size-6" />
               </div>
@@ -226,7 +183,7 @@ export default async function Home() {
       </section>
 
       {/* Section 2: MCN Checker */}
-      <section id="mcn-checker" className="relative z-10 border-t border-border/40 py-20 px-6">
+      <section id="mcn-checker" className="relative z-10 py-20 px-6 bg-transparent">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -257,15 +214,15 @@ export default async function Home() {
             </div>
 
             <div className="rounded-2xl border bg-card p-6 shadow-xl space-y-4">
-              <div className="rounded-xl border bg-background p-4">
+              <div className="rounded-xl border bg-muted/50 p-4">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Step 1</div>
                 <div className="font-medium text-foreground">Paste YouTube Channel URL</div>
               </div>
-              <div className="rounded-xl border bg-background p-4">
+              <div className="rounded-xl border bg-muted/50 p-4">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Step 2</div>
                 <div className="font-medium text-foreground">System Checks MCN Network Database</div>
               </div>
-              <div className="rounded-xl border bg-background p-4 border-emerald-500/30 bg-emerald-500/5">
+              <div className="rounded-xl border p-4 border-emerald-500/30 bg-emerald-500/10">
                 <div className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">Step 3</div>
                 <div className="font-medium text-foreground">Instant MCN Match &amp; Verified Contact Email Revealed</div>
               </div>
@@ -275,7 +232,7 @@ export default async function Home() {
       </section>
 
       {/* Section 3: Copyright Hub */}
-      <section id="copyright-hub" className="relative z-10 border-t border-border/40 py-20 px-6 bg-card/30">
+      <section id="copyright-hub" className="relative z-10 py-20 px-6 bg-transparent">
         <div className="mx-auto max-w-7xl text-center">
           <div className="max-w-3xl mx-auto mb-16">
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
@@ -287,21 +244,21 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            <div className="rounded-2xl border bg-card p-6">
+            <div className="rounded-2xl border bg-card p-6 shadow-sm">
               <h3 className="font-heading text-lg font-semibold">Release Claim Requests</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                 Submit claims directly to partner networks to quickly release video strikes and revenue holds.
               </p>
             </div>
 
-            <div className="rounded-2xl border bg-card p-6">
+            <div className="rounded-2xl border bg-card p-6 shadow-sm">
               <h3 className="font-heading text-lg font-semibold">Issue Dispute Tracker</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                 Stay updated on ongoing disputes with real-time status indicators and admin review logs.
               </p>
             </div>
 
-            <div className="rounded-2xl border bg-card p-6">
+            <div className="rounded-2xl border bg-card p-6 shadow-sm">
               <h3 className="font-heading text-lg font-semibold">Claimed Video Management</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                 Organize and filter all claimed assets in one structured overview with built-in export tools.
@@ -312,7 +269,7 @@ export default async function Home() {
       </section>
 
       {/* Section 4: Pricing */}
-      <section id="pricing" className="relative z-10 border-t border-border/40 py-20 px-6">
+      <section id="pricing" className="relative z-10 py-20 px-6 bg-transparent">
         <div className="mx-auto max-w-7xl text-center">
           <div className="max-w-3xl mx-auto mb-16">
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
@@ -344,7 +301,7 @@ export default async function Home() {
             </div>
 
             {/* Enterprise Plan */}
-            <div className="rounded-2xl border bg-card p-8 flex flex-col justify-between text-left">
+            <div className="rounded-2xl border bg-card p-8 flex flex-col justify-between text-left shadow-sm">
               <div>
                 <h3 className="font-heading text-xl font-bold">Enterprise</h3>
                 <p className="text-sm text-muted-foreground mt-1">Custom volume solutions</p>
@@ -362,7 +319,7 @@ export default async function Home() {
       </section>
 
       {/* Section 5: Support / FAQ */}
-      <section id="support" className="relative z-10 border-t border-border/40 py-20 px-6 bg-card/30">
+      <section id="support" className="relative z-10 py-20 px-6 bg-transparent">
         <div className="mx-auto max-w-4xl text-center">
           <div className="mb-12">
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
@@ -374,7 +331,7 @@ export default async function Home() {
           </div>
 
           <div className="space-y-4 text-left">
-            <div className="rounded-xl border bg-card p-6">
+            <div className="rounded-xl border bg-card p-6 shadow-sm">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <LuCircleHelp className="size-5 text-primary shrink-0" />
                 How accurate is the MCN channel check?
@@ -384,7 +341,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="rounded-xl border bg-card p-6">
+            <div className="rounded-xl border bg-card p-6 shadow-sm">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <LuCircleHelp className="size-5 text-primary shrink-0" />
                 How does wallet balance and credits work?
@@ -394,7 +351,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="rounded-xl border bg-card p-6">
+            <div className="rounded-xl border bg-card p-6 shadow-sm">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <LuCircleHelp className="size-5 text-primary shrink-0" />
                 Who can register for an account?
@@ -407,7 +364,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Styled Footer following exact reference layout with relevant project links */}
+      {/* Styled Footer matching user reference image */}
       <footer className="relative z-10 border-t border-neutral-800 bg-[#080808] text-white pt-16 pb-8 px-6">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
