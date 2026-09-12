@@ -10,9 +10,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
-import { LuSearch } from "react-icons/lu";
+import { LuSearch, LuCreditCard, LuUserCog } from "react-icons/lu";
 
 type TopupRow = {
   id: string;
@@ -23,6 +24,19 @@ type TopupRow = {
 };
 
 const PAGE_SIZE = 15;
+
+function SourceBadge({ note }: { note: string | null }) {
+  const isOnline = note?.startsWith("SSLCommerz top-up");
+  return isOnline ? (
+    <Badge className="gap-1 bg-blue-600/10 text-blue-700 dark:text-blue-400">
+      <LuCreditCard className="size-3" /> SSLCommerz
+    </Badge>
+  ) : (
+    <Badge variant="secondary" className="gap-1">
+      <LuUserCog className="size-3" /> Admin
+    </Badge>
+  );
+}
 
 export function TopupHistoryTable({ rows }: { rows: TopupRow[] }) {
   const [query, setQuery] = React.useState("");
@@ -59,6 +73,7 @@ export function TopupHistoryTable({ rows }: { rows: TopupRow[] }) {
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
+                <TableHead>Source</TableHead>
                 <TableHead>Note</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead className="text-right">Date</TableHead>
@@ -69,6 +84,9 @@ export function TopupHistoryTable({ rows }: { rows: TopupRow[] }) {
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">
                     {r.profiles?.full_name ?? r.profiles?.email ?? "N/A"}
+                  </TableCell>
+                  <TableCell>
+                    <SourceBadge note={r.note} />
                   </TableCell>
                   <TableCell className="max-w-[280px] truncate text-muted-foreground">
                     {r.note ?? "N/A"}

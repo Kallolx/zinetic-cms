@@ -65,7 +65,7 @@ export default async function AdminOverviewPage() {
       .limit(6),
     supabase
       .from("wallet_transactions")
-      .select("id, amount, created_at, profiles:user_id(full_name, email)")
+      .select("id, amount, note, created_at, profiles:user_id(full_name, email)")
       .eq("type", "topup")
       .order("created_at", { ascending: false })
       .limit(5),
@@ -171,6 +171,8 @@ export default async function AdminOverviewPage() {
                         {t.profiles?.full_name ?? t.profiles?.email}
                       </p>
                       <p className="text-xs text-muted-foreground">
+                        {t.note?.startsWith("SSLCommerz top-up") ? "via SSLCommerz" : "by admin"}
+                        {" · "}
                         {new Date(t.created_at).toLocaleDateString()}
                       </p>
                     </div>
