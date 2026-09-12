@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSessionProfile } from "@/lib/supabase/session";
+import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { AppShell, type NavItem } from "@/components/app-shell";
 import {
   LuShieldCheck,
@@ -33,11 +33,13 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, profile } = await getSessionProfile();
+  const { user, profile, isImpersonating } = await getDashboardSession();
 
   if (!user) redirect("/login");
   if (!profile) redirect("/login");
-  if (profile.role === "admin") redirect("/admin");
+  // an impersonating admin is allowed straight through, everyone else
+  // with an admin role belongs in /admin instead
+  if (!isImpersonating && profile.role === "admin") redirect("/admin");
   if (profile.status !== "approved") redirect("/pending");
 
   return (
@@ -49,6 +51,7 @@ export default async function DashboardLayout({
       walletBalance={Number(profile.wallet_balance)}
       roleLabel="Member"
       title="Dashboard"
+      impersonating={isImpersonating}
     >
       {children}
     </AppShell>

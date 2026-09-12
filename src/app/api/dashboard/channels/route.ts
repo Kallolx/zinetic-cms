@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import type { McnCheck } from "@/lib/types";
 
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user } = await getDashboardSession();
 
   if (!user) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
+  const supabase = createAdminClient();
   const [{ data: profile }, { data: checks }] = await Promise.all([
     supabase.from("profiles").select("wallet_balance").eq("id", user.id).single(),
     supabase

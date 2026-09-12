@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 
 const NO_VALUE_SENTINELS = new Set(["no network", "no email", "n/a", "none"]);
 
@@ -10,10 +10,7 @@ function normalizeSentinel(value: string | null | undefined): string | null {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user } = await getDashboardSession();
 
   if (!user) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });

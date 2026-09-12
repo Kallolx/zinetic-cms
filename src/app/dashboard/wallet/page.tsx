@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getSessionProfile } from "@/lib/supabase/session";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import {
   Card,
   CardContent,
@@ -12,10 +12,10 @@ import { TransactionsTable } from "@/components/dashboard/transactions-table";
 import { LuWallet, LuMail } from "react-icons/lu";
 
 export default async function WalletPage() {
-  const { user, profile } = await getSessionProfile();
+  const { user, profile } = await getDashboardSession();
   if (!user) redirect("/login");
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: transactions } = await supabase
     .from("wallet_transactions")
     .select("*")

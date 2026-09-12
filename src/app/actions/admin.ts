@@ -1,8 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { IMPERSONATE_COOKIE } from "@/lib/supabase/dashboard-session";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -65,6 +68,45 @@ export async function deleteUser(userId: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/users");
   return { error: null };
+}
+
+/**
+ * Impersonation never touches Supabase Auth cookies, it just drops a
+ * marker cookie that getDashboardSession() checks (only trusted when the
+ * real signed-in session is an admin, re-verified server-side on every
+ * request). The admin's real session stays fully logged in the whole
+ * time, in this tab and every other one, including /admin itself.
+ */
+export async function impersonateUser(userId: string) {
+  await requireAdmin();
+  const supabaseAdmin = createAdminClient();
+
+  const { data: target, error: targetError } = await supabaseAdmin
+    .from("profiles")
+    .select("role, status")
+    .eq("id", userId)
+    .single();
+
+  if (targetError || !target) return { error: "User not found." };
+  if (target.role === "admin") return { error: "Can't impersonate another admin." };
+  if (target.status !== "approved") return { error: "Only approved users can be impersonated." };
+
+  const cookieStore = await cookies();
+  cookieStore.set(IMPERSONATE_COOKIE, userId, {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 12,
+  });
+
+  return { error: null };
+}
+
+export async function stopImpersonating() {
+  const cookieStore = await cookies();
+  cookieStore.delete(IMPERSONATE_COOKIE);
+  revalidatePath("/", "layout");
+  redirect("/admin");
 }
 
 export async function topUpWallet(userId: string, amount: number, note?: string) {

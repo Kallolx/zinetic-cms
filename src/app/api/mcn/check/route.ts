@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 
 const CHECK_PRICE = Number(process.env.NEXT_PUBLIC_CHECK_PRICE ?? 15);
 
@@ -158,10 +158,7 @@ function mockMcnLookup(channelInput: string, channelId: string) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user } = await getDashboardSession();
 
   if (!user) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });

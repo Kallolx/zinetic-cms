@@ -1,14 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { getDashboardSession } from "@/lib/supabase/dashboard-session";
+import { createClient } from "@/lib/supabase/server";
+import { getSessionProfile } from "@/lib/supabase/session";
 import { ExpandableText } from "@/components/dashboard/expandable-text";
-import {
-  ChannelNetworkProvider,
-  OwnerContactCardBody,
-  CopyrightOwnershipBody,
-} from "@/components/dashboard/channel-network-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,6 +19,7 @@ import {
   LuUsers,
   LuEye,
   LuVideo,
+  LuMail,
   LuArrowLeft,
   LuCircleCheck,
   LuCircleAlert,
@@ -53,8 +49,6 @@ type RawResponse = {
   date_of_creation?: string;
   videos?: MockVideo[];
   reports?: MockReports;
-  // the provider's own internal processing state for this channel,
-  // "pending" while they're still crawling it, "updated" once final
   status?: string;
 };
 
@@ -73,48 +67,48 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-export default async function ChannelDetailPage({
+export default async function AdminCheckDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { user } = await getDashboardSession();
-  if (!user) redirect("/login");
+  const { profile } = await getSessionProfile();
+  if (!profile || profile.role !== "admin") redirect("/dashboard");
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const { data: channel } = await supabase
     .from("mcn_checks")
-    .select("*")
+    .select("*, profiles:user_id(full_name, email)")
     .eq("id", id)
-    .eq("user_id", user.id)
     .single();
 
   if (!channel) notFound();
 
   const raw = (channel.raw_response ?? {}) as RawResponse;
+  const hasOwner = Boolean(channel.network || channel.network_contact_email);
   const isConfirmedFinal = raw.status === "updated";
   const videos = raw.videos ?? [];
   const reports = raw.reports;
+  const owner = channel.profiles as { full_name: string | null; email: string } | null;
 
   return (
-    <ChannelNetworkProvider
-      checkId={channel.id}
-      initialNetwork={channel.network}
-      initialContactEmail={channel.network_contact_email}
-      initialIsConfirmedFinal={isConfirmedFinal}
-    >
     <div className="flex flex-col gap-6">
-      <nav className="flex items-center gap-1.5 text-sm">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
-        >
-          <LuArrowLeft className="size-4" />
-          Copyright
-        </Link>
-        <span className="text-muted-foreground">/</span>
-        <span className="font-medium text-foreground">#{channel.check_number}</span>
+      <nav className="flex flex-wrap items-center justify-between gap-3 text-sm">
+        <div className="flex items-center gap-1.5">
+          <Link
+            href="/admin/checks"
+            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <LuArrowLeft className="size-4" />
+            All Checks
+          </Link>
+          <span className="text-muted-foreground">/</span>
+          <span className="font-medium text-foreground">#{channel.check_number}</span>
+        </div>
+        <p className="text-muted-foreground">
+          Checked by <span className="font-medium text-foreground">{owner?.full_name ?? owner?.email ?? "N/A"}</span>
+        </p>
       </nav>
 
       <Card>
@@ -188,8 +182,31 @@ export default async function ChannelDetailPage({
                 Owner &amp; contact
               </p>
             </CardHeader>
-            <CardContent>
-              <OwnerContactCardBody />
+            <CardContent className="flex flex-col gap-2 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground">Network</p>
+                <p className="font-medium">{channel.network ?? "Independent"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Contact email</p>
+                {channel.network_contact_email ? (
+                  <a
+                    href={`mailto:${channel.network_contact_email}`}
+                    className="font-medium text-primary underline underline-offset-4"
+                  >
+                    {channel.network_contact_email}
+                  </a>
+                ) : (
+                  <p className="font-medium text-muted-foreground">Not available</p>
+                )}
+              </div>
+              {!channel.network && (
+                <p className="text-xs text-muted-foreground">
+                  {isConfirmedFinal
+                    ? "Confirmed: this channel has no MCN network on file."
+                    : "Still processing on the provider's side."}
+                </p>
+              )}
             </CardContent>
           </Card>
         </CardContent>
@@ -239,6 +256,7 @@ export default async function ChannelDetailPage({
               }
             />
             <DetailRow label="Network" value={channel.network ?? "Independent"} />
+            <DetailRow label="Cost" value={`$${Number(channel.cost).toFixed(2)}`} />
             <DetailRow
               label="Last checked"
               value={new Date(channel.created_at).toLocaleString()}
@@ -262,7 +280,29 @@ export default async function ChannelDetailPage({
                 <CardTitle className="text-base">Copyright information</CardTitle>
               </CardHeader>
               <CardContent>
-                <CopyrightOwnershipBody />
+                {hasOwner ? (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="rounded-lg border p-4">
+                      <p className="text-xs text-muted-foreground">Content owner</p>
+                      <p className="mt-1 font-medium">{channel.network}</p>
+                    </div>
+                    <div className="rounded-lg border p-4">
+                      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <LuMail className="size-3.5" /> Contact email
+                      </p>
+                      <p className="mt-1 font-medium">
+                        {channel.network_contact_email ?? "Not available"}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-1 py-8 text-center text-sm text-muted-foreground">
+                    <p>No network or ownership data found for this channel.</p>
+                    {isConfirmedFinal && (
+                      <p className="text-xs">Confirmed: this channel has no MCN network on file.</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -365,7 +405,6 @@ export default async function ChannelDetailPage({
         </Tabs>
       </div>
     </div>
-    </ChannelNetworkProvider>
   );
 }
 

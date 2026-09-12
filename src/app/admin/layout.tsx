@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/supabase/session";
 import { AppShell, type NavItem } from "@/components/app-shell";
-import { LuGauge, LuUsers, LuHistory } from "react-icons/lu";
+import { LuGauge, LuUsers, LuUserCheck, LuWalletCards, LuHistory } from "react-icons/lu";
 
 const navItems: NavItem[] = [
   { href: "/admin", label: "Overview", icon: <LuGauge /> },
-  { href: "/admin/users", label: "Users & Approvals", icon: <LuUsers /> },
+  { href: "/admin/users", label: "Users", icon: <LuUsers /> },
+  { href: "/admin/approvals", label: "Approvals", icon: <LuUserCheck /> },
+  { href: "/admin/topup", label: "Top Up", icon: <LuWalletCards /> },
   { href: "/admin/checks", label: "All Checks", icon: <LuHistory /> },
 ];
 

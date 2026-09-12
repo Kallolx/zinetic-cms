@@ -17,8 +17,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LuMenu, LuLogOut, LuWallet, LuSearch, LuCircleHelp, LuChevronsUpDown } from "react-icons/lu";
+import {
+  LuMenu,
+  LuLogOut,
+  LuWallet,
+  LuSearch,
+  LuCircleHelp,
+  LuChevronsUpDown,
+  LuUserRoundX,
+} from "react-icons/lu";
 import { signOut } from "@/app/actions/auth";
+import { stopImpersonating } from "@/app/actions/admin";
 import { onWalletBalance } from "@/lib/wallet-store";
 
 export type NavItem = {
@@ -66,19 +75,29 @@ function NavLinks({
   );
 }
 
-function SidebarLogoutButton({ collapsed }: { collapsed?: boolean }) {
+function SidebarLogoutButton({
+  collapsed,
+  impersonating,
+}: {
+  collapsed?: boolean;
+  impersonating?: boolean;
+}) {
   return (
-    <form action={signOut}>
+    <form action={impersonating ? stopImpersonating : signOut}>
       <button
         type="submit"
-        title={collapsed ? "Sign out" : undefined}
+        title={collapsed ? (impersonating ? "Stop impersonating" : "Sign out") : undefined}
         className={cn(
           "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
           collapsed && "justify-center px-2"
         )}
       >
-        <LuLogOut className="size-5 shrink-0" />
-        {!collapsed && "Sign out"}
+        {impersonating ? (
+          <LuUserRoundX className="size-5 shrink-0" />
+        ) : (
+          <LuLogOut className="size-5 shrink-0" />
+        )}
+        {!collapsed && (impersonating ? "Stop impersonating" : "Sign out")}
       </button>
     </form>
   );
@@ -118,6 +137,7 @@ export function AppShell({
   userEmail,
   walletBalance,
   title,
+  impersonating = false,
 }: {
   children: React.ReactNode;
   navItems: NavItem[];
@@ -127,6 +147,7 @@ export function AppShell({
   walletBalance?: number;
   roleLabel: string;
   title: string;
+  impersonating?: boolean;
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = React.useState(false);
@@ -182,7 +203,7 @@ export function AppShell({
             )}
           </Link>
         )}
-        <SidebarLogoutButton collapsed={collapsedMode} />
+        <SidebarLogoutButton collapsed={collapsedMode} impersonating={impersonating} />
       </div>
     </div>
   );
@@ -282,10 +303,14 @@ export function AppShell({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 render={
-                  <form action={signOut} className="w-full">
+                  <form action={impersonating ? stopImpersonating : signOut} className="w-full">
                     <button type="submit" className="flex w-full items-center gap-1.5 cursor-pointer">
-                      <LuLogOut className="size-4" />
-                      Sign out
+                      {impersonating ? (
+                        <LuUserRoundX className="size-4" />
+                      ) : (
+                        <LuLogOut className="size-4" />
+                      )}
+                      {impersonating ? "Stop impersonating" : "Sign out"}
                     </button>
                   </form>
                 }
@@ -294,6 +319,24 @@ export function AppShell({
           </DropdownMenu>
         </div>
       </header>
+
+      {impersonating && (
+        <div className="sticky top-[72px] z-40 flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-center text-sm font-medium text-amber-950">
+          <span>
+            You&apos;re viewing as <strong>{userName || userEmail}</strong> as an admin. Actions
+            here affect their real account.
+          </span>
+          <form action={stopImpersonating}>
+            <button
+              type="submit"
+              className="inline-flex items-center gap-1 rounded-full bg-amber-950/10 px-2.5 py-1 text-xs font-semibold hover:bg-amber-950/20"
+            >
+              <LuUserRoundX className="size-3.5" />
+              Stop impersonating
+            </button>
+          </form>
+        </div>
+      )}
 
       <div className="flex flex-1">
         <aside

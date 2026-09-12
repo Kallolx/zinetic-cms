@@ -3,7 +3,7 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { reviewUser, topUpWallet, deleteUser } from "@/app/actions/admin";
+import { reviewUser, topUpWallet, deleteUser, impersonateUser } from "@/app/actions/admin";
 import {
   Table,
   TableBody,
@@ -36,7 +36,15 @@ import {
   AlertDialogAction,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { LuCheck, LuX, LuWalletCards, LuLoaderCircle, LuTrash2 } from "react-icons/lu";
+import {
+  LuCheck,
+  LuX,
+  LuWalletCards,
+  LuLoaderCircle,
+  LuTrash2,
+  LuSearch,
+  LuLogIn,
+} from "react-icons/lu";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
 import type { Profile } from "@/lib/types";
@@ -50,7 +58,7 @@ function StatusBadge({ status }: { status: Profile["status"] }) {
   return <Badge variant="secondary">Pending</Badge>;
 }
 
-function TopUpDialog({ user }: { user: Profile }) {
+export function TopUpDialog({ user }: { user: Profile }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [amount, setAmount] = React.useState("15");
@@ -117,6 +125,53 @@ function TopUpDialog({ user }: { user: Profile }) {
   );
 }
 
+export function ImpersonateButton({ user }: { user: Profile }) {
+  const [open, setOpen] = React.useState(false);
+  const [pending, setPending] = React.useState(false);
+
+  async function onConfirm() {
+    setPending(true);
+    const result = await impersonateUser(user.id);
+    setPending(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    setOpen(false);
+    window.open("/dashboard", "_blank", "noopener,noreferrer");
+  }
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger
+        render={
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <LuLogIn className="size-3.5" />
+            Impersonate
+          </Button>
+        }
+      />
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>View as {user.full_name ?? user.email}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Opens their dashboard in a new tab, without needing their password. Your admin
+            session stays fully signed in the whole time, in this tab and every other one.
+            Any action you take there (checks, wallet spend) affects their real account.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction disabled={pending} onClick={onConfirm} className="gap-2">
+            {pending && <LuLoaderCircle className="size-4 animate-spin" />}
+            Open their dashboard
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 function DeleteUserDialog({ user }: { user: Profile }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
@@ -172,13 +227,29 @@ function DeleteUserDialog({ user }: { user: Profile }) {
 export function UsersTable({
   users,
   compact = false,
+  showStatusActions = true,
+  searchable = false,
 }: {
   users: Profile[];
   compact?: boolean;
+  /** Show approve/reject/top-up/reinstate inline. Turn off on pages that
+   *  already have a dedicated page for that action (Approvals, Top Up). */
+  showStatusActions?: boolean;
+  searchable?: boolean;
 }) {
   const router = useRouter();
   const [pendingId, setPendingId] = React.useState<string | null>(null);
-  const { page, setPage, pageCount, pageItems } = usePagination(users, PAGE_SIZE);
+  const [query, setQuery] = React.useState("");
+
+  const filtered = React.useMemo(() => {
+    if (!query.trim()) return users;
+    const q = query.toLowerCase();
+    return users.filter(
+      (u) => u.full_name?.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+    );
+  }, [users, query]);
+
+  const { page, setPage, pageCount, pageItems } = usePagination(filtered, PAGE_SIZE);
 
   async function onReview(userId: string, decision: "approved" | "rejected") {
     setPendingId(userId);
@@ -194,6 +265,17 @@ export function UsersTable({
 
   return (
     <div className="flex flex-col gap-4">
+      {searchable && (
+        <div className="relative max-w-sm">
+          <LuSearch className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name or email..."
+            className="pl-9"
+          />
+        </div>
+      )}
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
@@ -224,7 +306,7 @@ export function UsersTable({
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-2">
-                  {u.status === "pending" && (
+                  {showStatusActions && u.status === "pending" && (
                     <>
                       <Button
                         size="sm"
@@ -247,8 +329,9 @@ export function UsersTable({
                       </Button>
                     </>
                   )}
-                  {u.status === "approved" && <TopUpDialog user={u} />}
-                  {u.status === "rejected" && (
+                  {showStatusActions && u.status === "approved" && <TopUpDialog user={u} />}
+                  {u.status === "approved" && <ImpersonateButton user={u} />}
+                  {showStatusActions && u.status === "rejected" && (
                     <Button
                       size="sm"
                       variant="outline"

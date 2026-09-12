@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
-import { getSessionProfile } from "@/lib/supabase/session";
+import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export default async function AccountsPage() {
-  const { user, profile } = await getSessionProfile();
+  const { user, profile } = await getDashboardSession();
   if (!user) redirect("/login");
 
   return (
