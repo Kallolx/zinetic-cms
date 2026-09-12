@@ -13,8 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LuPlus, LuLoaderCircle, LuCircleCheck, LuCircleX } from "react-icons/lu";
 import { emitWalletBalance } from "@/lib/wallet-store";
+
+const CHECKING_STEPS = [
+  "Resolving channel...",
+  "Fetching channel data...",
+  "Looking up network ownership...",
+];
 
 type QueuedEntry = {
   id: string;
@@ -177,12 +184,29 @@ export function AddChannelDialog({
   );
 }
 
+function CheckingStep() {
+  const [step, setStep] = React.useState(0);
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setStep((s) => (s + 1) % CHECKING_STEPS.length);
+    }, 1400);
+    return () => clearInterval(interval);
+  }, []);
+  return <span>{CHECKING_STEPS[step]}</span>;
+}
+
 function ResultRow({ entry }: { entry: QueuedEntry }) {
   if (entry.status === "pending") {
     return (
-      <div className="flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm">
-        <LuLoaderCircle className="size-4 shrink-0 animate-spin text-muted-foreground" />
-        <span className="truncate text-muted-foreground">Checking {entry.input}…</span>
+      <div className="flex items-center gap-3 rounded-lg border px-3 py-2.5">
+        <Skeleton className="size-9 shrink-0 rounded-full" />
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <p className="truncate text-sm font-medium">{entry.input}</p>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <LuLoaderCircle className="size-3 shrink-0 animate-spin" />
+            <CheckingStep />
+          </div>
+        </div>
       </div>
     );
   }
