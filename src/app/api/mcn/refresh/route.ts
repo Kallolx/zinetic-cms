@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const NO_VALUE_SENTINELS = new Set(["no network", "no email", "n/a", "none"]);
+
+function normalizeSentinel(value: string | null | undefined): string | null {
+  if (!value) return null;
+  return NO_VALUE_SENTINELS.has(value.trim().toLowerCase()) ? null : value;
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
@@ -79,8 +86,8 @@ export async function POST(request: Request) {
 
   const update = {
     channel_name: (result.channel_name as string) ?? null,
-    network: (result.network_name as string) ?? null,
-    network_contact_email: (result.email_cms as string) ?? null,
+    network: normalizeSentinel(result.network_name as string | undefined),
+    network_contact_email: normalizeSentinel(result.email_cms as string | undefined),
     subscriber_count: (result.subscriber_count as number) ?? null,
     total_views: (result.total_views as number) ?? null,
     video_count: (result.video_count as number) ?? null,

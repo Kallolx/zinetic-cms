@@ -4,6 +4,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const CHECK_PRICE = Number(process.env.NEXT_PUBLIC_CHECK_PRICE ?? 15);
 
+const NO_VALUE_SENTINELS = new Set(["no network", "no email", "n/a", "none"]);
+
+function normalizeSentinel(value: string | null | undefined): string | null {
+  if (!value) return null;
+  return NO_VALUE_SENTINELS.has(value.trim().toLowerCase()) ? null : value;
+}
+
 function extractChannelId(input: string) {
   const trimmed = input.trim();
   const match = trimmed.match(/UC[\w-]{22}/);
@@ -280,9 +287,11 @@ export async function POST(request: Request) {
     channel_id: (result.channel_id as string) ?? (status === "success" ? channelId : null),
     channel_name: (result.channel_name as string) ?? null,
     // confirmed against a real API call: the live endpoint returns
-    // "network_name" and "email_cms", not "network" / "contact_email"
-    network: (result.network_name as string) ?? null,
-    network_contact_email: (result.email_cms as string) ?? null,
+    // "network_name" and "email_cms", not "network" / "contact_email".
+    // The provider also uses "No Network"/"No Email" as their own sentinel
+    // for "none", not a real value, so normalize those to null.
+    network: normalizeSentinel(result.network_name as string | undefined),
+    network_contact_email: normalizeSentinel(result.email_cms as string | undefined),
     subscriber_count: (result.subscriber_count as number) ?? null,
     total_views: (result.total_views as number) ?? null,
     video_count: (result.video_count as number) ?? null,
