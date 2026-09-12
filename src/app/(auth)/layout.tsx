@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { HeroScannerBg } from "@/components/hero-scanner-bg";
 import { LuShieldCheck, LuMail, LuChartBar, LuArrowLeft } from "react-icons/lu";
 
 const points = [
@@ -11,13 +12,14 @@ const points = [
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-screen md:grid-cols-[2fr_3fr]">
+    <div className="grid min-h-screen md:grid-cols-2">
       <div className="relative hidden flex-col justify-between overflow-hidden bg-[#0f0f0f] p-10 text-white md:flex">
+        <HeroScannerBg />
         <div
-          className="pointer-events-none absolute inset-0 opacity-40"
+          className="pointer-events-none absolute inset-0 opacity-40 z-0"
           style={{
             backgroundImage:
-              "radial-gradient(ellipse 60% 50% at 20% 10%, oklch(0.55 0.2 262.881 / 60%), transparent 60%), radial-gradient(ellipse 50% 40% at 90% 90%, oklch(0.65 0.2 47.604 / 45%), transparent 60%)",
+              "radial-gradient(ellipse 60% 50% at 20% 10%, oklch(0.55 0.25 15 / 35%), transparent 60%), radial-gradient(ellipse 50% 40% at 90% 90%, oklch(0.65 0.2 47.604 / 45%), transparent 60%)",
           }}
         />
         <Link href="/" className="relative z-10 flex items-center gap-2.5">
