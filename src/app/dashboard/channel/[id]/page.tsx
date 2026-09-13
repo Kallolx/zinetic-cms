@@ -238,7 +238,10 @@ export default async function ChannelDetailPage({
                 </Badge>
               }
             />
-            <DetailRow label="Network" value={channel.network ?? "Independent"} />
+            <DetailRow
+              label="Network"
+              value={channel.network ?? (isConfirmedFinal ? "Independent" : "Pending")}
+            />
             <DetailRow
               label="Last checked"
               value={new Date(channel.created_at).toLocaleString()}

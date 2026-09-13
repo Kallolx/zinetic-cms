@@ -134,7 +134,7 @@ export default async function AdminOverviewPage() {
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
                         {c.profiles?.full_name ?? c.profiles?.email} &middot;{" "}
-                        {c.network ?? "Independent"}
+                        {c.network ?? "N/A"}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">

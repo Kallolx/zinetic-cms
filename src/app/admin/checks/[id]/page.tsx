@@ -185,7 +185,9 @@ export default async function AdminCheckDetailPage({
             <CardContent className="flex flex-col gap-2 text-sm">
               <div>
                 <p className="text-xs text-muted-foreground">Network</p>
-                <p className="font-medium">{channel.network ?? "Independent"}</p>
+                <p className="font-medium">
+                  {channel.network ?? (isConfirmedFinal ? "Independent" : "Pending")}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Contact email</p>
@@ -255,7 +257,10 @@ export default async function AdminCheckDetailPage({
                 </Badge>
               }
             />
-            <DetailRow label="Network" value={channel.network ?? "Independent"} />
+            <DetailRow
+              label="Network"
+              value={channel.network ?? (isConfirmedFinal ? "Independent" : "Pending")}
+            />
             <DetailRow label="Cost" value={`$${Number(channel.cost).toFixed(2)}`} />
             <DetailRow
               label="Last checked"

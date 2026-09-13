@@ -173,7 +173,7 @@ export function OwnerContactCardBody() {
     <div className="flex flex-col gap-2 text-sm">
       <div>
         <p className="text-xs text-muted-foreground">Network</p>
-        <p className="font-medium">{network ?? "Independent"}</p>
+        <p className="font-medium">{network ?? (isConfirmedFinal ? "Independent" : "Pending")}</p>
       </div>
       <div>
         <p className="text-xs text-muted-foreground">Contact email</p>
