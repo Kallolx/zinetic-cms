@@ -1,5 +1,5 @@
 export type UserRole = "user" | "admin";
-export type UserStatus = "pending" | "approved" | "rejected";
+export type UserStatus = "pending" | "approved" | "rejected" | "blocked";
 
 export type Profile = {
   id: string;
@@ -11,6 +11,9 @@ export type Profile = {
   created_at: string;
   reviewed_at: string | null;
   reviewed_by: string | null;
+  blocked_at: string | null;
+  blocked_reason: string | null;
+  blocked_by: string | null;
 };
 
 export type WalletTxType = "topup" | "check_charge" | "refund" | "adjustment";

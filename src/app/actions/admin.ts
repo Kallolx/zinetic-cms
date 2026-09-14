@@ -47,6 +47,64 @@ export async function reviewUser(
   return { error: null };
 }
 
+export async function blockUser(userId: string, reason?: string) {
+  const admin = await requireAdmin();
+  if (userId === admin.id) return { error: "You can't block your own account." };
+
+  const supabaseAdmin = createAdminClient();
+
+  const { data: target } = await supabaseAdmin
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+
+  if (target?.role === "admin") return { error: "Admins can't block other admins." };
+
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({
+      status: "blocked",
+      blocked_at: new Date().toISOString(),
+      blocked_reason: reason?.trim() || null,
+      blocked_by: admin.id,
+    })
+    .eq("id", userId);
+
+  if (error) return { error: error.message };
+
+  // bans at the Supabase Auth layer itself, refuses any future sign-in
+  // or refresh-token renewal, not just our own app-level check
+  await supabaseAdmin.auth.admin.updateUserById(userId, { ban_duration: "876000h" });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/users");
+  return { error: null };
+}
+
+export async function unblockUser(userId: string) {
+  await requireAdmin();
+  const supabaseAdmin = createAdminClient();
+
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({
+      status: "approved",
+      blocked_at: null,
+      blocked_reason: null,
+      blocked_by: null,
+    })
+    .eq("id", userId);
+
+  if (error) return { error: error.message };
+
+  await supabaseAdmin.auth.admin.updateUserById(userId, { ban_duration: "none" });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/users");
+  return { error: null };
+}
+
 export async function deleteUser(userId: string) {
   const admin = await requireAdmin();
   if (userId === admin.id) return { error: "You can't delete your own account." };

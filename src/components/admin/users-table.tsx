@@ -3,7 +3,14 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { reviewUser, topUpWallet, deleteUser, impersonateUser } from "@/app/actions/admin";
+import {
+  reviewUser,
+  topUpWallet,
+  deleteUser,
+  impersonateUser,
+  blockUser,
+  unblockUser,
+} from "@/app/actions/admin";
 import {
   Table,
   TableBody,
@@ -44,6 +51,8 @@ import {
   LuTrash2,
   LuSearch,
   LuLogIn,
+  LuShieldAlert,
+  LuShieldCheck,
 } from "react-icons/lu";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
@@ -55,6 +64,7 @@ function StatusBadge({ status }: { status: Profile["status"] }) {
   if (status === "approved")
     return <Badge className="bg-emerald-600/10 text-emerald-700 dark:text-emerald-400">Approved</Badge>;
   if (status === "rejected") return <Badge variant="destructive">Rejected</Badge>;
+  if (status === "blocked") return <Badge variant="destructive">Blocked</Badge>;
   return <Badge variant="secondary">Pending</Badge>;
 }
 
@@ -169,6 +179,94 @@ export function ImpersonateButton({ user }: { user: Profile }) {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+function BlockUserDialog({ user }: { user: Profile }) {
+  const router = useRouter();
+  const [open, setOpen] = React.useState(false);
+  const [reason, setReason] = React.useState("");
+  const [pending, setPending] = React.useState(false);
+
+  async function onConfirm() {
+    setPending(true);
+    const result = await blockUser(user.id, reason);
+    setPending(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(`Blocked ${user.full_name ?? user.email}.`);
+    setOpen(false);
+    setReason("");
+    router.refresh();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={
+          <Button variant="outline" size="sm" className="gap-1.5 text-destructive hover:bg-destructive/10">
+            <LuShieldAlert className="size-3.5" />
+            Block
+          </Button>
+        }
+      />
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Block {user.full_name ?? user.email}?</DialogTitle>
+          <DialogDescription>
+            They&apos;ll be signed out and permanently locked out of their account. They&apos;ll
+            see a message saying their account was blocked for a Terms of Service violation, with
+            no way back in except contacting support. This can be reversed later from Unblock.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-2 py-2">
+          <Label htmlFor="block-reason">Internal reason (optional, not shown to the user)</Label>
+          <Input
+            id="block-reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="e.g. abusive checks, chargeback fraud"
+          />
+        </div>
+        <DialogFooter>
+          <Button
+            variant="destructive"
+            disabled={pending}
+            onClick={onConfirm}
+            className="gap-2"
+          >
+            {pending && <LuLoaderCircle className="size-4 animate-spin" />}
+            Block user
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function UnblockButton({ user }: { user: Profile }) {
+  const router = useRouter();
+  const [pending, setPending] = React.useState(false);
+
+  async function onClick() {
+    setPending(true);
+    const result = await unblockUser(user.id);
+    setPending(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(`Unblocked ${user.full_name ?? user.email}.`);
+    router.refresh();
+  }
+
+  return (
+    <Button size="sm" variant="outline" className="gap-1.5" disabled={pending} onClick={onClick}>
+      {pending ? <LuLoaderCircle className="size-3.5 animate-spin" /> : <LuShieldCheck className="size-3.5" />}
+      Unblock
+    </Button>
   );
 }
 
@@ -331,6 +429,8 @@ export function UsersTable({
                   )}
                   {showStatusActions && u.status === "approved" && <TopUpDialog user={u} />}
                   {u.status === "approved" && <ImpersonateButton user={u} />}
+                  {u.status === "approved" && <BlockUserDialog user={u} />}
+                  {u.status === "blocked" && <UnblockButton user={u} />}
                   {showStatusActions && u.status === "rejected" && (
                     <Button
                       size="sm"
