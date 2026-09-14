@@ -269,12 +269,40 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="mx-auto mb-10 max-w-md rounded-xl border bg-card px-6 py-3 text-sm text-muted-foreground">
-            No plan? No problem, top up any amount and pay ${CHECK_PRICE.toFixed(2)}/check, no
-            commitment, no discount required.
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 max-w-7xl mx-auto mt-10">
+            <div className="relative flex flex-col justify-between rounded-2xl border border-dashed bg-card p-6 text-left shadow-sm">
+              <div>
+                <h3 className="font-heading text-lg font-bold">Pay As You Go</h3>
+                <p className="mt-1 text-sm text-muted-foreground">No commitment</p>
+                <div className="mt-4 flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold">${CHECK_PRICE.toFixed(2)}</span>
+                  <span className="text-sm text-muted-foreground">/check</span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Standard rate, no bundle required
+                </p>
+                <ul className="mt-6 space-y-2.5 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">
+                    <LuCheck className="size-4 shrink-0 text-emerald-500" />
+                    Top up any amount
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <LuCheck className="size-4 shrink-0 text-emerald-500" />
+                    No discount, no minimum
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <LuCheck className="size-4 shrink-0 text-emerald-500" />
+                    Wallet credit never expires
+                  </li>
+                </ul>
+              </div>
+              <Button
+                className="mt-8 w-full"
+                variant="outline"
+                nativeButton={false}
+                render={<Link href="/register">Get started</Link>}
+              />
+            </div>
             {PRICING_PLANS.map((plan) => {
               const pricing = getPlanPricing(plan);
               const popular = plan.id === "growth";
