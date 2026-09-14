@@ -56,6 +56,7 @@ import {
 } from "react-icons/lu";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
+import { PRICING_PLANS, getPlanById, getPlanPricing, type PricingPlan } from "@/lib/pricing-plans";
 import type { Profile } from "@/lib/types";
 
 const PAGE_SIZE = 15;
@@ -72,7 +73,14 @@ export function TopUpDialog({ user }: { user: Profile }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [amount, setAmount] = React.useState("15");
+  const [planId, setPlanId] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
+
+  function selectPlan(plan: PricingPlan) {
+    const pricing = getPlanPricing(plan);
+    setPlanId(plan.id);
+    setAmount(String(pricing.faceValue));
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -81,8 +89,12 @@ export function TopUpDialog({ user }: { user: Profile }) {
       toast.error("Enter a valid amount.");
       return;
     }
+    const plan = planId ? getPlanById(planId) : undefined;
+    const note = plan
+      ? `${plan.label} plan (${plan.checks} checks) granted by admin`
+      : undefined;
     setPending(true);
-    const result = await topUpWallet(user.id, value);
+    const result = await topUpWallet(user.id, value, note);
     setPending(false);
     if (result.error) {
       toast.error(result.error);
@@ -90,11 +102,21 @@ export function TopUpDialog({ user }: { user: Profile }) {
     }
     toast.success(`Added $${value.toFixed(2)} to ${user.full_name ?? user.email}'s wallet.`);
     setOpen(false);
+    setPlanId(null);
     router.refresh();
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) {
+          setPlanId(null);
+          setAmount("15");
+        }
+      }}
+    >
       <DialogTrigger
         render={
           <Button variant="outline" size="sm" className="gap-1.5">
@@ -112,16 +134,48 @@ export function TopUpDialog({ user }: { user: Profile }) {
               {Number(user.wallet_balance).toFixed(2)}).
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-2 py-4">
-            <Label htmlFor="amount">Amount (USD)</Label>
-            <Input
-              id="amount"
-              type="number"
-              min="1"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
+          <div className="flex flex-col gap-3 py-4">
+            <div className="flex flex-col gap-1.5">
+              <Label>Grant a plan (optional)</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {PRICING_PLANS.map((plan) => {
+                  const pricing = getPlanPricing(plan);
+                  return (
+                    <Button
+                      key={plan.id}
+                      type="button"
+                      size="sm"
+                      variant={planId === plan.id ? "default" : "outline"}
+                      onClick={() => selectPlan(plan)}
+                      className="gap-1"
+                    >
+                      {plan.label}
+                      <span className="text-xs opacity-70">${pricing.faceValue}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="amount">Amount (USD)</Label>
+              <Input
+                id="amount"
+                type="number"
+                min="1"
+                step="0.01"
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setPlanId(null);
+                }}
+              />
+              {planId && (
+                <p className="text-xs text-muted-foreground">
+                  Crediting the full {getPlanById(planId)?.checks} checks worth (no charge to the
+                  user, this is a manual grant).
+                </p>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={pending} className="gap-2">
