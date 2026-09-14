@@ -6,7 +6,7 @@ import { CHECK_PRICE, getPlanById, getPlanPricing } from "@/lib/pricing-plans";
 
 const MIN_TOPUP_USD = CHECK_PRICE;
 const MAX_TOPUP_USD = 1000;
-const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 120);
+const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 122);
 
 export async function POST(request: Request) {
   const { user, profile } = await getDashboardSession();

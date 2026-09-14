@@ -21,7 +21,7 @@ import { LuWallet, LuLoaderCircle, LuCheck } from "react-icons/lu";
 import { CHECK_PRICE, PRICING_PLANS, getPlanPricing } from "@/lib/pricing-plans";
 
 const QUICK_AMOUNTS = [CHECK_PRICE, CHECK_PRICE * 2, CHECK_PRICE * 4, CHECK_PRICE * 8];
-const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 120);
+const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 122);
 
 export function TopUpForm() {
   const [open, setOpen] = React.useState(false);
