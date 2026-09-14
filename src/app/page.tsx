@@ -2,9 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { HeroScannerBg } from "@/components/hero-scanner-bg";
 import { LandingNavbar } from "@/components/landing-navbar";
 import { SiteFooter } from "@/components/site-footer";
+import { CHECK_PRICE, PRICING_PLANS, getPlanPricing } from "@/lib/pricing-plans";
 import {
   LuArrowRight,
   LuCircleCheck,
@@ -256,49 +258,77 @@ export default async function Home() {
       {/* Section 4: Pricing */}
       <section id="pricing" className="relative z-10 py-20 px-6 bg-transparent">
         <div className="mx-auto max-w-7xl text-center">
-          <div className="max-w-3xl mx-auto mb-16">
+          <div className="max-w-3xl mx-auto mb-4">
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
               Simple &amp; Transparent Pricing
             </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Choose the credit plan that best fits your channel audit and copyright management volume.
+              Standard rate: ${CHECK_PRICE.toFixed(2)} per channel check, pay as you go. Buy in
+              bulk and the discount is credited straight to your wallet, at ${CHECK_PRICE.toFixed(2)}/check
+              value, so the price per check never changes, you just get more for less.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Pro Plan */}
-            <div className="rounded-2xl border-2 border-primary bg-card p-8 flex flex-col justify-between text-left relative shadow-lg">
-              <div className="absolute -top-3 right-6 rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-primary-foreground">
-                Popular
-              </div>
-              <div>
-                <h3 className="font-heading text-xl font-bold">Pro Manager</h3>
-                <p className="text-sm text-muted-foreground mt-1">For digital rights agencies</p>
-                <div className="mt-4 text-3xl font-extrabold">Pay Per Check <span className="text-sm font-normal text-muted-foreground">/ credit</span></div>
-                <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2"><LuCheck className="size-4 text-emerald-500" /> Full MCN Channel Lookup</li>
-                  <li className="flex items-center gap-2"><LuCheck className="size-4 text-emerald-500" /> Verified Contact Email Retrieval</li>
-                  <li className="flex items-center gap-2"><LuCheck className="size-4 text-emerald-500" /> Claim Release Submissions</li>
-                  <li className="flex items-center gap-2"><LuCheck className="size-4 text-emerald-500" /> Priority Support</li>
-                </ul>
-              </div>
-              <Button className="mt-8 w-full" nativeButton={false} render={<Link href="/register">Start Pro Trial</Link>} />
-            </div>
+          <div className="mx-auto mb-10 max-w-md rounded-xl border bg-card px-6 py-3 text-sm text-muted-foreground">
+            No plan? No problem, top up any amount and pay ${CHECK_PRICE.toFixed(2)}/check, no
+            commitment, no discount required.
+          </div>
 
-            {/* Enterprise Plan */}
-            <div className="rounded-2xl border bg-card p-8 flex flex-col justify-between text-left shadow-sm">
-              <div>
-                <h3 className="font-heading text-xl font-bold">Enterprise</h3>
-                <p className="text-sm text-muted-foreground mt-1">Custom volume solutions</p>
-                <div className="mt-4 text-3xl font-extrabold">Custom <span className="text-sm font-normal text-muted-foreground">pricing</span></div>
-                <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2"><LuCheck className="size-4 text-emerald-500" /> Unlimited Bulk Checks</li>
-                  <li className="flex items-center gap-2"><LuCheck className="size-4 text-emerald-500" /> Dedicated Account Manager</li>
-                  <li className="flex items-center gap-2"><LuCheck className="size-4 text-emerald-500" /> API Access</li>
-                </ul>
-              </div>
-              <Button variant="outline" className="mt-8 w-full" nativeButton={false} render={<Link href="/login">Contact Us</Link>} />
-            </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
+            {PRICING_PLANS.map((plan) => {
+              const pricing = getPlanPricing(plan);
+              const popular = plan.id === "growth";
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative flex flex-col justify-between rounded-2xl border p-6 text-left shadow-sm ${
+                    popular ? "border-2 border-primary shadow-lg" : "bg-card"
+                  }`}
+                >
+                  {popular && (
+                    <div className="absolute -top-3 right-6 rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-primary-foreground">
+                      Popular
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-heading text-lg font-bold">{plan.label}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {plan.checks} channel checks
+                    </p>
+                    <div className="mt-4 flex items-baseline gap-1.5">
+                      <span className="text-3xl font-extrabold">${pricing.price.toFixed(2)}</span>
+                      <Badge variant="secondary" className="text-[0.7rem]">
+                        {plan.discountPercent}% off
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      ${pricing.perCheck.toFixed(2)}/check &middot; normally $
+                      {pricing.faceValue.toFixed(2)}
+                    </p>
+                    <ul className="mt-6 space-y-2.5 text-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <LuCheck className="size-4 shrink-0 text-emerald-500" />
+                        {plan.checks} MCN channel checks
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <LuCheck className="size-4 shrink-0 text-emerald-500" />
+                        Verified contact email lookup
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <LuCheck className="size-4 shrink-0 text-emerald-500" />
+                        Wallet credit never expires
+                      </li>
+                    </ul>
+                  </div>
+                  <Button
+                    className="mt-8 w-full"
+                    variant={popular ? "default" : "outline"}
+                    nativeButton={false}
+                    render={<Link href="/register">Get {plan.label}</Link>}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

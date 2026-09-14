@@ -14,6 +14,7 @@ export type CreateSessionInput = {
   amount: number;
   customerName: string;
   customerEmail: string;
+  productName?: string;
 };
 
 export type CreateSessionResult =
@@ -47,7 +48,7 @@ export async function createSslcommerzSession(
     cancel_url: `${appUrl}/api/payments/sslcommerz/cancel`,
     ipn_url: `${appUrl}/api/payments/sslcommerz/ipn`,
     shipping_method: "NO",
-    product_name: "Wallet top-up",
+    product_name: input.productName ?? "Wallet top-up",
     product_category: "Digital Service",
     product_profile: "general",
     num_of_item: "1",
