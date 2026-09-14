@@ -9,10 +9,10 @@ export type PricingPlan = {
 
 // bundle discounts. Always checks * CHECK_PRICE * (1 - discountPercent/100).
 export const PRICING_PLANS: PricingPlan[] = [
-  { id: "starter", label: "Starter", checks: 10, discountPercent: 20 },
-  { id: "growth", label: "Growth", checks: 25, discountPercent: 30 },
-  { id: "scale", label: "Scale", checks: 50, discountPercent: 40 },
-  { id: "enterprise", label: "Enterprise", checks: 100, discountPercent: 50 },
+  { id: "starter", label: "Starter", checks: 10, discountPercent: 30 },
+  { id: "growth", label: "Growth", checks: 25, discountPercent: 40 },
+  { id: "scale", label: "Scale", checks: 50, discountPercent: 50 },
+  { id: "enterprise", label: "Enterprise", checks: 100, discountPercent: 60 },
 ];
 
 export function getPlanById(id: string): PricingPlan | undefined {
