@@ -34,6 +34,25 @@ export async function updateSession(request: NextRequest) {
   const isProtectedRoute =
     path.startsWith("/dashboard") || path.startsWith("/admin");
 
+  // the app's own subdomain (e.g. cms.zineticmusic.com) is a service, not
+  // the marketing site, so its root goes straight to the app instead of
+  // the landing page. Any other host (the .vercel.app domain, the future
+  // marketing domain) keeps the landing page at "/" as normal.
+  const appHost = (() => {
+    try {
+      return new URL(process.env.NEXT_PUBLIC_APP_URL ?? "").hostname;
+    } catch {
+      return "";
+    }
+  })();
+  const requestHost = (request.headers.get("host") ?? "").split(":")[0];
+
+  if (appHost && requestHost === appHost && path === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = user ? "/dashboard" : "/login";
+    return NextResponse.redirect(url);
+  }
+
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
