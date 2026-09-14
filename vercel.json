@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/refresh-pending-checks",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useLocalCache } from "@/hooks/use-local-cache";
+import { useMcnChecksRealtime } from "@/hooks/use-mcn-checks-realtime";
 import { ChannelsBoard } from "@/components/dashboard/channels-board";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { McnCheck } from "@/lib/types";
@@ -15,10 +16,21 @@ async function fetchChannels(): Promise<ChannelsResponse> {
 }
 
 export function ChannelsPageClient({ initialQuery = "" }: { initialQuery?: string }) {
-  const { data, revalidate } = useLocalCache<ChannelsResponse>(
+  const { data, revalidate, setData } = useLocalCache<ChannelsResponse>(
     "dashboard-channels",
     fetchChannels
   );
+
+  useMcnChecksRealtime(Boolean(data), (updated) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const index = prev.channels.findIndex((c) => c.id === updated.id);
+      if (index === -1) return prev;
+      const channels = [...prev.channels];
+      channels[index] = updated;
+      return { ...prev, channels };
+    });
+  });
 
   if (!data) {
     return (

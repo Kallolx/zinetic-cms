@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -16,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LuSearch, LuDownload } from "react-icons/lu";
+import { LuSearch, LuDownload, LuLoaderCircle } from "react-icons/lu";
 import { AddChannelDialog } from "@/components/dashboard/add-channel-dialog";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
@@ -40,6 +41,10 @@ function StatusDot({ status }: { status: McnCheck["status"] }) {
       {label}
     </Badge>
   );
+}
+
+function isPending(c: McnCheck) {
+  return c.status === "success" && c.provider_status === "pending";
 }
 
 function initials(name: string) {
@@ -186,12 +191,20 @@ export function ChannelsBoard({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pageItems.map((c) => (
+              {pageItems.map((c) => {
+                const pending = isPending(c);
+                return (
                 <TableRow
                   key={c.id}
-                  className="group cursor-pointer"
+                  className={pending ? "opacity-80" : "group cursor-pointer"}
                   data-state={selected.has(c.id) ? "selected" : undefined}
-                  onClick={() => router.push(`/dashboard/channel/${c.id}`)}
+                  onClick={() => {
+                    if (pending) {
+                      toast.info("Still processing. This will unlock automatically once the network data is ready.");
+                      return;
+                    }
+                    router.push(`/dashboard/channel/${c.id}`);
+                  }}
                 >
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
@@ -217,7 +230,7 @@ export function ChannelsBoard({
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="truncate font-medium group-hover:underline">
+                        <p className={pending ? "truncate font-medium" : "truncate font-medium group-hover:underline"}>
                           {c.channel_name ?? c.channel_input}
                         </p>
                         {c.channel_id && (
@@ -228,18 +241,28 @@ export function ChannelsBoard({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{c.network ?? "N/A"}</TableCell>
+                  <TableCell>
+                    {pending ? <Skeleton className="h-4 w-20" /> : (c.network ?? "N/A")}
+                  </TableCell>
                   <TableCell className="max-w-[220px] truncate">
-                    {c.network_contact_email ?? "N/A"}
+                    {pending ? <Skeleton className="h-4 w-32" /> : (c.network_contact_email ?? "N/A")}
                   </TableCell>
                   <TableCell>
-                    <StatusDot status={c.status} />
+                    {pending ? (
+                      <Badge variant="secondary" className="gap-1.5">
+                        <LuLoaderCircle className="size-3 animate-spin" />
+                        Processing
+                      </Badge>
+                    ) : (
+                      <StatusDot status={c.status} />
+                    )}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
                     {new Date(c.created_at).toLocaleDateString()}
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </div>

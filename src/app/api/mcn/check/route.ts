@@ -1,15 +1,9 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
+import { normalizeSentinel, fetchProviderChannel } from "@/lib/mcn-provider";
 
 const CHECK_PRICE = Number(process.env.NEXT_PUBLIC_CHECK_PRICE ?? 15);
-
-const NO_VALUE_SENTINELS = new Set(["no network", "no email", "n/a", "none"]);
-
-function normalizeSentinel(value: string | null | undefined): string | null {
-  if (!value) return null;
-  return NO_VALUE_SENTINELS.has(value.trim().toLowerCase()) ? null : value;
-}
 
 function extractChannelId(input: string) {
   const trimmed = input.trim();
@@ -23,7 +17,7 @@ function extractChannelId(input: string) {
  * The real amnhacso API only accepts a channel's actual UC... ID, but users
  * naturally paste a @handle or a full youtube.com/@handle URL. Resolve that
  * to the real channel ID by reading YouTube's public page before ever
- * calling the paid API — otherwise every handle-based check would 404 (and
+ * calling the paid API, otherwise every handle-based check would 404 (and
  * still get charged, since a lookup did run).
  */
 async function resolveYouTubeChannelId(input: string): Promise<string | null> {
@@ -206,7 +200,7 @@ export async function POST(request: Request) {
     try {
       if (!apiKey) throw new Error("MCN_API_KEY is not configured.");
 
-      // resolve @handles / custom URLs to a real UC... ID first — their
+      // resolve @handles / custom URLs to a real UC... ID first, their
       // API only recognizes real channel IDs
       const resolvedId = await resolveYouTubeChannelId(channelInput);
       if (!resolvedId) {
@@ -217,41 +211,34 @@ export async function POST(request: Request) {
       }
       channelId = resolvedId;
 
-      const authHeader = { Authorization: `Bearer ${apiKey}` };
-      let res = await fetch(`${apiBase}/api/v1/channels/${encodeURIComponent(channelId)}`, {
-        headers: authHeader,
-        cache: "no-store",
-      });
+      let fetched = await fetchProviderChannel(channelId);
 
-      if (res.status === 404) {
-        // not in their database yet — register it, then fetch it
+      if (fetched.outcome === "not_found") {
+        // not in their database yet, register it, then fetch it
         const addRes = await fetch(`${apiBase}/api/v1/channels`, {
           method: "POST",
-          headers: { ...authHeader, "Content-Type": "application/json" },
+          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({ channels: [channelId] }),
         });
 
         if (addRes.status === 402) {
           status = "error";
         } else if (addRes.ok) {
-          res = await fetch(`${apiBase}/api/v1/channels/${encodeURIComponent(channelId)}`, {
-            headers: authHeader,
-            cache: "no-store",
-          });
-          if (res.status === 404) {
+          fetched = await fetchProviderChannel(channelId);
+          if (fetched.outcome === "not_found") {
             status = "not_found";
-          } else if (!res.ok) {
+          } else if (fetched.outcome === "error") {
             status = "error";
           } else {
-            result = await res.json();
+            result = fetched.result;
           }
         } else {
           status = "error";
         }
-      } else if (!res.ok) {
+      } else if (fetched.outcome === "error") {
         status = "error";
       } else {
-        result = await res.json();
+        result = fetched.result;
       }
     } catch {
       status = "error";
@@ -294,6 +281,7 @@ export async function POST(request: Request) {
     total_views: (result.total_views as number) ?? null,
     video_count: (result.video_count as number) ?? null,
     avatar_url: (result.avatar as string) ?? null,
+    provider_status: (result.status as string) ?? null,
     status,
     cost: status === "error" ? 0 : CHECK_PRICE,
     raw_response: result,

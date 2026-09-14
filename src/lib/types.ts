@@ -41,6 +41,9 @@ export type McnCheck = {
   video_count: number | null;
   avatar_url: string | null;
   status: CheckStatus;
+  /** the provider's own processing state: "pending" while still being
+   *  crawled, "updated" once final, null for not_found/error checks */
+  provider_status: string | null;
   cost: number;
   raw_response: unknown;
   created_at: string;

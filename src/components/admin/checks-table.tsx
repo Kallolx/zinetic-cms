@@ -219,9 +219,15 @@ export function ChecksTable({ checks }: { checks: any[] }) {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{c.network ?? "N/A"}</TableCell>
+                  <TableCell>
+                    {c.status === "success" && c.provider_status === "pending"
+                      ? "Processing..."
+                      : (c.network ?? "N/A")}
+                  </TableCell>
                   <TableCell className="max-w-[220px] truncate">
-                    {c.network_contact_email ?? "N/A"}
+                    {c.status === "success" && c.provider_status === "pending"
+                      ? "Processing..."
+                      : (c.network_contact_email ?? "N/A")}
                   </TableCell>
                   <TableCell>
                     <StatusDot status={c.status} />

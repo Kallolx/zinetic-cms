@@ -87,7 +87,7 @@ export default async function AdminCheckDetailPage({
 
   const raw = (channel.raw_response ?? {}) as RawResponse;
   const hasOwner = Boolean(channel.network || channel.network_contact_email);
-  const isConfirmedFinal = raw.status === "updated";
+  const isConfirmedFinal = channel.provider_status === "updated";
   const videos = raw.videos ?? [];
   const reports = raw.reports;
   const owner = channel.profiles as { full_name: string | null; email: string } | null;
