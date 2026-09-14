@@ -323,7 +323,7 @@ export default async function Home() {
                     <p className="mt-1 text-sm text-muted-foreground">
                       {plan.checks} channel checks
                     </p>
-                    <div className="mt-4 flex items-baseline gap-1.5">
+                    <div className="mt-4 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
                       <span className="text-3xl font-extrabold">${pricing.price.toFixed(2)}</span>
                       <Badge variant="secondary" className="text-[0.7rem]">
                         {plan.discountPercent}% off
