@@ -20,6 +20,7 @@ import { ViewRawDialog } from "@/components/admin/view-raw-dialog";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
 import { LuSearch, LuDownload } from "react-icons/lu";
+import { usdToCredits, formatCredits } from "@/lib/credits";
 
 const PAGE_SIZE = 15;
 
@@ -59,7 +60,7 @@ function toCsv(rows: any[]) {
     "Network",
     "Contact Email",
     "Status",
-    "Cost",
+    "Cost (Credits)",
     "Date",
   ];
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
@@ -71,7 +72,7 @@ function toCsv(rows: any[]) {
       c.network ?? "",
       c.network_contact_email ?? "",
       c.status,
-      Number(c.cost).toFixed(2),
+      usdToCredits(Number(c.cost)),
       new Date(c.created_at).toLocaleDateString(),
     ]
       .map((v) => escape(String(v)))
@@ -232,7 +233,7 @@ export function ChecksTable({ checks }: { checks: any[] }) {
                   <TableCell>
                     <StatusDot status={c.status} />
                   </TableCell>
-                  <TableCell className="text-right">${Number(c.cost).toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{formatCredits(Number(c.cost))}</TableCell>
                   <TableCell className="text-right text-muted-foreground">
                     {new Date(c.created_at).toLocaleDateString()}
                   </TableCell>

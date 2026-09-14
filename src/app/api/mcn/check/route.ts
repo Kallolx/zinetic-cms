@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { normalizeSentinel, fetchProviderChannel } from "@/lib/mcn-provider";
+import { formatCredits } from "@/lib/credits";
 
 const CHECK_PRICE = Number(process.env.NEXT_PUBLIC_CHECK_PRICE ?? 15);
 
@@ -179,7 +180,7 @@ export async function POST(request: Request) {
   }
   if (Number(profile.wallet_balance) < CHECK_PRICE) {
     return NextResponse.json(
-      { error: `Insufficient balance. This check costs $${CHECK_PRICE.toFixed(2)}.` },
+      { error: `Insufficient balance. This check costs ${formatCredits(CHECK_PRICE)}.` },
       { status: 402 }
     );
   }

@@ -4,8 +4,8 @@ import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createSslcommerzSession } from "@/lib/sslcommerz";
 import { CHECK_PRICE, getPlanById, getPlanPricing } from "@/lib/pricing-plans";
 
-const MIN_TOPUP_USD = CHECK_PRICE;
-const MAX_TOPUP_USD = 1000;
+const MIN_CREDITS = 1;
+const MAX_CREDITS = Math.floor(1000 / CHECK_PRICE);
 const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 122);
 
 export async function POST(request: Request) {
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  const { amount, planId, agreedToPolicies } = await request.json();
+  const { credits, planId, agreedToPolicies } = await request.json();
 
   if (!agreedToPolicies) {
     return NextResponse.json(
@@ -23,11 +23,13 @@ export async function POST(request: Request) {
     );
   }
 
-  // usdCharge: what's actually paid (and charged through the gateway).
-  // usdCredit: what lands in the wallet, equal to usdCharge for a plain
-  // top-up, or the full face value of the checks for a discounted plan,
-  // the discount always shows up as bonus wallet credit, never a
-  // cheaper per-check price later.
+  // usdCharge: what's actually paid (and charged through the gateway), in
+  // real USD. usdCredit: what lands in the wallet (still stored as USD
+  // internally, 1 Credit = $CHECK_PRICE, converted to Credits only at
+  // display time), equal to usdCharge for a plain top-up, or the full
+  // face value of the credits for a discounted plan, the discount always
+  // shows up as bonus wallet credit, never a cheaper per-credit price
+  // later.
   let usdCharge: number;
   let usdCredit: number;
   let planLabel: string | null = null;
@@ -42,15 +44,19 @@ export async function POST(request: Request) {
     usdCredit = pricing.faceValue;
     planLabel = plan.label;
   } else {
-    const usdAmount = Number(amount);
-    if (!Number.isFinite(usdAmount) || usdAmount < MIN_TOPUP_USD || usdAmount > MAX_TOPUP_USD) {
+    const creditsAmount = Number(credits);
+    if (
+      !Number.isFinite(creditsAmount) ||
+      creditsAmount < MIN_CREDITS ||
+      creditsAmount > MAX_CREDITS
+    ) {
       return NextResponse.json(
-        { error: `Enter an amount between $${MIN_TOPUP_USD} and $${MAX_TOPUP_USD}.` },
+        { error: `Enter an amount between ${MIN_CREDITS} and ${MAX_CREDITS} Credits.` },
         { status: 400 }
       );
     }
-    usdCharge = usdAmount;
-    usdCredit = usdAmount;
+    usdCharge = creditsAmount * CHECK_PRICE;
+    usdCredit = usdCharge;
   }
 
   // SSLCommerz only settles in BDT, the wallet stays in USD, so convert

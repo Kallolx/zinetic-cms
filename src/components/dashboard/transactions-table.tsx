@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
+import { formatSignedCredits } from "@/lib/credits";
 import type { WalletTransaction } from "@/lib/types";
 
 const PAGE_SIZE = 15;
@@ -51,8 +52,7 @@ export function TransactionsTable({ transactions }: { transactions: WalletTransa
                     Number(t.amount) >= 0 ? "text-emerald-600" : "text-destructive"
                   }`}
                 >
-                  {Number(t.amount) >= 0 ? "+" : ""}
-                  {Number(t.amount).toFixed(2)}
+                  {formatSignedCredits(Number(t.amount))}
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground">
                   {new Date(t.created_at).toLocaleDateString()}

@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
 import { LuSearch, LuCreditCard, LuUserCog } from "react-icons/lu";
+import { formatSignedCredits } from "@/lib/credits";
 
 type TopupRow = {
   id: string;
@@ -92,7 +93,7 @@ export function TopupHistoryTable({ rows }: { rows: TopupRow[] }) {
                     {r.note ?? "N/A"}
                   </TableCell>
                   <TableCell className="text-right font-medium text-emerald-600">
-                    +${Number(r.amount).toFixed(2)}
+                    {formatSignedCredits(Number(r.amount))}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
                     {new Date(r.created_at).toLocaleString()}

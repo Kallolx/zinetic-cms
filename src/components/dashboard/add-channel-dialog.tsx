@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LuPlus, LuLoaderCircle, LuCircleCheck, LuCircleX } from "react-icons/lu";
 import { emitWalletBalance } from "@/lib/wallet-store";
+import { formatCredits } from "@/lib/credits";
 
 const CHECKING_STEPS = [
   "Resolving channel...",
@@ -49,7 +50,7 @@ export function AddChannelDialog({
     const trimmed = value.trim();
     if (!trimmed || submitting) return;
     if (walletBalance < checkPrice) {
-      toast.error(`Insufficient balance. Each check costs $${checkPrice.toFixed(2)}.`);
+      toast.error(`Insufficient balance. Each check costs ${formatCredits(checkPrice)}.`);
       return;
     }
 
@@ -152,7 +153,7 @@ export function AddChannelDialog({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              ${checkPrice.toFixed(2)} per channel, charged to your wallet
+              {formatCredits(checkPrice)} per channel, charged to your wallet
             </p>
           </div>
 
@@ -242,7 +243,7 @@ function ResultRow({ entry }: { entry: QueuedEntry }) {
         )}
       </div>
       <Badge className="shrink-0 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400">
-        -${checkPrice.toFixed(2)}
+        -{formatCredits(checkPrice)}
       </Badge>
     </div>
   );

@@ -11,6 +11,7 @@ import {
 import { TransactionsTable } from "@/components/dashboard/transactions-table";
 import { TopUpForm } from "@/components/dashboard/topup-form";
 import { LuWallet, LuMail, LuCircleCheck, LuCircleX, LuClock } from "react-icons/lu";
+import { formatCredits } from "@/lib/credits";
 
 export default async function WalletPage({
   searchParams,
@@ -59,7 +60,7 @@ export default async function WalletPage({
               <LuWallet className="size-4" /> Current balance
             </CardDescription>
             <CardTitle className="font-heading text-4xl">
-              ${Number(profile?.wallet_balance ?? 0).toFixed(2)}
+              {formatCredits(Number(profile?.wallet_balance ?? 0))}
             </CardTitle>
           </div>
           <TopUpForm />

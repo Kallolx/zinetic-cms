@@ -20,20 +20,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LuWallet, LuLoaderCircle, LuCheck } from "react-icons/lu";
 import { CHECK_PRICE, PRICING_PLANS, getPlanPricing } from "@/lib/pricing-plans";
 
-const QUICK_AMOUNTS = [CHECK_PRICE, CHECK_PRICE * 2, CHECK_PRICE * 4, CHECK_PRICE * 8];
+const QUICK_CREDITS = [1, 2, 4, 8];
+const MAX_CREDITS = Math.floor(1000 / CHECK_PRICE);
 const USD_TO_BDT_RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 122);
 
 export function TopUpForm() {
   const [open, setOpen] = React.useState(false);
   const [tab, setTab] = React.useState<"plans" | "custom">("plans");
-  const [amount, setAmount] = React.useState(String(CHECK_PRICE));
+  const [credits, setCredits] = React.useState("1");
   const [planId, setPlanId] = React.useState<string | null>(null);
   const [agreed, setAgreed] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
 
-  const canSubmit = agreed && (tab === "custom" ? Number(amount) >= CHECK_PRICE : Boolean(planId));
+  const canSubmit = agreed && (tab === "custom" ? Number(credits) >= 1 : Boolean(planId));
 
-  const bdtPreview = Number(amount) > 0 ? Number(amount) * USD_TO_BDT_RATE : 0;
+  const customUsd = Number(credits) > 0 ? Number(credits) * CHECK_PRICE : 0;
+  const bdtPreview = customUsd * USD_TO_BDT_RATE;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,7 +52,7 @@ export function TopUpForm() {
       const body =
         tab === "plans"
           ? { planId, agreedToPolicies: agreed }
-          : { amount: Number(amount), agreedToPolicies: agreed };
+          : { credits: Number(credits), agreedToPolicies: agreed };
       const res = await fetch("/api/payments/sslcommerz/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,7 +100,7 @@ export function TopUpForm() {
         if (!next) {
           setTab("plans");
           setPlanId(null);
-          setAmount(String(CHECK_PRICE));
+          setCredits("1");
         }
       }}
     >
@@ -132,9 +134,10 @@ export function TopUpForm() {
 
             <TabsContent value="plans" className="pt-4">
               <p className="text-xs text-muted-foreground">
-                Standard rate: ${CHECK_PRICE.toFixed(2)}/check. Buy in bulk and the discount is
-                credited straight to your wallet, at ${CHECK_PRICE.toFixed(2)}/check value, so the
-                per-check price never changes, you just get more for less.
+                Regular price: 1 Credit = ${CHECK_PRICE.toFixed(2)} (when purchased as a single
+                check). Buy Credits in bulk and the discount stacks straight into your balance, at
+                the same ${CHECK_PRICE.toFixed(2)}/Credit value, so 1 Credit always equals 1
+                channel check, you just get more Credits for less.
               </p>
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {PRICING_PLANS.map((plan) => {
@@ -152,20 +155,20 @@ export function TopUpForm() {
                       {selected && (
                         <LuCheck className="absolute top-3 right-3 size-4 text-primary" />
                       )}
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">{plan.label}</span>
                         <Badge variant="secondary" className="text-[0.7rem]">
                           {plan.discountPercent}% off
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {plan.checks} checks &middot; ${pricing.perCheck.toFixed(2)}/check
+                        Buy {plan.checks} Credits &middot; ${pricing.perCheck.toFixed(2)}/Credit
                       </p>
                       <p className="text-lg font-heading font-semibold">
                         ${pricing.price.toFixed(2)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Credits ${pricing.faceValue.toFixed(2)} to your wallet
+                        Adds {plan.checks} Credits to your wallet
                       </p>
                     </button>
                   );
@@ -183,33 +186,34 @@ export function TopUpForm() {
 
             <TabsContent value="custom" className="pt-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="topup-amount">Amount (USD)</Label>
+                <Label htmlFor="topup-credits">Credits</Label>
                 <Input
-                  id="topup-amount"
+                  id="topup-credits"
                   type="number"
-                  min={CHECK_PRICE}
-                  max="1000"
+                  min="1"
+                  max={MAX_CREDITS}
                   step="1"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  value={credits}
+                  onChange={(e) => setCredits(e.target.value)}
                   className="h-11"
                 />
                 <div className="flex flex-wrap gap-2">
-                  {QUICK_AMOUNTS.map((a) => (
+                  {QUICK_CREDITS.map((c) => (
                     <Button
-                      key={a}
+                      key={c}
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => setAmount(String(a))}
+                      onClick={() => setCredits(String(c))}
                     >
-                      ${a}
+                      {c} {c === 1 ? "Credit" : "Credits"}
                     </Button>
                   ))}
                 </div>
-                {bdtPreview > 0 && (
+                {customUsd > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    You&apos;ll be charged &#2547;{bdtPreview.toLocaleString()} BDT via SSLCommerz
+                    {credits} Credit{Number(credits) === 1 ? "" : "s"} = ${customUsd.toFixed(2)},
+                    charged as &#2547;{Math.round(bdtPreview).toLocaleString()} BDT via SSLCommerz
                     (&#2547;{USD_TO_BDT_RATE} = $1). No bundle discount applies to custom amounts.
                   </p>
                 )}

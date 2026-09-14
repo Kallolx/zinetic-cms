@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatCredits } from "@/lib/credits";
 
 export default async function AccountsPage() {
   const { user, profile } = await getDashboardSession();
@@ -40,7 +41,7 @@ export default async function AccountsPage() {
                 : "N/A"
             }
           />
-          <Row label="Wallet balance" value={`$${Number(profile?.wallet_balance ?? 0).toFixed(2)}`} />
+          <Row label="Wallet balance" value={formatCredits(Number(profile?.wallet_balance ?? 0))} />
         </CardContent>
       </Card>
     </div>

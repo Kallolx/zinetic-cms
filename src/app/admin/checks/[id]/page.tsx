@@ -4,6 +4,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/supabase/session";
 import { ExpandableText } from "@/components/dashboard/expandable-text";
+import { formatCredits } from "@/lib/credits";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -261,7 +262,7 @@ export default async function AdminCheckDetailPage({
               label="Network"
               value={channel.network ?? (isConfirmedFinal ? "Independent" : "Pending")}
             />
-            <DetailRow label="Cost" value={`$${Number(channel.cost).toFixed(2)}`} />
+            <DetailRow label="Cost" value={formatCredits(Number(channel.cost))} />
             <DetailRow
               label="Last checked"
               value={new Date(channel.created_at).toLocaleString()}

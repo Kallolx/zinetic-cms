@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { validateSslcommerzTransaction } from "@/lib/sslcommerz";
+import { formatCredits } from "@/lib/credits";
 
 /**
  * Server-to-server notification from SSLCommerz. This is the only place
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
     user_id: session.user_id,
     type: "topup",
     amount: usdCredit,
-    note: `SSLCommerz top-up: $${usdCredit.toFixed(2)} (${Number(session.amount).toFixed(2)} BDT paid, ${tranId})`,
+    note: `SSLCommerz top-up: ${formatCredits(usdCredit)} (${Number(session.amount).toFixed(2)} BDT paid, ${tranId})`,
   });
   await admin
     .from("payment_sessions")

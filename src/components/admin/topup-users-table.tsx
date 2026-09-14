@@ -14,6 +14,7 @@ import { TopUpDialog } from "@/components/admin/users-table";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
 import { LuSearch } from "react-icons/lu";
+import { formatCredits } from "@/lib/credits";
 import type { Profile } from "@/lib/types";
 
 const PAGE_SIZE = 15;
@@ -62,7 +63,7 @@ export function TopUpUsersTable({ users }: { users: Profile[] }) {
                   <TableCell className="font-medium">{u.full_name ?? "N/A"}</TableCell>
                   <TableCell className="text-muted-foreground">{u.email}</TableCell>
                   <TableCell className="text-right font-medium">
-                    ${Number(u.wallet_balance).toFixed(2)}
+                    {formatCredits(Number(u.wallet_balance))}
                   </TableCell>
                   <TableCell className="text-right">
                     <TopUpDialog user={u} />

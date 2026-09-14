@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { LuUsers, LuClock, LuHistory, LuTrendingUp, LuArrowRight } from "react-icons/lu";
 import { UsersTable } from "@/components/admin/users-table";
+import { formatSignedCredits } from "@/lib/credits";
 
 function StatusDot({ status }: { status: string }) {
   const color =
@@ -177,7 +178,7 @@ export default async function AdminOverviewPage() {
                       </p>
                     </div>
                     <Badge className="shrink-0 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400">
-                      +${Number(t.amount).toFixed(2)}
+                      {formatSignedCredits(Number(t.amount))}
                     </Badge>
                   </div>
                 ))}

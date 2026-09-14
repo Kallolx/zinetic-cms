@@ -29,6 +29,7 @@ import {
 import { signOut } from "@/app/actions/auth";
 import { stopImpersonating } from "@/app/actions/admin";
 import { onWalletBalance } from "@/lib/wallet-store";
+import { formatCredits } from "@/lib/credits";
 
 export type NavItem = {
   href: string;
@@ -192,14 +193,14 @@ export function AppShell({
               "flex items-center justify-between rounded-xl border bg-muted/40 px-3 py-3 transition-colors hover:bg-accent",
               collapsedMode && "justify-center px-2"
             )}
-            title={collapsedMode ? `Wallet: $${balance.toFixed(2)}` : undefined}
+            title={collapsedMode ? `Wallet: ${formatCredits(balance)}` : undefined}
           >
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <LuWallet className="size-5" />
               {!collapsedMode && "Wallet"}
             </div>
             {!collapsedMode && (
-              <span className="font-heading font-semibold">${balance.toFixed(2)}</span>
+              <span className="font-heading font-semibold">{formatCredits(balance)}</span>
             )}
           </Link>
         )}
@@ -259,7 +260,8 @@ export function AppShell({
                 variant="secondary"
                 className="h-9 gap-1.5 rounded-full px-3 text-sm transition-colors hover:bg-secondary/70"
               >
-                <LuWallet className="size-4" />${balance.toFixed(2)}
+                <LuWallet className="size-4" />
+                {formatCredits(balance)}
               </Badge>
             </Link>
           )}

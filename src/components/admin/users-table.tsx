@@ -56,7 +56,8 @@ import {
 } from "react-icons/lu";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
-import { PRICING_PLANS, getPlanById, getPlanPricing, type PricingPlan } from "@/lib/pricing-plans";
+import { CHECK_PRICE, PRICING_PLANS, getPlanById, type PricingPlan } from "@/lib/pricing-plans";
+import { formatCredits, creditsToUsd } from "@/lib/credits";
 import type { Profile } from "@/lib/types";
 
 const PAGE_SIZE = 15;
@@ -72,35 +73,37 @@ function StatusBadge({ status }: { status: Profile["status"] }) {
 export function TopUpDialog({ user }: { user: Profile }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
-  const [amount, setAmount] = React.useState("15");
+  const [credits, setCredits] = React.useState("1");
   const [planId, setPlanId] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
 
   function selectPlan(plan: PricingPlan) {
-    const pricing = getPlanPricing(plan);
     setPlanId(plan.id);
-    setAmount(String(pricing.faceValue));
+    setCredits(String(plan.checks));
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const value = Number(amount);
-    if (!value || value <= 0) {
+    const creditsValue = Number(credits);
+    if (!creditsValue || creditsValue <= 0) {
       toast.error("Enter a valid amount.");
       return;
     }
+    const usdValue = creditsToUsd(creditsValue);
     const plan = planId ? getPlanById(planId) : undefined;
     const note = plan
-      ? `${plan.label} plan (${plan.checks} checks) granted by admin`
+      ? `${plan.label} plan (${plan.checks} Credits) granted by admin`
       : undefined;
     setPending(true);
-    const result = await topUpWallet(user.id, value, note);
+    const result = await topUpWallet(user.id, usdValue, note);
     setPending(false);
     if (result.error) {
       toast.error(result.error);
       return;
     }
-    toast.success(`Added $${value.toFixed(2)} to ${user.full_name ?? user.email}'s wallet.`);
+    toast.success(
+      `Added ${formatCredits(usdValue)} to ${user.full_name ?? user.email}'s wallet.`
+    );
     setOpen(false);
     setPlanId(null);
     router.refresh();
@@ -113,7 +116,7 @@ export function TopUpDialog({ user }: { user: Profile }) {
         setOpen(next);
         if (!next) {
           setPlanId(null);
-          setAmount("15");
+          setCredits("1");
         }
       }}
     >
@@ -130,51 +133,46 @@ export function TopUpDialog({ user }: { user: Profile }) {
           <DialogHeader>
             <DialogTitle>Top up wallet</DialogTitle>
             <DialogDescription>
-              Credit {user.full_name ?? user.email}&apos;s wallet balance (current: $
-              {Number(user.wallet_balance).toFixed(2)}).
+              Credit {user.full_name ?? user.email}&apos;s wallet balance (current:{" "}
+              {formatCredits(Number(user.wallet_balance))}).
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-4">
             <div className="flex flex-col gap-1.5">
               <Label>Grant a plan (optional)</Label>
               <div className="flex flex-wrap gap-1.5">
-                {PRICING_PLANS.map((plan) => {
-                  const pricing = getPlanPricing(plan);
-                  return (
-                    <Button
-                      key={plan.id}
-                      type="button"
-                      size="sm"
-                      variant={planId === plan.id ? "default" : "outline"}
-                      onClick={() => selectPlan(plan)}
-                      className="gap-1"
-                    >
-                      {plan.label}
-                      <span className="text-xs opacity-70">${pricing.faceValue}</span>
-                    </Button>
-                  );
-                })}
+                {PRICING_PLANS.map((plan) => (
+                  <Button
+                    key={plan.id}
+                    type="button"
+                    size="sm"
+                    variant={planId === plan.id ? "default" : "outline"}
+                    onClick={() => selectPlan(plan)}
+                    className="gap-1"
+                  >
+                    {plan.label}
+                    <span className="text-xs opacity-70">{plan.checks} Credits</span>
+                  </Button>
+                ))}
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="amount">Amount (USD)</Label>
+              <Label htmlFor="credits">Credits</Label>
               <Input
-                id="amount"
+                id="credits"
                 type="number"
                 min="1"
-                step="0.01"
-                value={amount}
+                step="1"
+                value={credits}
                 onChange={(e) => {
-                  setAmount(e.target.value);
+                  setCredits(e.target.value);
                   setPlanId(null);
                 }}
               />
-              {planId && (
-                <p className="text-xs text-muted-foreground">
-                  Crediting the full {getPlanById(planId)?.checks} checks worth (no charge to the
-                  user, this is a manual grant).
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                = {formatCredits(creditsToUsd(Number(credits) || 0))} (${CHECK_PRICE.toFixed(2)}
+                /Credit). No charge to the user, this is a manual grant.
+              </p>
             </div>
           </div>
           <DialogFooter>
@@ -450,7 +448,7 @@ export function UsersTable({
               </TableCell>
               {!compact && (
                 <TableCell className="text-right">
-                  ${Number(u.wallet_balance).toFixed(2)}
+                  {formatCredits(Number(u.wallet_balance))}
                 </TableCell>
               )}
               <TableCell className="text-muted-foreground">

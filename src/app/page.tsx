@@ -263,9 +263,9 @@ export default async function Home() {
               Simple &amp; Transparent Pricing
             </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Standard rate: ${CHECK_PRICE.toFixed(2)} per channel check, pay as you go. Buy in
-              bulk and the discount is credited straight to your wallet, at ${CHECK_PRICE.toFixed(2)}/check
-              value, so the price per check never changes, you just get more for less.
+              Regular price: 1 Credit = ${CHECK_PRICE.toFixed(2)} (when purchased as a single
+              check). Buy Credits in bulk and save, at ${CHECK_PRICE.toFixed(2)}/Credit face
+              value, so the price per Credit never changes, you just get more for less.
             </p>
           </div>
 
@@ -276,7 +276,7 @@ export default async function Home() {
                 <p className="mt-1 text-sm text-muted-foreground">No commitment</p>
                 <div className="mt-4 flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold">${CHECK_PRICE.toFixed(2)}</span>
-                  <span className="text-sm text-muted-foreground">/check</span>
+                  <span className="text-sm text-muted-foreground">/Credit</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Standard rate, no bundle required
@@ -284,7 +284,7 @@ export default async function Home() {
                 <ul className="mt-6 space-y-2.5 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <LuCheck className="size-4 shrink-0 text-emerald-500" />
-                    Top up any amount
+                    Top up any amount of Credits
                   </li>
                   <li className="flex items-center gap-2">
                     <LuCheck className="size-4 shrink-0 text-emerald-500" />
@@ -292,7 +292,7 @@ export default async function Home() {
                   </li>
                   <li className="flex items-center gap-2">
                     <LuCheck className="size-4 shrink-0 text-emerald-500" />
-                    Wallet credit never expires
+                    Credits never expire
                   </li>
                 </ul>
               </div>
@@ -321,7 +321,7 @@ export default async function Home() {
                   <div>
                     <h3 className="font-heading text-lg font-bold">{plan.label}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {plan.checks} channel checks
+                      Buy {plan.checks} Credits for ${pricing.price.toFixed(2)}
                     </p>
                     <div className="mt-4 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
                       <span className="text-3xl font-extrabold">${pricing.price.toFixed(2)}</span>
@@ -330,13 +330,13 @@ export default async function Home() {
                       </Badge>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      ${pricing.perCheck.toFixed(2)}/check &middot; normally $
+                      ${pricing.perCheck.toFixed(2)}/Credit &middot; normally $
                       {pricing.faceValue.toFixed(2)}
                     </p>
                     <ul className="mt-6 space-y-2.5 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
                         <LuCheck className="size-4 shrink-0 text-emerald-500" />
-                        {plan.checks} MCN channel checks
+                        Adds {plan.checks} Credits to your wallet
                       </li>
                       <li className="flex items-center gap-2">
                         <LuCheck className="size-4 shrink-0 text-emerald-500" />
@@ -344,7 +344,7 @@ export default async function Home() {
                       </li>
                       <li className="flex items-center gap-2">
                         <LuCheck className="size-4 shrink-0 text-emerald-500" />
-                        Wallet credit never expires
+                        Credits never expire
                       </li>
                     </ul>
                   </div>
