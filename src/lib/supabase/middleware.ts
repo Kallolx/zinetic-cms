@@ -40,9 +40,9 @@ export async function updateSession(request: NextRequest) {
 
   // the app's own subdomain (e.g. cms.zineticmusic.com) is the service,
   // every other host (the marketing domain, the .vercel.app domain) is
-  // informational only. Any app route reached from a non-app host, root
-  // included, always bounces over to the app host so the app never
-  // actually runs anywhere but its own subdomain.
+  // informational only and keeps its own landing page at "/". Any actual
+  // app route reached from a non-app host always bounces over to the app
+  // host, so auth and the app itself never actually run anywhere else.
   const appHost = (() => {
     try {
       return new URL(process.env.NEXT_PUBLIC_APP_URL ?? "").hostname;
@@ -52,13 +52,11 @@ export async function updateSession(request: NextRequest) {
   })();
   const requestHost = (request.headers.get("host") ?? "").split(":")[0];
   const isAppHost = Boolean(appHost) && requestHost === appHost;
-  const isAppRoute = path === "/" || isAuthRoute || isProtectedRoute;
 
-  if (appHost && !isAppHost && isAppRoute) {
+  if (appHost && !isAppHost && (isAuthRoute || isProtectedRoute)) {
     const url = request.nextUrl.clone();
     url.host = appHost;
     url.port = "";
-    if (path === "/") url.pathname = user ? "/dashboard" : "/login";
     return NextResponse.redirect(url);
   }
 
