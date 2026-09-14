@@ -30,14 +30,19 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isAuthRoute = path.startsWith("/login") || path.startsWith("/register");
+  const isAuthRoute =
+    path.startsWith("/login") ||
+    path.startsWith("/register") ||
+    path.startsWith("/forgot-password") ||
+    path.startsWith("/reset-password");
   const isProtectedRoute =
-    path.startsWith("/dashboard") || path.startsWith("/admin");
+    path.startsWith("/dashboard") || path.startsWith("/admin") || path.startsWith("/pending");
 
-  // the app's own subdomain (e.g. cms.zineticmusic.com) is a service, not
-  // the marketing site, so its root goes straight to the app instead of
-  // the landing page. Any other host (the .vercel.app domain, the future
-  // marketing domain) keeps the landing page at "/" as normal.
+  // the app's own subdomain (e.g. cms.zineticmusic.com) is the service,
+  // every other host (the marketing domain, the .vercel.app domain) is
+  // informational only. Any app route reached from a non-app host, root
+  // included, always bounces over to the app host so the app never
+  // actually runs anywhere but its own subdomain.
   const appHost = (() => {
     try {
       return new URL(process.env.NEXT_PUBLIC_APP_URL ?? "").hostname;
@@ -46,8 +51,18 @@ export async function updateSession(request: NextRequest) {
     }
   })();
   const requestHost = (request.headers.get("host") ?? "").split(":")[0];
+  const isAppHost = Boolean(appHost) && requestHost === appHost;
+  const isAppRoute = path === "/" || isAuthRoute || isProtectedRoute;
 
-  if (appHost && requestHost === appHost && path === "/") {
+  if (appHost && !isAppHost && isAppRoute) {
+    const url = request.nextUrl.clone();
+    url.host = appHost;
+    url.port = "";
+    if (path === "/") url.pathname = user ? "/dashboard" : "/login";
+    return NextResponse.redirect(url);
+  }
+
+  if (isAppHost && path === "/") {
     const url = request.nextUrl.clone();
     url.pathname = user ? "/dashboard" : "/login";
     return NextResponse.redirect(url);
