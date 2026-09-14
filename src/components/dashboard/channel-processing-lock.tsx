@@ -20,7 +20,7 @@ export function ChannelProcessingLock({
   const router = useRouter();
 
   useMcnChecksRealtime(true, (updated) => {
-    if (updated.id === checkId && updated.provider_status !== "pending") {
+    if (updated.id === checkId && updated.provider_status === "updated") {
       router.refresh();
     }
   });

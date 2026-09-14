@@ -6,10 +6,15 @@ import { fetchProviderChannel, mapProviderResult } from "@/lib/mcn-provider";
 const BATCH_SIZE = 25;
 
 /**
- * Server-side background refresh: re-polls every channel the provider is
- * still processing (provider_status = "pending") and writes real data the
- * moment it's available. This is the only thing that ever moves a channel
- * out of "pending", independent of whether anyone has the page open.
+ * Server-side background refresh: re-polls every channel the provider
+ * hasn't confirmed final yet (provider_status != "updated", e.g. "sent",
+ * "pending", or any other in-progress value they use) and writes real data
+ * the moment it's available. This is the only thing that ever moves a
+ * channel to "updated", independent of whether anyone has the page open.
+ *
+ * Rows with a null provider_status are legacy/untracked and intentionally
+ * excluded, only channels the provider has told us it's still working on
+ * get re-polled.
  *
  * Triggered every 5 minutes by Supabase's pg_cron (see
  * supabase/add_pg_cron_refresh.sql), with Vercel's own daily cron
@@ -29,7 +34,8 @@ export async function GET(request: Request) {
   const { data: pending, error } = await admin
     .from("mcn_checks")
     .select("id, channel_id")
-    .eq("provider_status", "pending")
+    .not("provider_status", "is", null)
+    .neq("provider_status", "updated")
     .not("channel_id", "is", null)
     .order("created_at", { ascending: true })
     .limit(BATCH_SIZE);

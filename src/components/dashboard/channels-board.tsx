@@ -44,7 +44,11 @@ function StatusDot({ status }: { status: McnCheck["status"] }) {
 }
 
 function isPending(c: McnCheck) {
-  return c.status === "success" && c.provider_status === "pending";
+  return (
+    c.status === "success" &&
+    c.provider_status !== null &&
+    c.provider_status !== "updated"
+  );
 }
 
 function initials(name: string) {

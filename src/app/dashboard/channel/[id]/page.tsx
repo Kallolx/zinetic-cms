@@ -90,7 +90,10 @@ export default async function ChannelDetailPage({
   if (!channel) notFound();
 
   const raw = (channel.raw_response ?? {}) as RawResponse;
-  const isPending = channel.status === "success" && channel.provider_status === "pending";
+  const isPending =
+    channel.status === "success" &&
+    channel.provider_status !== null &&
+    channel.provider_status !== "updated";
   const videos = raw.videos ?? [];
   const reports = raw.reports;
 
