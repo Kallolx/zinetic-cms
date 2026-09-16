@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMcnChecksRealtime } from "@/hooks/use-mcn-checks-realtime";
+import { isChannelStillProcessing } from "@/lib/mcn-provider";
 import { LuLoaderCircle, LuArrowLeft } from "react-icons/lu";
 
 /**
@@ -20,7 +21,7 @@ export function ChannelProcessingLock({
   const router = useRouter();
 
   useMcnChecksRealtime(true, (updated) => {
-    if (updated.id === checkId && updated.provider_status === "updated") {
+    if (updated.id === checkId && !isChannelStillProcessing(updated)) {
       router.refresh();
     }
   });

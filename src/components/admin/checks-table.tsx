@@ -21,6 +21,7 @@ import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
 import { LuSearch, LuDownload } from "react-icons/lu";
 import { usdToCredits, formatCredits } from "@/lib/credits";
+import { isChannelStillProcessing } from "@/lib/mcn-provider";
 
 const PAGE_SIZE = 15;
 
@@ -221,16 +222,10 @@ export function ChecksTable({ checks }: { checks: any[] }) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {c.status === "success" &&
-                    c.provider_status !== null &&
-                    c.provider_status !== "updated"
-                      ? "Processing..."
-                      : (c.network ?? "N/A")}
+                    {isChannelStillProcessing(c) ? "Processing..." : (c.network ?? "N/A")}
                   </TableCell>
                   <TableCell className="max-w-[220px] truncate">
-                    {c.status === "success" &&
-                    c.provider_status !== null &&
-                    c.provider_status !== "updated"
+                    {isChannelStillProcessing(c)
                       ? "Processing..."
                       : (c.network_contact_email ?? "N/A")}
                   </TableCell>

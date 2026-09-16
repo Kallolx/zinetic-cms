@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { ExpandableText } from "@/components/dashboard/expandable-text";
 import { ChannelProcessingLock } from "@/components/dashboard/channel-processing-lock";
+import { isChannelStillProcessing } from "@/lib/mcn-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -90,10 +91,7 @@ export default async function ChannelDetailPage({
   if (!channel) notFound();
 
   const raw = (channel.raw_response ?? {}) as RawResponse;
-  const isPending =
-    channel.status === "success" &&
-    channel.provider_status !== null &&
-    channel.provider_status !== "updated";
+  const isPending = isChannelStillProcessing(channel);
   const videos = raw.videos ?? [];
   const reports = raw.reports;
 

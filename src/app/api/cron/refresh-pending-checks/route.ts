@@ -1,16 +1,28 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { fetchProviderChannel, mapProviderResult } from "@/lib/mcn-provider";
+import {
+  fetchProviderChannel,
+  mapProviderResult,
+  EMAIL_GRACE_PERIOD_MS,
+} from "@/lib/mcn-provider";
 
 // keep each run well under Vercel's function time limit
 const BATCH_SIZE = 25;
 
 /**
- * Server-side background refresh: re-polls every channel the provider
- * hasn't confirmed final yet (provider_status != "updated", e.g. "sent",
- * "pending", or any other in-progress value they use) and writes real data
- * the moment it's available. This is the only thing that ever moves a
- * channel to "updated", independent of whether anyone has the page open.
+ * Server-side background refresh: re-polls every channel that isn't fully
+ * settled yet and writes real data the moment it's available. This is the
+ * only thing that ever moves a channel forward, independent of whether
+ * anyone has the page open.
+ *
+ * "Not settled" covers two cases: provider_status != "updated" (still
+ * being crawled, e.g. "sent", "pending", or any other in-progress value
+ * they use), and the trickier one, provider_status = "updated" but with a
+ * network match and no contact email yet, since the provider finalizes
+ * the network before the email lookup necessarily completes. That second
+ * case is only re-polled for EMAIL_GRACE_PERIOD_MS after the check was
+ * created, to avoid polling forever on channels the provider never
+ * attaches an email to.
  *
  * Rows with a null provider_status are legacy/untracked and intentionally
  * excluded, only channels the provider has told us it's still working on
@@ -31,12 +43,16 @@ export async function GET(request: Request) {
 
   const admin = createAdminClient();
 
+  const emailGraceCutoff = new Date(Date.now() - EMAIL_GRACE_PERIOD_MS).toISOString();
+
   const { data: pending, error } = await admin
     .from("mcn_checks")
     .select("id, channel_id")
     .not("provider_status", "is", null)
-    .neq("provider_status", "updated")
     .not("channel_id", "is", null)
+    .or(
+      `provider_status.neq.updated,and(network.not.is.null,network_contact_email.is.null,created_at.gte.${emailGraceCutoff})`
+    )
     .order("created_at", { ascending: true })
     .limit(BATCH_SIZE);
 

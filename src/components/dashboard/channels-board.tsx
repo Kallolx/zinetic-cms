@@ -22,6 +22,7 @@ import { AddChannelDialog } from "@/components/dashboard/add-channel-dialog";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { usePagination } from "@/hooks/use-pagination";
 import type { McnCheck } from "@/lib/types";
+import { isChannelStillProcessing } from "@/lib/mcn-provider";
 
 const PAGE_SIZE = 15;
 
@@ -43,13 +44,7 @@ function StatusDot({ status }: { status: McnCheck["status"] }) {
   );
 }
 
-function isPending(c: McnCheck) {
-  return (
-    c.status === "success" &&
-    c.provider_status !== null &&
-    c.provider_status !== "updated"
-  );
-}
+const isPending = isChannelStillProcessing;
 
 function initials(name: string) {
   return name
