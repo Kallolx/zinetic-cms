@@ -71,30 +71,22 @@ export function mapProviderResult(result: ProviderChannel) {
   };
 }
 
-/** how long to keep re-polling a network-matched channel that's still
- *  missing its contact email, before giving up for good */
-export const EMAIL_GRACE_PERIOD_MS = 7 * 24 * 60 * 60 * 1000;
-
 /**
  * The provider finalizes the network match (provider_status = "updated")
  * before the contact email lookup necessarily completes, the email can
  * land separately, later, with the status never reverting to a
  * non-final value. So "updated" alone doesn't mean this channel is done:
- * a channel with a network but no email yet is still worth re-polling,
- * for a bounded grace period, in case the email is still on its way.
+ * network and email are both required before a channel is considered
+ * settled, a network match with no email yet keeps getting re-polled
+ * indefinitely, however long it takes, rather than being shown as N/A.
  */
 export function isChannelStillProcessing(check: {
   status: string;
   provider_status: string | null;
   network: string | null;
   network_contact_email: string | null;
-  created_at: string;
 }): boolean {
   if (check.status !== "success" || check.provider_status === null) return false;
   if (check.provider_status !== "updated") return true;
-  if (check.network && !check.network_contact_email) {
-    const age = Date.now() - new Date(check.created_at).getTime();
-    return age < EMAIL_GRACE_PERIOD_MS;
-  }
-  return false;
+  return Boolean(check.network) && !check.network_contact_email;
 }

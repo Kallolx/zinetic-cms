@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/supabase/session";
 import { ExpandableText } from "@/components/dashboard/expandable-text";
 import { formatCredits } from "@/lib/credits";
+import { isChannelStillProcessing } from "@/lib/mcn-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -87,6 +88,7 @@ export default async function AdminCheckDetailPage({
   if (!channel) notFound();
 
   const raw = (channel.raw_response ?? {}) as RawResponse;
+  const isProcessing = isChannelStillProcessing(channel);
   const hasOwner = Boolean(channel.network || channel.network_contact_email);
   const isConfirmedFinal = channel.provider_status === "updated";
   const videos = raw.videos ?? [];
@@ -187,7 +189,7 @@ export default async function AdminCheckDetailPage({
               <div>
                 <p className="text-xs text-muted-foreground">Network</p>
                 <p className="font-medium">
-                  {channel.network ?? (isConfirmedFinal ? "Independent" : "Pending")}
+                  {channel.network ?? (isConfirmedFinal ? "Independent" : "Checking...")}
                 </p>
               </div>
               <div>
@@ -200,7 +202,9 @@ export default async function AdminCheckDetailPage({
                     {channel.network_contact_email}
                   </a>
                 ) : (
-                  <p className="font-medium text-muted-foreground">Not available</p>
+                  <p className="font-medium text-muted-foreground">
+                    {isProcessing ? "Checking..." : "Not available"}
+                  </p>
                 )}
               </div>
               {!channel.network && (
@@ -260,7 +264,7 @@ export default async function AdminCheckDetailPage({
             />
             <DetailRow
               label="Network"
-              value={channel.network ?? (isConfirmedFinal ? "Independent" : "Pending")}
+              value={channel.network ?? (isConfirmedFinal ? "Independent" : "Checking...")}
             />
             <DetailRow label="Cost" value={formatCredits(Number(channel.cost))} />
             <DetailRow
@@ -297,7 +301,7 @@ export default async function AdminCheckDetailPage({
                         <LuMail className="size-3.5" /> Contact email
                       </p>
                       <p className="mt-1 font-medium">
-                        {channel.network_contact_email ?? "Not available"}
+                        {channel.network_contact_email ?? (isProcessing ? "Checking..." : "Not available")}
                       </p>
                     </div>
                   </div>

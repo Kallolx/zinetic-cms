@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  fetchProviderChannel,
-  mapProviderResult,
-  EMAIL_GRACE_PERIOD_MS,
-} from "@/lib/mcn-provider";
+import { fetchProviderChannel, mapProviderResult } from "@/lib/mcn-provider";
 
 // keep each run well under Vercel's function time limit
 const BATCH_SIZE = 25;
@@ -19,10 +15,10 @@ const BATCH_SIZE = 25;
  * being crawled, e.g. "sent", "pending", or any other in-progress value
  * they use), and the trickier one, provider_status = "updated" but with a
  * network match and no contact email yet, since the provider finalizes
- * the network before the email lookup necessarily completes. That second
- * case is only re-polled for EMAIL_GRACE_PERIOD_MS after the check was
- * created, to avoid polling forever on channels the provider never
- * attaches an email to.
+ * the network before the email lookup necessarily completes. Both network
+ * and email are required before a channel counts as settled, so the
+ * second case keeps getting re-polled indefinitely, however long it
+ * takes, rather than ever being shown as a blank/N/A email.
  *
  * Rows with a null provider_status are legacy/untracked and intentionally
  * excluded, only channels the provider has told us it's still working on
@@ -43,16 +39,12 @@ export async function GET(request: Request) {
 
   const admin = createAdminClient();
 
-  const emailGraceCutoff = new Date(Date.now() - EMAIL_GRACE_PERIOD_MS).toISOString();
-
   const { data: pending, error } = await admin
     .from("mcn_checks")
     .select("id, channel_id")
     .not("provider_status", "is", null)
     .not("channel_id", "is", null)
-    .or(
-      `provider_status.neq.updated,and(network.not.is.null,network_contact_email.is.null,created_at.gte.${emailGraceCutoff})`
-    )
+    .or("provider_status.neq.updated,and(network.not.is.null,network_contact_email.is.null)")
     .order("created_at", { ascending: true })
     .limit(BATCH_SIZE);
 
