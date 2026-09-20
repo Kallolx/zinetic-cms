@@ -18,11 +18,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <Link href="/" className="relative z-10 flex items-center gap-2.5">
           <Image
             src="/brand/logo.png"
-            alt="Zinetic Music"
+            alt=""
             width={899}
             height={1140}
             style={{ height: 40, width: "auto" }}
           />
+          <span className="font-heading text-lg font-semibold">Zinetic Music</span>
         </Link>
 
         <div className="relative z-10 flex flex-col gap-8">
