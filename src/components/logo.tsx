@@ -18,7 +18,7 @@ export function Logo({
         src="/brand/logo.png"
         alt="Zinetic Music"
         width={899}
-        height={935}
+        height={1140}
         style={{ height: size, width: "auto" }}
         className="shrink-0"
         priority
