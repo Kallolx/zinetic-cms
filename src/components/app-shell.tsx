@@ -241,8 +241,17 @@ export function AppShell({
             src="/brand/logo.png"
             alt=""
             width={899}
-            height={935}
+            height={1140}
             style={{ height: 30, width: "auto" }}
+            className="hidden dark:block"
+          />
+          <Image
+            src="/brand/logo-black.png"
+            alt=""
+            width={899}
+            height={1140}
+            style={{ height: 30, width: "auto" }}
+            className="block dark:hidden"
           />
           <h1 className="hidden font-heading text-lg font-semibold sm:block">{title}</h1>
         </div>
