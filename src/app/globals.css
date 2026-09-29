@@ -142,21 +142,6 @@
 
 /* Marketing landing page (services.zineticmusic.com) */
 .zl {
-  --zl-bg: #f6f2ec;
-  --zl-surface: #ffffff;
-  --zl-surface-2: #ede7df;
-  --zl-line: rgb(24 18 28 / 0.1);
-  --zl-text: #16121a;
-  --zl-muted: #6b6371;
-  --zl-glow-a: rgb(255 92 140 / 0.28);
-  --zl-glow-b: rgb(255 138 31 / 0.22);
-  --zl-glow-c: rgb(96 110 255 / 0.2);
-  --zl-grain-opacity: 0.035;
-  background: var(--zl-bg);
-  color: var(--zl-text);
-}
-
-.dark .zl {
   --zl-bg: #08070a;
   --zl-surface: #121016;
   --zl-surface-2: #1a1720;
@@ -167,6 +152,9 @@
   --zl-glow-b: rgb(255 122 26 / 0.26);
   --zl-glow-c: rgb(80 96 255 / 0.22);
   --zl-grain-opacity: 0.045;
+  background: var(--zl-bg);
+  color: var(--zl-text);
+  color-scheme: dark;
 }
 
 .zl-display {

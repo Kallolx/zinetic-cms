@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { Logo } from "@/components/logo";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { LuArrowUpRight, LuChevronDown, LuMail, LuMenu } from "react-icons/lu";
 import { cn } from "@/lib/utils";
@@ -133,7 +132,7 @@ export function LandingNav() {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className={`zl ${displayFont.variable} ${serifFont.variable} flex w-[88vw] max-w-sm flex-col gap-0 overflow-hidden border-(--zl-line) bg-(--zl-bg) p-0`}
+              className={`zl dark ${displayFont.variable} ${serifFont.variable} flex w-[88vw] max-w-sm flex-col gap-0 overflow-hidden border-(--zl-line) bg-(--zl-bg) p-0`}
             >
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <div aria-hidden className="pointer-events-none absolute inset-0 -z-0">
@@ -213,10 +212,6 @@ export function LandingNav() {
               </nav>
 
               <div className="relative flex flex-col gap-3 border-t border-(--zl-line) px-6 py-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-(--zl-muted)">Appearance</span>
-                  <ThemeToggle />
-                </div>
                 <ZButton href="/login" variant="outline" arrow={false} className="w-full" onClick={() => setSheetOpen(false)}>
                   Log in
                 </ZButton>
@@ -259,9 +254,6 @@ export function LandingNav() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="[&_button]:text-white [&_button:hover]:bg-white/10">
-            <ThemeToggle />
-          </div>
           <span className="hidden sm:block">
             <ZButton href="/login" variant="glass" size="sm" arrow={false}>
               Log in

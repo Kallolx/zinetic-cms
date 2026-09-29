@@ -4,7 +4,7 @@ import * as React from "react";
 import { useTheme } from "next-themes";
 import Scanner from "@/components/scanner";
 
-export function HeroScannerBg({ className }: { className?: string }) {
+export function HeroScannerBg({ className, forceDark = false }: { className?: string; forceDark?: boolean }) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -12,7 +12,7 @@ export function HeroScannerBg({ className }: { className?: string }) {
     setMounted(true);
   }, []);
 
-  const isDark = !mounted || resolvedTheme === "dark";
+  const isDark = forceDark || !mounted || resolvedTheme === "dark";
 
   return (
     <div

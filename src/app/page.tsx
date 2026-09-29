@@ -31,7 +31,7 @@ export default async function Home() {
   if (user) redirect("/dashboard");
 
   return (
-    <div className={`zl ${displayFont.variable} ${serifFont.variable} relative min-h-screen overflow-x-clip`}>
+    <div className={`zl dark ${displayFont.variable} ${serifFont.variable} relative min-h-screen overflow-x-clip`}>
       <SiteEffects />
       <div aria-hidden className="zl-grain" />
       <LandingNav />

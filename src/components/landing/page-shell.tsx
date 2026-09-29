@@ -11,7 +11,7 @@ export function PageShell({
   effects?: boolean;
 }) {
   return (
-    <div className={`zl ${displayFont.variable} ${serifFont.variable} relative min-h-screen overflow-x-clip`}>
+    <div className={`zl dark ${displayFont.variable} ${serifFont.variable} relative min-h-screen overflow-x-clip`}>
       {effects && <SiteEffects />}
       <div aria-hidden className="zl-grain" />
       <LandingNav />
@@ -25,7 +25,7 @@ export function PageShell({
 export function SiteEffects() {
   return (
     <>
-      <HeroScannerBg />
+      <HeroScannerBg forceDark />
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0 opacity-40 dark:opacity-30"
