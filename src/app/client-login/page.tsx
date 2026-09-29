@@ -6,7 +6,7 @@ import {
   LuChartBar,
   LuClapperboard,
   LuDisc3,
-  LuLock,
+  LuClock,
   LuMail,
   LuShieldCheck,
 } from "react-icons/lu";
@@ -164,7 +164,7 @@ export default function ClientLoginPage() {
                             aria-disabled
                             className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs font-medium text-white/45"
                           >
-                            <LuLock className="size-3.5" /> Locked
+                            <LuClock className="size-3.5" /> Soon
                           </span>
                         ) : (
                           <ZButton href={d.href!} size="sm" className="shrink-0">
