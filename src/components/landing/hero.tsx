@@ -91,12 +91,12 @@ type Card = {
 };
 
 const CARDS: Card[] = [
-  { media: { kind: "video", src: MEDIA.neonSinger }, label: "AI Music", className: "left-[1.5%] top-[11%] h-[260px] w-[172px]", rotate: -9, speed: -120, delay: 0.1 },
-  { media: { kind: "image", src: MEDIA.amberVinyl }, label: "Distribution", className: "left-[5%] top-[50%] h-[160px] w-[160px]", rotate: 6, speed: -60, delay: 0.25 },
-  { media: { kind: "video", src: MEDIA.womanTalking }, label: "AI Avatar Video", className: "-left-[4%] top-[76%] h-[150px] w-[230px] hidden xl:block", rotate: -4, speed: -200, delay: 0.4 },
-  { media: { kind: "video", src: MEDIA.headphonesCloseUp }, label: "AI Lip Sync", className: "right-[1.5%] top-[9%] h-[270px] w-[178px]", rotate: 8, speed: -140, delay: 0.15 },
-  { media: { kind: "image", src: MEDIA.micRedCurtain }, label: "Voice Changer", className: "right-[5%] top-[52%] h-[180px] w-[150px]", rotate: -7, speed: -70, delay: 0.3 },
-  { media: { kind: "video", src: MEDIA.djDeck }, label: "Sound Effects", className: "-right-[4%] top-[78%] h-[150px] w-[220px] hidden xl:block", rotate: 5, speed: -190, delay: 0.45 },
+  { media: { kind: "video", src: MEDIA.neonSinger }, label: "AI Music", className: "left-[13%] top-[20%] h-[190px] w-[128px]", rotate: -8, speed: -90, delay: 0.1 },
+  { media: { kind: "image", src: MEDIA.amberVinyl }, label: "Distribution", className: "left-[10%] top-[58%] h-[120px] w-[120px]", rotate: 6, speed: -50, delay: 0.25 },
+  { media: { kind: "video", src: MEDIA.womanTalking }, label: "AI Avatar", className: "left-[7%] top-[78%] h-[92px] w-[138px] hidden xl:block", rotate: -4, speed: -140, delay: 0.4 },
+  { media: { kind: "video", src: MEDIA.headphonesCloseUp }, label: "AI Lip Sync", className: "right-[13%] top-[18%] h-[195px] w-[130px]", rotate: 8, speed: -100, delay: 0.15 },
+  { media: { kind: "image", src: MEDIA.micRedCurtain }, label: "Voice Changer", className: "right-[10%] top-[56%] h-[130px] w-[110px]", rotate: -7, speed: -55, delay: 0.3 },
+  { media: { kind: "video", src: MEDIA.djDeck }, label: "Sound Effects", className: "right-[7%] top-[79%] h-[92px] w-[138px] hidden xl:block", rotate: 5, speed: -130, delay: 0.45 },
 ];
 
 function FloatingCard({ card, progress }: { card: Card; progress: MotionValue<number> }) {
@@ -150,13 +150,13 @@ export function Hero() {
 
       <motion.div
         style={{ y: contentY, opacity: contentOpacity }}
-        className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center px-5 text-center"
+        className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-5 text-center"
       >
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-(--zl-line) bg-(--zl-surface)/60 px-4 py-1.5 text-xs font-medium text-(--zl-muted) backdrop-blur-md"
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-(--zl-line) bg-(--zl-surface)/60 px-4 py-1.5 text-xs font-medium text-(--zl-muted) backdrop-blur-md"
         >
           <span className="relative flex size-2">
             <span className="absolute inset-0 animate-ping rounded-full bg-[#ff3d86] opacity-60" />
@@ -165,7 +165,7 @@ export function Hero() {
           Music distribution, AI voice and AI video in one studio
         </motion.div>
 
-        <h1 className="zl-display text-[clamp(3.2rem,9.5vw,8.5rem)] font-bold">
+        <h1 className="zl-display text-[clamp(2.4rem,6vw,5.25rem)] font-bold">
           <motion.span
             className="block"
             initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
@@ -188,7 +188,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-8 max-w-2xl text-lg leading-relaxed text-(--zl-muted) sm:text-xl"
+          className="mt-6 max-w-xl text-base leading-relaxed text-(--zl-muted) sm:text-lg"
         >
           Release your music to the world and keep up to 90% of the royalties. Generate songs,
           voices and sound. Dub, translate and lip-sync video. All from one Zinetic account.
@@ -198,7 +198,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 24, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-10 w-full max-w-2xl"
+          className="mt-8 w-full max-w-2xl"
         >
           <div className="rounded-[28px] border border-(--zl-line) bg-(--zl-surface)/75 p-2.5 text-left shadow-[0_40px_120px_-40px_rgb(0_0_0/0.55)] backdrop-blur-2xl">
             <div className="flex min-h-[74px] items-start gap-3 px-4 pt-3.5 pb-2">
