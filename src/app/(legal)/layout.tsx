@@ -2,11 +2,11 @@ import { LandingNavbar } from "@/components/landing-navbar";
 import { SiteFooter } from "@/components/site-footer";
 
 const navLinks = [
-  { label: "Features", href: "/#features" },
-  { label: "MCN Checker", href: "/#mcn-checker" },
-  { label: "Copyright Hub", href: "/#copyright-hub" },
+  { label: "Music", href: "/#music" },
+  { label: "Voice & Audio", href: "/#voice" },
+  { label: "Video", href: "/#video" },
+  { label: "Creator Tools", href: "/#creator-tools" },
   { label: "Pricing", href: "/#pricing" },
-  { label: "Support", href: "/#support" },
 ];
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {

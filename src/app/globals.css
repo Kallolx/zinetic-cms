@@ -139,3 +139,131 @@
     @apply font-heading tracking-tight;
   }
 }
+
+/* Marketing landing page (services.zineticmusic.com) */
+.zl {
+  --zl-bg: #f6f2ec;
+  --zl-surface: #ffffff;
+  --zl-surface-2: #ede7df;
+  --zl-line: rgb(24 18 28 / 0.1);
+  --zl-text: #16121a;
+  --zl-muted: #6b6371;
+  --zl-glow-a: rgb(255 92 140 / 0.28);
+  --zl-glow-b: rgb(255 138 31 / 0.22);
+  --zl-glow-c: rgb(96 110 255 / 0.2);
+  --zl-grain-opacity: 0.035;
+  background: var(--zl-bg);
+  color: var(--zl-text);
+}
+
+.dark .zl {
+  --zl-bg: #08070a;
+  --zl-surface: #121016;
+  --zl-surface-2: #1a1720;
+  --zl-line: rgb(255 255 255 / 0.08);
+  --zl-text: #f5f1ec;
+  --zl-muted: #9b94a1;
+  --zl-glow-a: rgb(255 46 126 / 0.34);
+  --zl-glow-b: rgb(255 122 26 / 0.26);
+  --zl-glow-c: rgb(80 96 255 / 0.22);
+  --zl-grain-opacity: 0.045;
+}
+
+.zl-display {
+  font-family: var(--font-display), var(--font-heading), sans-serif;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+.zl-serif {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.zl-grad-text {
+  background: linear-gradient(95deg, #3d8bff 0%, #9b4dff 38%, #ff3d86 68%, #ff8a1f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.zl-grad-bg {
+  background: linear-gradient(95deg, #ff2e7e 0%, #ff5b4a 50%, #ff8a1f 100%);
+}
+
+.zl-grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  opacity: var(--zl-grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes zl-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.zl-marquee {
+  animation: zl-marquee var(--zl-marquee-duration, 40s) linear infinite;
+}
+
+.zl-marquee-paused:hover .zl-marquee {
+  animation-play-state: paused;
+}
+
+@keyframes zl-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes zl-bar {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes zl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes zl-pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes zl-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zl *,
+  .zl *::before,
+  .zl *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

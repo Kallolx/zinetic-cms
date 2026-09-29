@@ -9,10 +9,17 @@ export default function AboutPage() {
 
       <Section title="Who we are">
         <p>
-          Zinetic Music Limited operates Zinetic Music, a YouTube MCN (Multi-Channel Network)
-          checker and copyright management platform for creators, record labels, and digital
-          rights managers. The Service instantly identifies which network a YouTube channel
-          belongs to, surfaces verified contact details, and helps manage copyright claims.
+          Zinetic Music Limited is a Bangladesh-based digital music and technology company
+          providing music distribution, digital creator services, subscription-based tools, and
+          AI-powered media solutions to artists, labels, creators, and businesses.
+        </p>
+        <p className="mt-3">
+          Our services are designed to support creators and digital businesses with access to
+          music distribution, digital media tools, AI-powered audio and video solutions, and other
+          online services through a secure and user-friendly platform. Zinetic Music, the YouTube
+          MCN (Multi-Channel Network) checker and copyright management platform, is one of these
+          services: it instantly identifies which network a YouTube channel belongs to, surfaces
+          verified contact details, and helps manage copyright claims.
         </p>
       </Section>
 
@@ -25,28 +32,41 @@ export default function AboutPage() {
         </p>
       </Section>
 
-      <Section title="Registered office">
-        <p>Batar Goli, Boro Moghbazar, Ramna, Dhaka, 1217, Bangladesh</p>
-      </Section>
-
-      <Section title="Company details">
+      <Section title="Company information">
         <p className="text-muted-foreground">
-          Trade License No.: <span className="text-foreground">[to be added]</span>
+          Company Name: <span className="text-foreground">Zinetic Music Limited</span>
           <br />
-          TIN: <span className="text-foreground">[to be added]</span>
+          Country: <span className="text-foreground">Bangladesh</span>
+          <br />
+          RJSC Registration No.: <span className="text-foreground">C-195622/2024</span>
+          <br />
+          Trade License No.: <span className="text-foreground">TRAD/DNCC/000393/2024</span>
+          <br />
+          Registered Address:{" "}
+          <span className="text-foreground">
+            258/B, Batar Goli, Boro Moghbazar, Ramna, Dhaka 1217
+          </span>
         </p>
       </Section>
 
       <Section title="Management">
-        <p className="text-muted-foreground">[Management team details to be added]</p>
+        <p className="text-muted-foreground">
+          <span className="text-foreground font-medium">Zishan Mahmud Rudro</span>
+          <br />
+          Managing Director &amp; CEO
+          <br />
+          Zinetic Music Limited
+        </p>
       </Section>
 
       <Section title="Contact">
         <p>
-          <a href="mailto:info@zineticmusic.com" className="text-primary underline underline-offset-4">
-            info@zineticmusic.com
+          For business inquiries or customer support, please contact us through the information
+          provided on our{" "}
+          <a href="/contact" className="text-primary underline underline-offset-4">
+            Contact Us
           </a>{" "}
-          &middot; +880 9696 797 267
+          page.
         </p>
       </Section>
     </div>

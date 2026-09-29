@@ -8,7 +8,7 @@ export default function ContactPage() {
       </div>
 
       <Section title="Registered office (Bangladesh)">
-        <p>Batar Goli, Boro Moghbazar, Ramna, Dhaka, 1217, Bangladesh</p>
+        <p>258/B, Batar Goli, Boro Moghbazar, Ramna, Dhaka 1217, Bangladesh</p>
         <p className="mt-1">
           Phone: +880 9696 797 267
           <br />

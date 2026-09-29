@@ -83,7 +83,7 @@ export function SiteFooter() {
             <ul className="space-y-3.5 text-sm text-neutral-400">
               <li className="flex items-start gap-3">
                 <LuMapPin className="size-4 mt-0.5 shrink-0 text-neutral-500" />
-                <span>Batar Goli, Boro Moghbazar, Ramna, Dhaka, 1217</span>
+                <span>258/B, Batar Goli, Boro Moghbazar, Ramna, Dhaka 1217</span>
               </li>
               <li className="flex items-center gap-3">
                 <LuPhone className="size-4 shrink-0 text-neutral-500" />
@@ -93,6 +93,7 @@ export function SiteFooter() {
                 <LuMail className="size-4 shrink-0 text-neutral-500" />
                 <a href="mailto:info@zineticmusic.com" className="hover:text-white transition-colors">info@zineticmusic.com</a>
               </li>
+              <li className="text-neutral-500">Trade License No.: TRAD/DNCC/000393/2024</li>
             </ul>
           </div>
         </div>
