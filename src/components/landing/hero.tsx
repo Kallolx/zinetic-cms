@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { LuMusic, LuMic, LuClapperboard, LuGlobe, LuPlus } from "react-icons/lu";
-import { AutoVideo } from "@/components/landing/primitives";
-import { MEDIA } from "@/lib/landing-services";
+import { HeroOrbit } from "@/components/landing/hero-orbit";
 import { cn } from "@/lib/utils";
 import { ZButton } from "@/components/landing/button";
 
@@ -81,52 +79,6 @@ function TypedPrompt({ lines }: { lines: string[] }) {
   );
 }
 
-type Card = {
-  media: { kind: "video" | "image"; src: string };
-  label: string;
-  className: string;
-  rotate: number;
-  speed: number;
-  delay: number;
-};
-
-const CARDS: Card[] = [
-  { media: { kind: "video", src: MEDIA.neonShades }, label: "AI Music", className: "left-[13%] top-[20%] h-[190px] w-[128px]", rotate: -8, speed: -90, delay: 0.1 },
-  { media: { kind: "image", src: MEDIA.amberVinyl }, label: "Distribution", className: "left-[10%] top-[58%] h-[120px] w-[120px]", rotate: 6, speed: -50, delay: 0.25 },
-  { media: { kind: "video", src: MEDIA.speakerWoman }, label: "AI Avatar", className: "left-[7%] top-[78%] h-[92px] w-[138px] hidden xl:block", rotate: -4, speed: -140, delay: 0.4 },
-  { media: { kind: "video", src: MEDIA.headphonesCloseUp }, label: "AI Lip Sync", className: "right-[13%] top-[18%] h-[195px] w-[130px]", rotate: 8, speed: -100, delay: 0.15 },
-  { media: { kind: "image", src: MEDIA.micRedCurtain }, label: "Voice Changer", className: "right-[10%] top-[56%] h-[130px] w-[110px]", rotate: -7, speed: -55, delay: 0.3 },
-  { media: { kind: "video", src: MEDIA.djDeck }, label: "Sound Effects", className: "right-[7%] top-[79%] h-[92px] w-[138px] hidden xl:block", rotate: 5, speed: -130, delay: 0.45 },
-];
-
-function FloatingCard({ card, progress }: { card: Card; progress: MotionValue<number> }) {
-  const y = useTransform(progress, [0, 1], [0, card.speed]);
-  return (
-    <motion.div
-      style={{ y }}
-      initial={{ opacity: 0, scale: 0.9, rotate: card.rotate * 1.6 }}
-      animate={{ opacity: 1, scale: 1, rotate: card.rotate }}
-      transition={{ duration: 1.2, delay: card.delay, ease: [0.22, 1, 0.36, 1] }}
-      className={cn("absolute hidden lg:block", card.className)}
-    >
-      <div
-        className="relative h-full w-full overflow-hidden rounded-[22px] border border-white/10 shadow-[0_30px_80px_-30px_rgb(0_0_0/0.7)]"
-        style={{ animation: `zl-float ${6 + card.delay * 6}s ease-in-out ${card.delay}s infinite` }}
-      >
-        {card.media.kind === "video" ? (
-          <AutoVideo src={card.media.src} />
-        ) : (
-          <Image src={card.media.src} alt="" fill sizes="260px" className="object-cover" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-        <span className="absolute bottom-3 left-3 rounded-full bg-black/45 px-2.5 py-1 text-[0.68rem] font-semibold tracking-wide text-white backdrop-blur-md">
-          {card.label}
-        </span>
-      </div>
-    </motion.div>
-  );
-}
-
 export function Hero() {
   const ref = React.useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -144,9 +96,7 @@ export function Hero() {
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-(--zl-bg)" />
       </div>
 
-      {CARDS.map((card) => (
-        <FloatingCard key={card.label} card={card} progress={scrollYProgress} />
-      ))}
+      <HeroOrbit />
 
       <motion.div
         style={{ y: contentY, opacity: contentOpacity }}
