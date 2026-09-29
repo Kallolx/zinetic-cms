@@ -6,8 +6,9 @@ import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { LuArrowUpRight, LuMenu } from "react-icons/lu";
+import { LuMenu } from "react-icons/lu";
 import { cn } from "@/lib/utils";
+import { ZButton } from "@/components/landing/button";
 
 export const LANDING_LINKS = [
   { label: "Music", href: "#music" },
@@ -67,18 +68,12 @@ export function LandingNav() {
                 ))}
               </nav>
               <div className="mt-10 flex flex-col gap-3">
-                <Link
-                  href="/login"
-                  className="rounded-full border border-(--zl-line) py-3 text-center text-sm font-semibold"
-                >
+                <ZButton href="/login" variant="outline" arrow={false} onClick={() => setOpen(false)}>
                   Log in
-                </Link>
-                <Link
-                  href="/register"
-                  className="zl-grad-bg rounded-full py-3 text-center text-sm font-semibold text-white"
-                >
+                </ZButton>
+                <ZButton href="/register" onClick={() => setOpen(false)}>
                   Start creating
-                </Link>
+                </ZButton>
               </div>
             </SheetContent>
           </Sheet>
@@ -101,19 +96,12 @@ export function LandingNav() {
 
         <div className="flex items-center gap-1.5 sm:gap-2">
           <ThemeToggle />
-          <Link
-            href="/login"
-            className="hidden rounded-full px-4 py-2 text-sm font-semibold sm:block"
-          >
+          <ZButton href="/login" variant="outline" size="sm" arrow={false} className="hidden sm:inline-flex">
             Log in
-          </Link>
-          <Link
-            href="/register"
-            className="zl-grad-bg group flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_30px_-8px_rgb(255_60_110/0.7)] transition-transform hover:scale-[1.03]"
-          >
+          </ZButton>
+          <ZButton href="/register" size="sm" arrow="up-right">
             Start creating
-            <LuArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </Link>
+          </ZButton>
         </div>
       </div>
     </motion.header>

@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { motion, useInView } from "motion/react";
-import { LuArrowRight, LuCheck, LuMail, LuNetwork, LuSearch } from "react-icons/lu";
+import { LuCheck, LuMail, LuNetwork, LuSearch } from "react-icons/lu";
 import { Eyebrow, Reveal } from "@/components/landing/primitives";
 import { SERVICES } from "@/lib/landing-services";
 import { CHECK_PRICE } from "@/lib/pricing-plans";
+import { ZButton } from "@/components/landing/button";
 
 const mcn = SERVICES.find((s) => s.id === "mcn-checker")!;
 const QUERY = "youtube.com/@yourfavouritechannel";
@@ -96,12 +96,9 @@ export function CreatorSection() {
             ))}
           </ul>
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Link
-              href="/register"
-              className="zl-grad-bg inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold text-white"
-            >
-              {mcn.cta} <LuArrowRight className="size-4" />
-            </Link>
+            <ZButton href="/register" size="lg">
+              {mcn.cta}
+            </ZButton>
             <p className="text-sm text-(--zl-muted)">
               ${CHECK_PRICE} per check, down to less with credit bundles
             </p>

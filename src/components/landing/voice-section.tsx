@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { LuArrowRight, LuArrowRightLeft, LuPlay } from "react-icons/lu";
+import { LuArrowRightLeft, LuPlay } from "react-icons/lu";
 import { AutoVideo, Reveal, SectionHeading } from "@/components/landing/primitives";
 import { MEDIA, SERVICES, formatPrice, type Service } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
+import { ZLink } from "@/components/landing/button";
 
 const byId = (id: string) => SERVICES.find((s) => s.id === id)!;
 
@@ -66,12 +66,9 @@ function Card({
         </div>
         <p className="mt-3 max-w-md text-(--zl-muted)">{service.blurb}</p>
         <div className="mt-8 flex-1">{children}</div>
-        <Link
-          href="/register"
-          className="mt-8 inline-flex w-fit items-center gap-1.5 text-sm font-semibold transition-colors hover:text-[#ff3d86]"
-        >
-          {service.cta} <LuArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-        </Link>
+        <ZLink href="/register" className="mt-8">
+          {service.cta}
+        </ZLink>
       </div>
     </Reveal>
   );

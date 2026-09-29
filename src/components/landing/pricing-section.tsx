@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { LuArrowRight, LuCheck, LuShieldCheck } from "react-icons/lu";
+import { LuCheck, LuShieldCheck } from "react-icons/lu";
 import { Reveal, SectionHeading } from "@/components/landing/primitives";
 import { CATEGORIES, formatPrice, servicesIn, type ServiceCategory } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
+import { ZButton } from "@/components/landing/button";
 
 export function PricingSection() {
   const [category, setCategory] = React.useState<ServiceCategory>("music");
@@ -67,7 +67,7 @@ export function PricingSection() {
                 type="button"
                 onClick={() => setServiceId(s.id)}
                 className={cn(
-                  "rounded-full border px-3.5 py-1.5 text-sm transition-colors",
+                  "zl-chip rounded-full border px-3.5 py-1.5 text-sm",
                   s.id === service.id
                     ? "border-[#ff3d86] text-(--zl-text)"
                     : "border-(--zl-line) text-(--zl-muted) hover:text-(--zl-text)"
@@ -137,15 +137,13 @@ export function PricingSection() {
                       </ul>
                     )}
                     <div className="mt-auto pt-8">
-                      <Link
+                      <ZButton
                         href="/register"
-                        className={cn(
-                          "flex items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold transition-transform hover:scale-[1.02]",
-                          featured ? "zl-grad-bg text-white" : "bg-(--zl-text) text-(--zl-bg)"
-                        )}
+                        variant={featured ? "primary" : "solid"}
+                        className="w-full"
                       >
-                        {service.cta} <LuArrowRight className="size-4" />
-                      </Link>
+                        {service.cta}
+                      </ZButton>
                     </div>
                   </div>
                 );

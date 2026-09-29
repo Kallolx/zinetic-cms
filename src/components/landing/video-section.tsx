@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { motion } from "motion/react";
-import { LuArrowRight, LuScissors, LuSparkles, LuWandSparkles } from "react-icons/lu";
+import { LuScissors, LuSparkles, LuWandSparkles } from "react-icons/lu";
 import { AutoVideo, Reveal, SectionHeading } from "@/components/landing/primitives";
 import { MEDIA, SERVICES, formatPrice, type Service } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
+import { ZButton, ZLink } from "@/components/landing/button";
 
 const byId = (id: string) => SERVICES.find((s) => s.id === id)!;
 
@@ -33,12 +33,9 @@ function CardHead({ service }: { service: Service }) {
 
 function Cta({ service }: { service: Service }) {
   return (
-    <Link
-      href="/register"
-      className="mt-6 inline-flex w-fit items-center gap-1.5 text-sm font-semibold transition-colors hover:text-[#ff3d86]"
-    >
-      {service.cta} <LuArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-    </Link>
+    <ZLink href="/register" className="mt-6">
+      {service.cta}
+    </ZLink>
   );
 }
 
@@ -82,12 +79,9 @@ function AvatarStudio() {
             </div>
           </div>
           <div className="mt-auto pt-6">
-            <Link
-              href="/register"
-              className="zl-grad-bg inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white"
-            >
-              <LuWandSparkles className="size-4" /> {s.cta}
-            </Link>
+            <ZButton href="/register" arrow={false} icon={<LuWandSparkles className="size-4" />}>
+              {s.cta}
+            </ZButton>
           </div>
         </div>
         <div className="relative min-h-[320px] lg:min-h-[520px]">

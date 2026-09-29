@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
-import { LuArrowRight, LuMusic, LuMic, LuClapperboard, LuGlobe, LuPlus } from "react-icons/lu";
+import { LuMusic, LuMic, LuClapperboard, LuGlobe, LuPlus } from "react-icons/lu";
 import { AutoVideo } from "@/components/landing/primitives";
 import { MEDIA } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
+import { ZButton } from "@/components/landing/button";
 
 const MODES = [
   {
@@ -218,7 +218,7 @@ export function Hero() {
                       type="button"
                       onClick={() => setMode(m)}
                       className={cn(
-                        "flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-all",
+                        "zl-chip flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium",
                         active
                           ? "border-transparent bg-(--zl-text) text-(--zl-bg)"
                           : "border-(--zl-line) text-(--zl-muted) hover:text-(--zl-text)"
@@ -230,13 +230,9 @@ export function Hero() {
                   );
                 })}
               </div>
-              <Link
-                href="/register"
-                className="zl-grad-bg group flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgb(255_60_110/0.8)] transition-transform hover:scale-[1.03]"
-              >
+              <ZButton href="/register" size="sm">
                 Create
-                <LuArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-              </Link>
+              </ZButton>
             </div>
           </div>
         </motion.div>

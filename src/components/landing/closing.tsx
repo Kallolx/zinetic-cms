@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LuArrowUpRight, LuPlus } from "react-icons/lu";
+import { LuPlus } from "react-icons/lu";
 import { Reveal, SectionHeading } from "@/components/landing/primitives";
 import { MEDIA } from "@/lib/landing-services";
+import { ZButton } from "@/components/landing/button";
 
 const STEPS = [
   {
@@ -120,13 +121,9 @@ export function FinalCta() {
           <p className="mx-auto mt-6 max-w-xl text-lg text-white/75">
             One account for distribution, AI voice, AI video and creator tools.
           </p>
-          <Link
-            href="/register"
-            className="group mt-10 inline-flex items-center gap-2 rounded-full bg-white px-7 py-4 text-base font-semibold text-black transition-transform hover:scale-[1.03]"
-          >
+          <ZButton href="/register" variant="light" size="lg" arrow="up-right" className="mt-10">
             Create your free account
-            <LuArrowUpRight className="size-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </Link>
+          </ZButton>
         </div>
       </Reveal>
     </section>

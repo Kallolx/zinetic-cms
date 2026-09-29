@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { animate, motion, useInView, useReducedMotion } from "motion/react";
-import { LuArrowRight, LuCheck, LuSparkles } from "react-icons/lu";
+import { LuCheck, LuSparkles } from "react-icons/lu";
 import { AutoVideo, Eyebrow, Reveal } from "@/components/landing/primitives";
 import { MEDIA, SERVICES, formatPrice } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
+import { ZButton } from "@/components/landing/button";
 
 const distribution = SERVICES.find((s) => s.id === "distribution")!;
 const generator = SERVICES.find((s) => s.id === "music-generator")!;
@@ -157,16 +157,13 @@ export function MusicSection() {
                     </li>
                   ))}
                 </ul>
-                <Link
+                <ZButton
                   href="/register"
-                  className={cn(
-                    "mt-8 flex items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold transition-transform hover:scale-[1.02]",
-                    featured ? "zl-grad-bg text-white" : "bg-(--zl-text) text-(--zl-bg)"
-                  )}
+                  variant={featured ? "primary" : "solid"}
+                  className="mt-8 w-full"
                 >
                   {distribution.cta}
-                  <LuArrowRight className="size-4" />
-                </Link>
+                </ZButton>
               </div>
             </Reveal>
           );
@@ -221,12 +218,9 @@ export function MusicSection() {
                   </div>
                 );
               })}
-              <Link
-                href="/register"
-                className="zl-grad-bg mt-2 flex items-center justify-center gap-2 rounded-full py-3.5 text-sm font-semibold text-white"
-              >
-                {generator.cta} <LuArrowRight className="size-4" />
-              </Link>
+              <ZButton href="/register" className="mt-2 w-full">
+                {generator.cta}
+              </ZButton>
             </div>
           </div>
         </div>
