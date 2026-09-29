@@ -482,16 +482,17 @@
   }
 }
 
-/* Hero: looping 3D carousel of slides curved around a ring */
+/* Hero: looping 3D slider. The viewer sits inside the ring, so slides wrap around
+   like a curved screen: the middle is furthest away, the sides come closer and angle inward. */
 .zl-orbit {
-  --w: 200px;
-  --h: 128px;
-  --r: 400px;
+  --w: 240px;
+  --h: 152px;
+  --r: 470px;
   position: absolute;
   inset-inline: 0;
   top: 8%;
   height: 42%;
-  perspective: 1500px;
+  perspective: 2200px;
   pointer-events: none;
   opacity: 0.5;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
@@ -502,16 +503,16 @@
 }
 @media (min-width: 640px) {
   .zl-orbit {
-    --w: 260px;
-    --h: 165px;
-    --r: 540px;
+    --w: 320px;
+    --h: 200px;
+    --r: 620px;
   }
 }
 @media (min-width: 1024px) {
   .zl-orbit {
-    --w: 330px;
-    --h: 205px;
-    --r: 680px;
+    --w: 400px;
+    --h: 250px;
+    --r: 780px;
   }
 }
 .zl-orbit-ring {
@@ -521,7 +522,6 @@
   width: 0;
   height: 0;
   transform-style: preserve-3d;
-  transform: translateZ(calc(var(--r) * -1));
 }
 .zl-orbit-spin {
   transform-style: preserve-3d;
@@ -534,7 +534,7 @@
   left: calc(var(--w) * -0.5);
   top: calc(var(--h) * -0.5);
   backface-visibility: hidden;
-  transform: rotateY(calc(var(--i) * 30deg)) translateZ(var(--r));
+  transform: rotateY(calc(var(--i) * 30deg)) translateZ(calc(var(--r) * -1));
 }
 @keyframes zl-orbit {
   to {
