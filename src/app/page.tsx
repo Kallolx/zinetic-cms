@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SiteFooter } from "@/components/site-footer";
 import { LandingNav } from "@/components/landing/nav";
+import { SiteEffects } from "@/components/landing/page-shell";
 import { Hero } from "@/components/landing/hero";
 import { Showcase } from "@/components/landing/showcase";
 import { Pillars } from "@/components/landing/pillars";
@@ -31,9 +32,10 @@ export default async function Home() {
 
   return (
     <div className={`zl ${displayFont.variable} ${serifFont.variable} relative min-h-screen overflow-x-clip`}>
+      <SiteEffects />
       <div aria-hidden className="zl-grain" />
       <LandingNav />
-      <main>
+      <main className="relative z-10">
         <Hero />
         <Showcase />
         <Pillars />

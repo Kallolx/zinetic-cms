@@ -6,6 +6,7 @@ import { LuArrowRightLeft, LuPlay } from "react-icons/lu";
 import { AutoVideo, Reveal, SectionHeading } from "@/components/landing/primitives";
 import { MEDIA, SERVICES, formatPrice, type Service } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
+import { serviceHref } from "@/lib/service-pages";
 import { ZButton, ZLink } from "@/components/landing/button";
 
 const byId = (id: string) => SERVICES.find((s) => s.id === id)!;
@@ -66,8 +67,8 @@ function Card({
         </div>
         <p className="mt-3 max-w-md text-(--zl-muted)">{service.blurb}</p>
         <div className="mt-8 flex-1">{children}</div>
-        <ZLink href="/register" className="mt-8">
-          {service.cta}
+        <ZLink href={serviceHref(service.id)} className="mt-8">
+          Learn more
         </ZLink>
       </div>
     </Reveal>
@@ -243,8 +244,8 @@ function DubbingCard() {
               </li>
             ))}
           </ul>
-          <ZButton href="/register" className="mt-8 w-fit">
-            {service.cta}
+          <ZButton href={serviceHref(service.id)} className="mt-8 w-fit">
+            Learn more
           </ZButton>
         </div>
       </div>

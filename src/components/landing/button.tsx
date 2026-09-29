@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LuArrowRight, LuArrowUpRight } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "solid" | "outline" | "light";
+type Variant = "primary" | "solid" | "outline" | "light" | "glass";
 type Size = "sm" | "md" | "lg";
 
 function SwapArrow({ kind }: { kind: "right" | "up-right" }) {

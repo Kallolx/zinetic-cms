@@ -11,10 +11,10 @@ const PILLARS: {
   media: { kind: "video" | "image"; src: string };
   tags?: string[];
 }[] = [
-  { id: "music", anchor: "#music", title: "Music", line: "Release it. Or make it from a prompt.", media: { kind: "video", src: MEDIA.guitar }, tags: ["Music Distribution", "Music Generator", "Unlimited releases", "Worldwide reach", "Major streaming platforms", "Analytics dashboard", "Monthly royalty reports", "Up to 90% royalties", "Prompt-to-music", "Vocals & instrumentals"] },
-  { id: "voice", anchor: "#voice", title: "AI Voice & Audio", line: "Voices, dubs, effects and clean sound.", media: { kind: "video", src: MEDIA.studioSinger } },
-  { id: "video", anchor: "#video", title: "AI Video", line: "Avatars, translation, lip sync and clips.", media: { kind: "video", src: MEDIA.greenPresenterB } },
-  { id: "creator", anchor: "#creator-tools", title: "Creator Tools", line: "Know who owns any YouTube channel.", media: { kind: "video", src: MEDIA.videoEditing }, tags: ["MCN / CMS Checking", "Network ownership", "Network contact email", "Instant results", "Credit bundles", "Credits never expire", "YouTube channel lookup"] },
+  { id: "music", anchor: "/services#music", title: "Music", line: "Release it. Or make it from a prompt.", media: { kind: "video", src: MEDIA.guitar }, tags: ["Music Distribution", "Music Generator", "Unlimited releases", "Worldwide reach", "Major streaming platforms", "Analytics dashboard", "Monthly royalty reports", "Up to 90% royalties", "Prompt-to-music", "Vocals & instrumentals"] },
+  { id: "voice", anchor: "/services#voice", title: "AI Voice & Audio", line: "Voices, dubs, effects and clean sound.", media: { kind: "video", src: MEDIA.studioSinger } },
+  { id: "video", anchor: "/services#video", title: "AI Video", line: "Avatars, translation, lip sync and clips.", media: { kind: "video", src: MEDIA.greenPresenterB } },
+  { id: "creator", anchor: "/services#creator-tools", title: "Creator Tools", line: "Know who owns any YouTube channel.", media: { kind: "video", src: MEDIA.videoEditing }, tags: ["MCN / CMS Checking", "Network ownership", "Network contact email", "Instant results", "Credit bundles", "Credits never expire", "YouTube channel lookup"] },
 ];
 
 export function Pillars() {

@@ -6,10 +6,11 @@ import { Reveal } from "@/components/landing/primitives";
 import { LuMapPin, LuMail, LuPhone, LuBadgeCheck } from "react-icons/lu";
 
 const SERVICES = [
-  { label: "Music Distribution", href: "/#music" },
-  { label: "AI Voice & Audio", href: "/#voice" },
-  { label: "AI Video", href: "/#video" },
-  { label: "Creator Tools", href: "/#creator-tools" },
+  { label: "Music", href: "/services#music" },
+  { label: "AI Voice & Audio", href: "/services#voice" },
+  { label: "AI Video", href: "/services#video" },
+  { label: "Creator Tools", href: "/services#creator-tools" },
+  { label: "All services", href: "/services" },
   { label: "Pricing", href: "/#pricing" },
 ];
 
@@ -47,7 +48,7 @@ function LinkColumn({ title, links }: { title: string; links: { label: string; h
 
 export function SiteFooter() {
   return (
-    <footer className="relative isolate overflow-hidden border-t border-(--zl-line) px-5 pt-20 pb-8 sm:pt-28">
+    <footer className="relative z-10 isolate overflow-hidden border-t border-(--zl-line) bg-(--zl-bg)/80 px-5 pt-20 pb-8 backdrop-blur-sm sm:pt-28">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -bottom-40 left-1/2 h-[420px] w-[80vw] -translate-x-1/2 rounded-full bg-(--zl-glow-a) blur-[120px]" />
         <div className="absolute -top-20 right-0 h-[280px] w-[40vw] rounded-full bg-(--zl-glow-c) blur-[120px]" />

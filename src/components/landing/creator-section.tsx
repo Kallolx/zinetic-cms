@@ -6,6 +6,7 @@ import { LuCheck, LuMail, LuNetwork, LuSearch } from "react-icons/lu";
 import { Eyebrow, Reveal } from "@/components/landing/primitives";
 import { SERVICES } from "@/lib/landing-services";
 import { CHECK_PRICE } from "@/lib/pricing-plans";
+import { serviceHref } from "@/lib/service-pages";
 import { ZButton } from "@/components/landing/button";
 
 const mcn = SERVICES.find((s) => s.id === "mcn-checker")!;
@@ -98,6 +99,9 @@ export function CreatorSection() {
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <ZButton href="/register" size="lg">
               {mcn.cta}
+            </ZButton>
+            <ZButton href={serviceHref("mcn-checker")} variant="outline" size="lg" arrow={false}>
+              Learn more
             </ZButton>
             <p className="text-sm text-(--zl-muted)">
               ${CHECK_PRICE} per check, down to less with credit bundles

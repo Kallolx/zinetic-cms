@@ -7,6 +7,7 @@ import { LuCheck, LuSparkles } from "react-icons/lu";
 import { AutoVideo, Eyebrow, Reveal } from "@/components/landing/primitives";
 import { MEDIA, SERVICES, formatPrice } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
+import { serviceHref } from "@/lib/service-pages";
 import { ZButton } from "@/components/landing/button";
 
 const distribution = SERVICES.find((s) => s.id === "distribution")!;
@@ -86,6 +87,12 @@ export function MusicSection() {
             Unlimited releases to the major streaming platforms, an analytics dashboard, and a
             royalty report every month. One yearly price, no per-release fees.
           </p>
+
+          <div className="mt-6">
+            <ZButton href={serviceHref("distribution")} variant="outline" arrow={false}>
+              Learn about distribution
+            </ZButton>
+          </div>
 
           <div className="mt-8 flex items-end gap-5">
             <p className="zl-display text-[clamp(3.2rem,6vw,4.8rem)] font-bold leading-none">
@@ -220,6 +227,9 @@ export function MusicSection() {
               })}
               <ZButton href="/register" className="mt-2 w-full">
                 {generator.cta}
+              </ZButton>
+              <ZButton href={serviceHref("music-generator")} variant="glass" arrow={false} className="w-full">
+                Learn more
               </ZButton>
             </div>
           </div>

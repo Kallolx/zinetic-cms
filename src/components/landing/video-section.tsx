@@ -7,6 +7,7 @@ import { LuScissors, LuSparkles, LuWandSparkles } from "react-icons/lu";
 import { AutoVideo, Reveal, SectionHeading } from "@/components/landing/primitives";
 import { MEDIA, SERVICES, formatPrice, type Service } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
+import { serviceHref } from "@/lib/service-pages";
 import { ZButton, ZLink } from "@/components/landing/button";
 
 const byId = (id: string) => SERVICES.find((s) => s.id === id)!;
@@ -34,7 +35,7 @@ function CardHead({ service }: { service: Service }) {
 function Cta({ service }: { service: Service }) {
   return (
     <div className="mt-auto pt-6">
-      <ZLink href="/register">{service.cta}</ZLink>
+      <ZLink href={serviceHref(service.id)}>Learn more</ZLink>
     </div>
   );
 }
@@ -93,8 +94,8 @@ function AvatarStudio() {
             </div>
           </div>
           <div className="mt-auto pt-6">
-            <ZButton href="/register" arrow={false} icon={<LuWandSparkles className="size-4" />}>
-              {s.cta}
+            <ZButton href={serviceHref(s.id)} arrow={false} icon={<LuWandSparkles className="size-4" />}>
+              Learn more
             </ZButton>
           </div>
         </div>
