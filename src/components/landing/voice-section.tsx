@@ -56,9 +56,9 @@ function Card({
   delay?: number;
 }) {
   return (
-    <Reveal delay={delay} className={className}>
-      <div className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-(--zl-line) bg-(--zl-surface) p-7 transition-colors hover:border-(--zl-text)/20">
-        <div className="flex items-start justify-between gap-4">
+    <Reveal delay={delay} className={cn("min-w-0", className)}>
+      <div className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-(--zl-line) bg-(--zl-surface) p-5 transition-colors hover:border-(--zl-text)/20 sm:p-7">
+        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
           <h3 className="zl-display text-2xl font-semibold sm:text-[1.7rem]">{service.name}</h3>
           <span className="shrink-0 rounded-full bg-(--zl-surface-2) px-2.5 py-1 text-xs font-medium text-(--zl-muted)">
             {fromPrice(service)}
@@ -188,7 +188,7 @@ function Dubbing() {
   }, []);
   return (
     <div className="relative aspect-[16/9] overflow-hidden rounded-2xl">
-      <AutoVideo src={MEDIA.womanTalking} />
+      <AutoVideo src={MEDIA.greenPresenterA} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
       <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
         {DUB_LINES.map((d, idx) => (
@@ -224,7 +224,7 @@ function Dubbing() {
 function DubbingCard() {
   const service = byId("dubbing");
   return (
-    <Reveal className="lg:col-span-3">
+    <Reveal className="min-w-0 lg:col-span-3">
       <div className="group grid overflow-hidden rounded-[28px] border border-(--zl-line) bg-(--zl-surface) transition-colors hover:border-(--zl-text)/20 lg:grid-cols-[1.35fr_1fr]">
         <div className="p-4 sm:p-6 lg:p-7">
           <Dubbing />
@@ -269,7 +269,7 @@ export function VoiceSection() {
         sub="Generate natural speech, re-voice recordings, design sound effects, transcribe, clean and dub. Six tools, one account."
       />
 
-      <div className="mx-auto mt-16 grid max-w-7xl gap-5 lg:grid-cols-3">
+      <div className="mx-auto mt-16 grid max-w-7xl grid-cols-1 gap-5 lg:grid-cols-3">
         <Card service={byId("voice-generator")} className="lg:col-span-2">
           <VoiceOrbs />
         </Card>

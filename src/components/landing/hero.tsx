@@ -91,9 +91,9 @@ type Card = {
 };
 
 const CARDS: Card[] = [
-  { media: { kind: "video", src: MEDIA.neonSinger }, label: "AI Music", className: "left-[13%] top-[20%] h-[190px] w-[128px]", rotate: -8, speed: -90, delay: 0.1 },
+  { media: { kind: "video", src: MEDIA.neonShades }, label: "AI Music", className: "left-[13%] top-[20%] h-[190px] w-[128px]", rotate: -8, speed: -90, delay: 0.1 },
   { media: { kind: "image", src: MEDIA.amberVinyl }, label: "Distribution", className: "left-[10%] top-[58%] h-[120px] w-[120px]", rotate: 6, speed: -50, delay: 0.25 },
-  { media: { kind: "video", src: MEDIA.womanTalking }, label: "AI Avatar", className: "left-[7%] top-[78%] h-[92px] w-[138px] hidden xl:block", rotate: -4, speed: -140, delay: 0.4 },
+  { media: { kind: "video", src: MEDIA.speakerWoman }, label: "AI Avatar", className: "left-[7%] top-[78%] h-[92px] w-[138px] hidden xl:block", rotate: -4, speed: -140, delay: 0.4 },
   { media: { kind: "video", src: MEDIA.headphonesCloseUp }, label: "AI Lip Sync", className: "right-[13%] top-[18%] h-[195px] w-[130px]", rotate: 8, speed: -100, delay: 0.15 },
   { media: { kind: "image", src: MEDIA.micRedCurtain }, label: "Voice Changer", className: "right-[10%] top-[56%] h-[130px] w-[110px]", rotate: -7, speed: -55, delay: 0.3 },
   { media: { kind: "video", src: MEDIA.djDeck }, label: "Sound Effects", className: "right-[7%] top-[79%] h-[92px] w-[138px] hidden xl:block", rotate: 5, speed: -130, delay: 0.45 },

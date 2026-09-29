@@ -95,7 +95,7 @@ export function LandingNav() {
                   Log in
                 </ZButton>
                 <ZButton href="/register" className="w-full" onClick={() => setOpen(false)}>
-                  Start creating
+                  Start Now
                 </ZButton>
                 <a
                   href="mailto:info@zineticmusic.com"

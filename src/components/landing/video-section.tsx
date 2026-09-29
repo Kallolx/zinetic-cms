@@ -20,7 +20,7 @@ function fromPrice(s: Service) {
 function CardHead({ service }: { service: Service }) {
   return (
     <>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <h3 className="zl-display text-2xl font-semibold sm:text-[1.7rem]">{service.name}</h3>
         <span className="shrink-0 rounded-full bg-(--zl-surface-2) px-2.5 py-1 text-xs font-medium text-(--zl-muted)">
           {fromPrice(service)}
@@ -51,12 +51,12 @@ function FeatureChips({ items }: { items: string[] }) {
   );
 }
 
-const STAGE = "relative mt-6 h-[260px] overflow-hidden rounded-2xl";
+const STAGE = "relative mt-6 min-h-[240px] overflow-hidden rounded-2xl sm:h-[260px]";
 
 function Shell({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   return (
-    <Reveal delay={delay} className={className}>
-      <div className="group flex h-full flex-col rounded-[28px] border border-(--zl-line) bg-(--zl-surface) p-7 transition-colors hover:border-(--zl-text)/20">
+    <Reveal delay={delay} className={cn("min-w-0", className)}>
+      <div className="group flex h-full flex-col rounded-[28px] border border-(--zl-line) bg-(--zl-surface) p-5 sm:p-7 transition-colors hover:border-(--zl-text)/20">
         {children}
       </div>
     </Reveal>
@@ -67,13 +67,13 @@ function AvatarStudio() {
   const s = byId("avatar-video");
   const avatars = [MEDIA.portraitWoman, MEDIA.bearded, MEDIA.pinkNeonPortrait, MEDIA.portraitCloseUp];
   return (
-    <Reveal className="lg:col-span-3">
+    <Reveal className="min-w-0 md:col-span-2 lg:col-span-3">
       <div className="group grid overflow-hidden rounded-[32px] border border-(--zl-line) bg-(--zl-surface) lg:grid-cols-[1fr_1.5fr]">
         <div className="flex flex-col p-7 sm:p-10">
           <CardHead service={s} />
           <div className="mt-8 rounded-2xl border border-(--zl-line) bg-(--zl-bg) p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--zl-muted)">Script</p>
-            <p className="mt-2 leading-relaxed">
+            <p className="mt-2 text-sm leading-relaxed sm:text-base">
               &ldquo;Hi, I&apos;m Maya. This month we&apos;re launching three new plans, and I&apos;ll walk you
               through each one in under a minute.&rdquo;
             </p>
@@ -98,8 +98,8 @@ function AvatarStudio() {
             </ZButton>
           </div>
         </div>
-        <div className="relative min-h-[320px] lg:min-h-[520px]">
-          <AutoVideo src={MEDIA.womanTalking} />
+        <div className="relative order-first aspect-video lg:order-none lg:aspect-auto lg:min-h-[520px]">
+          <AutoVideo src={MEDIA.presenterWoman} />
           <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-(--zl-surface)/30" />
           <div className="absolute right-5 bottom-5 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
             <span className="size-2 animate-pulse rounded-full bg-[#ff3d86]" /> 1080p · Rendering from script
@@ -112,7 +112,7 @@ function AvatarStudio() {
 
 function PortraitVideo({ src, chip, caption }: { src: string; chip: string; caption?: string }) {
   return (
-    <div className="relative mt-6 aspect-[4/5] overflow-hidden rounded-2xl">
+    <div className="relative mt-6 aspect-[4/3] overflow-hidden rounded-2xl sm:aspect-[4/5]">
       <AutoVideo src={src} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
       <span className="absolute top-3 left-3 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-black">
@@ -130,13 +130,13 @@ function PortraitVideo({ src, chip, caption }: { src: string; chip: string; capt
 function ShortClips() {
   const s = byId("short-clips");
   const clips = [
-    { src: MEDIA.concertLights, len: "0:32" },
-    { src: MEDIA.djPurple, len: "0:45" },
-    { src: MEDIA.neonMaleSinger, len: "0:28" },
+    { src: MEDIA.neonDancer, len: "0:32" },
+    { src: MEDIA.drummer, len: "0:45" },
+    { src: MEDIA.bandStage, len: "0:28" },
   ];
   return (
-    <Reveal className="lg:col-span-3">
-      <div className="group grid gap-10 rounded-[32px] border border-(--zl-line) bg-(--zl-surface) p-7 sm:p-10 lg:grid-cols-[1fr_1.4fr] lg:items-center">
+    <Reveal className="min-w-0 md:col-span-2 lg:col-span-3">
+      <div className="group grid gap-8 rounded-[32px] border border-(--zl-line) bg-(--zl-surface) p-5 sm:p-10 lg:grid-cols-[1fr_1.4fr] lg:items-center">
         <div>
           <CardHead service={s} />
           <div className="mt-8">
@@ -324,7 +324,7 @@ export function VideoSection() {
         sub="Avatars that present your script, translations in the speaker's own voice, lips that match the new audio, and Shorts cut from your long videos."
       />
 
-      <div className="mx-auto mt-16 grid max-w-7xl gap-5 lg:grid-cols-3">
+      <div className="mx-auto mt-16 grid max-w-7xl grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         <AvatarStudio />
 
         <Shell>
@@ -339,7 +339,7 @@ export function VideoSection() {
         </Shell>
         <Shell delay={0.16}>
           <CardHead service={lipSync} />
-          <PortraitVideo src={MEDIA.neonSinger} chip="New vocal track" />
+          <PortraitVideo src={MEDIA.studioSinger2} chip="New vocal track" />
           <Cta service={lipSync} />
         </Shell>
 

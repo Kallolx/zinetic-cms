@@ -212,6 +212,10 @@
   animation: zl-marquee var(--zl-marquee-duration, 40s) linear infinite;
 }
 
+.zl-marquee-reverse {
+  animation-direction: reverse;
+}
+
 .zl-marquee-paused:hover .zl-marquee {
   animation-play-state: paused;
 }
