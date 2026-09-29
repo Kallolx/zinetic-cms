@@ -76,11 +76,8 @@ export function LandingNav() {
                     initial={{ opacity: 0, x: -18 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.08 + i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                    className="group flex items-baseline gap-4 border-b border-(--zl-line) py-4"
+                    className="group flex items-center gap-4 border-b border-(--zl-line) py-4"
                   >
-                    <span className="w-6 text-xs font-semibold tabular-nums text-(--zl-muted)">
-                      0{i + 1}
-                    </span>
                     <span className="zl-display flex-1 text-[1.7rem] font-semibold transition-transform duration-500 group-hover:translate-x-1">
                       {l.label}
                     </span>
