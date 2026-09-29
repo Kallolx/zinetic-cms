@@ -33,11 +33,25 @@ function CardHead({ service }: { service: Service }) {
 
 function Cta({ service }: { service: Service }) {
   return (
-    <ZLink href="/register" className="mt-6">
-      {service.cta}
-    </ZLink>
+    <div className="mt-auto pt-6">
+      <ZLink href="/register">{service.cta}</ZLink>
+    </div>
   );
 }
+
+function FeatureChips({ items }: { items: string[] }) {
+  return (
+    <ul className="mt-5 flex flex-wrap gap-1.5">
+      {items.map((f) => (
+        <li key={f} className="rounded-full border border-(--zl-line) px-2.5 py-1 text-xs text-(--zl-muted)">
+          {f}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const STAGE = "relative mt-6 h-[260px] overflow-hidden rounded-2xl";
 
 function Shell({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   return (
@@ -187,55 +201,102 @@ const FILLER = [
 
 function FillerDemo() {
   return (
-    <div className="mt-6 rounded-2xl bg-(--zl-surface-2) p-5 text-lg leading-loose">
-      {FILLER.map((t, i) => (
-        <span key={i} className="relative mr-1.5 inline-block">
-          <span className={t.f ? "text-(--zl-muted)" : ""}>{t.w}</span>
-          {t.f && (
-            <motion.span
-              className="absolute top-1/2 left-0 h-[2px] bg-[#ff3d86]"
-              initial={{ width: 0 }}
-              whileInView={{ width: "100%" }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5 + i * 0.12, duration: 0.3 }}
-            />
-          )}
-        </span>
-      ))}
-      <p className="mt-3 text-xs font-medium text-(--zl-muted)">4 filler words and 2 long pauses removed</p>
+    <div className={`${STAGE} flex flex-col justify-between bg-(--zl-surface-2) p-5`}>
+      <p className="text-[1.05rem] leading-loose">
+        {FILLER.map((t, i) => (
+          <span key={i} className="relative mr-1.5 inline-block">
+            <span className={t.f ? "text-(--zl-muted)" : ""}>{t.w}</span>
+            {t.f && (
+              <motion.span
+                className="absolute top-1/2 left-0 h-[2px] bg-[#ff3d86]"
+                initial={{ width: 0 }}
+                whileInView={{ width: "100%" }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5 + i * 0.12, duration: 0.3 }}
+              />
+            )}
+          </span>
+        ))}
+      </p>
+      <div>
+        <div className="flex h-9 items-end gap-[3px]" aria-hidden>
+          {Array.from({ length: 44 }).map((_, i) => {
+            const pause = i % 11 === 7 || i % 11 === 8;
+            return (
+              <motion.span
+                key={i}
+                className="flex-1 rounded-full bg-(--zl-muted)/50"
+                initial={{ height: pause ? "18%" : `${35 + ((i * 29) % 65)}%` }}
+                whileInView={{ height: pause ? "4%" : `${35 + ((i * 29) % 65)}%` }}
+                viewport={{ once: true }}
+                transition={{ delay: 1.2 + i * 0.02, duration: 0.6 }}
+              />
+            );
+          })}
+        </div>
+        <p className="mt-3 text-xs font-medium text-(--zl-muted)">4 filler words and 2 long pauses removed</p>
+      </div>
     </div>
   );
 }
 
 function AvatarCreatorDemo() {
   return (
-    <div className="relative mt-6 aspect-[4/5] overflow-hidden rounded-2xl">
-      <Image src={MEDIA.portraitWoman} alt="" fill sizes="400px" className="object-cover" />
+    <div className={STAGE}>
+      <Image src={MEDIA.portraitWoman} alt="" fill sizes="420px" className="object-cover object-top" />
       <motion.div
-        className="absolute inset-x-0 h-24 bg-gradient-to-b from-transparent via-[#ff3d86]/40 to-transparent"
-        animate={{ top: ["-20%", "100%"] }}
+        className="absolute inset-x-0 h-20 bg-gradient-to-b from-transparent via-[#ff3d86]/40 to-transparent"
+        animate={{ top: ["-25%", "100%"] }}
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
       />
-      <span className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-        <LuSparkles className="size-3.5" /> Building your avatar
-      </span>
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+        <span className="flex w-fit items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
+          <LuSparkles className="size-3.5" /> Building your avatar
+        </span>
+      </div>
+      <div className="absolute top-3 left-3 flex gap-1.5">
+        {["Photo avatar", "Video avatar"].map((t, i) => (
+          <span
+            key={t}
+            className={cn(
+              "rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur-md",
+              i === 0 ? "bg-white text-black" : "bg-black/45 text-white/80"
+            )}
+          >
+            {t}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
 function PromptVideoDemo() {
   return (
-    <div className="mt-6 flex flex-col gap-3">
-      <div className="rounded-2xl bg-(--zl-surface-2) px-4 py-3 text-sm">
+    <div className={STAGE}>
+      <Image src={MEDIA.cameraLights} alt="" fill sizes="420px" className="object-cover" />
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        animate={{ x: ["-100%", "100%"] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
+      />
+      <div className="absolute inset-x-3 top-3 rounded-xl bg-black/55 px-3.5 py-2.5 text-sm text-white backdrop-blur-md">
         A camera operator on a neon-lit set, slow push-in, cinematic
       </div>
-      <div className="relative aspect-video overflow-hidden rounded-2xl">
-        <Image src={MEDIA.cameraLights} alt="" fill sizes="400px" className="object-cover" />
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
-          animate={{ x: ["-100%", "100%"] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }}
-        />
+      <div className="absolute inset-x-3 bottom-3 rounded-xl bg-black/55 px-3.5 py-2.5 backdrop-blur-md">
+        <div className="flex items-center justify-between text-xs font-medium text-white/80">
+          <span>Generating video</span>
+          <span>0:05</span>
+        </div>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/20">
+          <motion.div
+            className="zl-grad-bg h-full rounded-full"
+            initial={{ width: "10%" }}
+            whileInView={{ width: "100%" }}
+            viewport={{ once: true }}
+            transition={{ duration: 3.2, delay: 0.3, ease: "easeInOut" }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -287,16 +348,19 @@ export function VideoSection() {
         <Shell>
           <CardHead service={filler} />
           <FillerDemo />
+          <FeatureChips items={filler.features} />
           <Cta service={filler} />
         </Shell>
         <Shell delay={0.08}>
           <CardHead service={avatarCreator} />
           <AvatarCreatorDemo />
+          <FeatureChips items={avatarCreator.features} />
           <Cta service={avatarCreator} />
         </Shell>
         <Shell delay={0.16}>
           <CardHead service={promptVideo} />
           <PromptVideoDemo />
+          <FeatureChips items={promptVideo.features.slice(0, 4)} />
           <Cta service={promptVideo} />
         </Shell>
       </div>

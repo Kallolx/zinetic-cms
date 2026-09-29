@@ -6,7 +6,7 @@ import { LuArrowRightLeft, LuPlay } from "react-icons/lu";
 import { AutoVideo, Reveal, SectionHeading } from "@/components/landing/primitives";
 import { MEDIA, SERVICES, formatPrice, type Service } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
-import { ZLink } from "@/components/landing/button";
+import { ZButton, ZLink } from "@/components/landing/button";
 
 const byId = (id: string) => SERVICES.find((s) => s.id === id)!;
 
@@ -221,6 +221,37 @@ function Dubbing() {
   );
 }
 
+function DubbingCard() {
+  const service = byId("dubbing");
+  return (
+    <Reveal className="lg:col-span-3">
+      <div className="group grid overflow-hidden rounded-[28px] border border-(--zl-line) bg-(--zl-surface) transition-colors hover:border-(--zl-text)/20 lg:grid-cols-[1.35fr_1fr]">
+        <div className="p-4 sm:p-6 lg:p-7">
+          <Dubbing />
+        </div>
+        <div className="flex flex-col justify-center p-7 sm:p-10 lg:pl-4">
+          <span className="w-fit rounded-full bg-(--zl-surface-2) px-2.5 py-1 text-xs font-medium text-(--zl-muted)">
+            {fromPrice(service)}
+          </span>
+          <h3 className="zl-display mt-4 text-2xl font-semibold sm:text-3xl">{service.name}</h3>
+          <p className="mt-3 text-(--zl-muted)">{service.blurb}</p>
+          <ul className="mt-6 flex flex-col">
+            {service.features.map((f) => (
+              <li key={f} className="flex items-center gap-3 border-b border-(--zl-line) py-2.5 text-sm">
+                <span className="zl-grad-bg size-1.5 shrink-0 rounded-full" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <ZButton href="/register" className="mt-8 w-fit">
+            {service.cta}
+          </ZButton>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
 const SFX = ["Thunder rolling over hills", "Footsteps on wet gravel", "Sci-fi door, heavy hiss", "Crowd cheering, stadium"];
 
 export function VoiceSection() {
@@ -276,19 +307,7 @@ export function VoiceSection() {
           <Cleaner />
         </Card>
 
-        <Card service={byId("dubbing")} className="lg:col-span-3">
-          <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-center">
-            <Dubbing />
-            <ul className="flex flex-col gap-3">
-              {byId("dubbing").features.map((f) => (
-                <li key={f} className="flex items-center gap-3 border-b border-(--zl-line) pb-3 text-lg">
-                  <span className="zl-grad-bg size-1.5 rounded-full" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Card>
+        <DubbingCard />
       </div>
     </section>
   );
