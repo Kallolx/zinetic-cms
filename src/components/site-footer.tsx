@@ -1,175 +1,161 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "@/components/logo";
-import { LuMapPin, LuMail, LuPhone } from "react-icons/lu";
-import {
-  FaFacebookF,
-  FaWhatsapp,
-  FaLinkedinIn,
-  FaYoutube,
-  FaInstagram,
-  FaXTwitter,
-  FaSoundcloud,
-  FaSpotify,
-  FaTiktok,
-  FaStar,
-} from "react-icons/fa6";
+import { ZButton } from "@/components/landing/button";
+import { Reveal } from "@/components/landing/primitives";
+import { LuMapPin, LuMail, LuPhone, LuBadgeCheck } from "react-icons/lu";
+
+const SERVICES = [
+  { label: "Music Distribution", href: "/#music" },
+  { label: "AI Voice & Audio", href: "/#voice" },
+  { label: "AI Video", href: "/#video" },
+  { label: "Creator Tools", href: "/#creator-tools" },
+  { label: "Pricing", href: "/#pricing" },
+];
+
+const COMPANY = [
+  { label: "About Us", href: "/about" },
+  { label: "Contact Us", href: "/contact" },
+];
+
+const LEGAL = [
+  { label: "Terms & Conditions", href: "/terms" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Return & Refund Policy", href: "/refund-policy" },
+];
+
+function LinkColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
+  return (
+    <div>
+      <h4 className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-(--zl-muted)">{title}</h4>
+      <ul className="mt-5 flex flex-col gap-3">
+        {links.map((l) => (
+          <li key={l.href}>
+            <Link
+              href={l.href}
+              className="group inline-flex items-center gap-2 text-sm text-(--zl-text)/85 transition-colors hover:text-(--zl-text)"
+            >
+              <span className="zl-grad-bg h-px w-0 transition-all duration-300 group-hover:w-3" />
+              {l.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export function SiteFooter() {
   return (
-    <footer className="relative z-10 border-t border-neutral-800 bg-[#080808] text-white pt-16 pb-8 px-6">
+    <footer className="relative isolate overflow-hidden border-t border-(--zl-line) px-5 pt-20 pb-8 sm:pt-28">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -bottom-40 left-1/2 h-[420px] w-[80vw] -translate-x-1/2 rounded-full bg-(--zl-glow-a) blur-[120px]" />
+        <div className="absolute -top-20 right-0 h-[280px] w-[40vw] rounded-full bg-(--zl-glow-c) blur-[120px]" />
+      </div>
+
       <div className="mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-          {/* Column 1: Brand Info (3 cols) */}
-          <div className="space-y-6 lg:col-span-3">
-            <Logo size={36} />
-            <p className="text-sm leading-relaxed text-neutral-400 max-w-sm">
-              YouTube MCN Checker &amp; Copyright Management portal built for creators, record labels, and digital rights managers.
+        <Reveal className="flex flex-col items-start justify-between gap-8 border-b border-(--zl-line) pb-14 lg:flex-row lg:items-end">
+          <h2 className="zl-display max-w-3xl text-[clamp(2.2rem,5vw,4.2rem)] font-semibold">
+            Let&apos;s make something <span className="zl-serif zl-grad-text">people hear.</span>
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <ZButton href="/register" size="lg">
+              Start now
+            </ZButton>
+            <ZButton href="/contact" variant="outline" size="lg" arrow={false}>
+              Contact us
+            </ZButton>
+          </div>
+        </Reveal>
+
+        <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-12">
+          <div className="sm:col-span-2 lg:col-span-4">
+            <Logo size={38} />
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-(--zl-muted)">
+              Music distribution, AI voice and AI video, and YouTube network checks, from one
+              Bangladesh-based studio for artists, labels and creators.
             </p>
-            <div className="flex items-center gap-3">
-              <a href="#" className="flex size-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white">
-                <FaFacebookF className="size-4" />
-              </a>
-              <a href="#" className="flex size-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white">
-                <FaWhatsapp className="size-4" />
-              </a>
-              <a href="#" className="flex size-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white">
-                <FaLinkedinIn className="size-4" />
-              </a>
-              <a href="#" className="flex size-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white">
-                <FaYoutube className="size-4" />
-              </a>
-            </div>
           </div>
 
-          {/* Column 2: Legal (2 cols) */}
           <div className="lg:col-span-2">
-            <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-5">LEGAL</h4>
-            <ul className="space-y-3 text-sm text-neutral-400">
-              <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link></li>
-              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/refund-policy" className="hover:text-white transition-colors">Refund Policy</Link></li>
-            </ul>
+            <LinkColumn title="Services" links={SERVICES} />
+          </div>
+          <div className="lg:col-span-2">
+            <LinkColumn title="Company" links={COMPANY} />
+            <div className="mt-10">
+              <LinkColumn title="Legal" links={LEGAL} />
+            </div>
           </div>
 
-          {/* Column 3: United Kingdom (3 cols) */}
-          <div className="lg:col-span-3">
-            <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-5 flex items-center gap-2">
-              <span>🇬🇧</span> UNITED KINGDOM
+          <div className="sm:col-span-2 lg:col-span-4">
+            <h4 className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-(--zl-muted)">
+              Registered office, Bangladesh
             </h4>
-            <ul className="space-y-3.5 text-sm text-neutral-400">
+            <ul className="mt-5 flex flex-col gap-3.5 text-sm">
               <li className="flex items-start gap-3">
-                <LuMapPin className="size-4 mt-0.5 shrink-0 text-neutral-500" />
-                <span>71-75 Shelton Street, Covent Garden, London, WC2H 9JQ</span>
+                <LuMapPin className="mt-0.5 size-4 shrink-0 text-[#ff3d86]" />
+                <span className="text-(--zl-text)/85">258/B, Batar Goli, Boro Moghbazar, Ramna, Dhaka 1217</span>
               </li>
               <li className="flex items-center gap-3">
-                <LuPhone className="size-4 shrink-0 text-neutral-500" />
-                <span>+44 7307 601 744</span>
+                <LuPhone className="size-4 shrink-0 text-[#ff3d86]" />
+                <a href="tel:+8809696797267" className="text-(--zl-text)/85 hover:text-(--zl-text)">
+                  +880 9696 797 267
+                </a>
               </li>
               <li className="flex items-center gap-3">
-                <LuMail className="size-4 shrink-0 text-neutral-500" />
-                <a href="mailto:contact@zineticmusic.com" className="hover:text-white transition-colors">contact@zineticmusic.com</a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Bangladesh (4 cols) */}
-          <div className="lg:col-span-4">
-            <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-5 flex items-center gap-2">
-              <span>🇧🇩</span> BANGLADESH
-            </h4>
-            <ul className="space-y-3.5 text-sm text-neutral-400">
-              <li className="flex items-start gap-3">
-                <LuMapPin className="size-4 mt-0.5 shrink-0 text-neutral-500" />
-                <span>258/B, Batar Goli, Boro Moghbazar, Ramna, Dhaka 1217</span>
+                <LuMail className="size-4 shrink-0 text-[#ff3d86]" />
+                <a href="mailto:info@zineticmusic.com" className="text-(--zl-text)/85 hover:text-(--zl-text)">
+                  info@zineticmusic.com
+                </a>
               </li>
               <li className="flex items-center gap-3">
-                <LuPhone className="size-4 shrink-0 text-neutral-500" />
-                <span>+880 9696 797 267</span>
+                <LuBadgeCheck className="size-4 shrink-0 text-[#ff3d86]" />
+                <span className="text-(--zl-muted)">Trade License No.: TRAD/DNCC/000393/2024</span>
               </li>
-              <li className="flex items-center gap-3">
-                <LuMail className="size-4 shrink-0 text-neutral-500" />
-                <a href="mailto:info@zineticmusic.com" className="hover:text-white transition-colors">info@zineticmusic.com</a>
-              </li>
-              <li className="text-neutral-500">Trade License No.: TRAD/DNCC/000393/2024</li>
             </ul>
           </div>
         </div>
 
-        {/* Payment methods & Certifications */}
-        <div className="mt-12 border-t border-neutral-900 pt-8">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-end">
-            <div className="lg:col-span-7 flex flex-col justify-center">
-              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-4">
-                WE ACCEPT
-              </h4>
-              <div className="overflow-hidden rounded-lg bg-white p-2 border border-neutral-800 flex h-20 w-full items-center justify-center">
-                <Image
-                  src="/SSLCommerz-Pay-With-logo-All-Size.webp"
-                  alt="Payment Methods Accepted"
-                  width={1200}
-                  height={150}
-                  className="max-h-full max-w-full w-auto h-auto object-contain mx-auto my-auto"
-                />
-              </div>
+        <div className="grid gap-6 border-t border-(--zl-line) pt-10 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <h4 className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-(--zl-muted)">We accept</h4>
+            <div className="mt-4 flex h-20 items-center justify-center overflow-hidden rounded-2xl border border-(--zl-line) bg-white p-2">
+              <Image
+                src="/SSLCommerz-Pay-With-logo-All-Size.webp"
+                alt="Payment methods accepted through SSLCommerz"
+                width={1200}
+                height={150}
+                className="mx-auto h-auto max-h-full w-auto max-w-full object-contain"
+              />
             </div>
-
-            <div className="lg:col-span-5 flex flex-col justify-center">
-              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-white mb-4">
-                GOVT. CERTIFIED SHOP
-              </h4>
-              <div className="overflow-hidden rounded-lg bg-white p-2 border border-neutral-800 flex h-20 w-full items-center justify-center">
-                <Image
-                  src="/govt-certified-banner.jpg"
-                  alt="Government Certified Shop DBID Trust Badge"
-                  width={1200}
-                  height={200}
-                  className="max-h-full max-w-full w-auto h-auto object-contain mx-auto my-auto"
-                />
-              </div>
+          </div>
+          <div className="lg:col-span-5">
+            <h4 className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-(--zl-muted)">
+              Govt. certified shop
+            </h4>
+            <div className="mt-4 flex h-20 items-center justify-center overflow-hidden rounded-2xl border border-(--zl-line) bg-white p-2">
+              <Image
+                src="/govt-certified-banner.jpg"
+                alt="Government Certified Shop trust badge, DNCC Trade License TRAD/DNCC/000393/2024"
+                width={1200}
+                height={200}
+                className="mx-auto h-auto max-h-full w-auto max-w-full object-contain"
+              />
             </div>
           </div>
         </div>
 
-        {/* Bottom Row Bar */}
-        <div className="mt-8 border-t border-neutral-900 pt-8 flex flex-col lg:flex-row items-center justify-between gap-6 text-xs text-neutral-500">
-          <div>
-            © Copyright 2026 | Zinetic Music Limited | All Right Reserved |{" "}
-            <Link href="/privacy" className="hover:text-neutral-300">Privacy Policy</Link> |{" "}
-            <Link href="/terms" className="hover:text-neutral-300">Terms and Conditions</Link> |{" "}
-            <Link href="/refund-policy" className="hover:text-neutral-300">Refund Policy</Link> |{" "}
-            <Link href="/about" className="hover:text-neutral-300">About Us</Link> |{" "}
-            <Link href="/contact" className="hover:text-neutral-300">Contact Us</Link>
-          </div>
-
-          <div className="flex items-center gap-6">
-            {/* Trustpilot Branding */}
-            <div className="flex items-center gap-1.5 font-bold text-white text-sm">
-              <FaStar className="size-4 text-[#00b67a] fill-[#00b67a]" />
-              <span>Trustpilot</span>
-            </div>
-
-            {/* Small Circular Social Icons */}
-            <div className="flex items-center gap-2">
-              <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                <FaInstagram className="size-3.5" />
-              </a>
-              <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                <FaXTwitter className="size-3.5" />
-              </a>
-              <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                <FaSoundcloud className="size-3.5" />
-              </a>
-              <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                <FaSpotify className="size-3.5" />
-              </a>
-              <a href="#" className="flex size-7 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors">
-                <FaTiktok className="size-3.5" />
-              </a>
-            </div>
-          </div>
+        <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-(--zl-line) pt-6 text-xs text-(--zl-muted) md:flex-row md:items-center">
+          <p>&copy; {new Date().getFullYear()} Zinetic Music Limited. All rights reserved.</p>
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            {[...LEGAL, ...COMPANY].map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="transition-colors hover:text-(--zl-text)">
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </footer>

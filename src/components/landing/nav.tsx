@@ -19,7 +19,7 @@ export const LANDING_LINKS = [
   { label: "Pricing", href: "#pricing" },
 ];
 
-export function LandingNav() {
+export function LandingNav({ base = "" }: { base?: string }) {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
@@ -71,7 +71,7 @@ export function LandingNav() {
                 {LANDING_LINKS.map((l, i) => (
                   <motion.a
                     key={l.href}
-                    href={l.href}
+                    href={base + l.href}
                     onClick={() => setOpen(false)}
                     initial={{ opacity: 0, x: -18 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -106,7 +106,7 @@ export function LandingNav() {
               </div>
             </SheetContent>
           </Sheet>
-          <Link href="/" aria-label="Zinetic Music home">
+          <Link href="/" aria-label="Zinetic Music home" className="shrink-0">
             <Logo size={30} />
           </Link>
         </div>
@@ -115,7 +115,7 @@ export function LandingNav() {
           {LANDING_LINKS.map((l) => (
             <a
               key={l.href}
-              href={l.href}
+              href={base + l.href}
               className="rounded-full px-4 py-2 text-sm font-medium text-(--zl-muted) transition-colors hover:text-(--zl-text)"
             >
               {l.label}
@@ -130,8 +130,8 @@ export function LandingNav() {
               Log in
             </ZButton>
           </span>
-          <ZButton href="/register" size="sm" arrow="up-right" className="max-sm:px-3.5">
-            Start<span className="hidden sm:inline">&nbsp;creating</span>
+          <ZButton href="/register" size="sm" arrow="up-right">
+            Start now
           </ZButton>
         </div>
       </div>
