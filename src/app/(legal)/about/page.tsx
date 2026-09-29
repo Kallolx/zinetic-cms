@@ -172,7 +172,7 @@ export default function AboutPage() {
               return a result instantly.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <ZButton href="/register">Start now</ZButton>
+              <ZButton href="/client-login">Start now</ZButton>
               <ZButton href="/contact" variant="outline" arrow={false}>
                 Contact us
               </ZButton>

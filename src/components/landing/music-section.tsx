@@ -165,7 +165,7 @@ export function MusicSection() {
                   ))}
                 </ul>
                 <ZButton
-                  href="/register"
+                  href="/client-login"
                   variant={featured ? "primary" : "solid"}
                   className="mt-8 w-full"
                 >
@@ -225,7 +225,7 @@ export function MusicSection() {
                   </div>
                 );
               })}
-              <ZButton href="/register" className="mt-2 w-full">
+              <ZButton href="/client-login" className="mt-2 w-full">
                 {generator.cta}
               </ZButton>
               <ZButton href={serviceHref("music-generator")} variant="glass" arrow={false} className="w-full">

@@ -121,7 +121,7 @@ export function FinalCta() {
           <p className="mx-auto mt-6 max-w-xl text-lg text-white/75">
             One account for distribution, AI voice, AI video and creator tools.
           </p>
-          <ZButton href="/register" variant="light" size="lg" arrow="up-right" className="mt-10">
+          <ZButton href="/client-login" variant="light" size="lg" arrow="up-right" className="mt-10">
             Create your free account
           </ZButton>
         </div>

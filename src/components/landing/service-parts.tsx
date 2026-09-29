@@ -77,7 +77,7 @@ export function TierCards({ service }: { service: Service }) {
                 </ul>
               )}
               <div className="mt-auto pt-8">
-                <ZButton href="/register" variant={featured ? "primary" : "solid"} className="w-full">
+                <ZButton href="/client-login" variant={featured ? "primary" : "solid"} className="w-full">
                   {service.cta}
                 </ZButton>
               </div>

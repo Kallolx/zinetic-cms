@@ -56,7 +56,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
         sub={<span className="text-(--zl-text)/90">{page.tagline}</span>}
         meta={
           <div className="flex flex-wrap items-center gap-3">
-            <ZButton href="/register" size="lg">
+            <ZButton href="/client-login" size="lg">
               {service.cta}
             </ZButton>
             <ZButton href="#plans" variant="outline" size="lg" arrow={false}>

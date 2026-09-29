@@ -138,7 +138,7 @@ export function PricingSection() {
                     )}
                     <div className="mt-auto pt-8">
                       <ZButton
-                        href="/register"
+                        href="/client-login"
                         variant={featured ? "primary" : "solid"}
                         className="w-full"
                       >

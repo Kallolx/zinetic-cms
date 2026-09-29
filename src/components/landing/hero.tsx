@@ -180,7 +180,7 @@ export function Hero() {
                   );
                 })}
               </div>
-              <ZButton href="/register" size="sm">
+              <ZButton href="/client-login" size="sm">
                 Create
               </ZButton>
             </div>

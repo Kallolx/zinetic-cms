@@ -97,7 +97,7 @@ export function CreatorSection() {
             ))}
           </ul>
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <ZButton href="/register" size="lg">
+            <ZButton href="/client-login" size="lg">
               {mcn.cta}
             </ZButton>
             <ZButton href={serviceHref("mcn-checker")} variant="outline" size="lg" arrow={false}>

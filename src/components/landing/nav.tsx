@@ -212,10 +212,10 @@ export function LandingNav() {
               </nav>
 
               <div className="relative flex flex-col gap-3 border-t border-(--zl-line) px-6 py-5">
-                <ZButton href="/login" variant="outline" arrow={false} className="w-full" onClick={() => setSheetOpen(false)}>
+                <ZButton href="/client-login" variant="outline" arrow={false} className="w-full" onClick={() => setSheetOpen(false)}>
                   Log in
                 </ZButton>
-                <ZButton href="/register" className="w-full" onClick={() => setSheetOpen(false)}>
+                <ZButton href="/client-login" className="w-full" onClick={() => setSheetOpen(false)}>
                   Start now
                 </ZButton>
                 <a
@@ -255,11 +255,11 @@ export function LandingNav() {
 
         <div className="flex items-center gap-1.5 sm:gap-2">
           <span className="hidden sm:block">
-            <ZButton href="/login" variant="glass" size="sm" arrow={false}>
+            <ZButton href="/client-login" variant="glass" size="sm" arrow={false}>
               Log in
             </ZButton>
           </span>
-          <ZButton href="/register" size="sm" arrow="up-right">
+          <ZButton href="/client-login" size="sm" arrow="up-right">
             Start now
           </ZButton>
         </div>
