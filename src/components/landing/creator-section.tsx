@@ -80,10 +80,10 @@ export function CreatorSection() {
       <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2 lg:gap-20">
         <Reveal>
           <Eyebrow>Creator Tools</Eyebrow>
-          <h2 className="zl-display mt-5 text-[clamp(2.4rem,5.2vw,4.6rem)] font-semibold">
+          <h2 className="zl-display mt-5 text-[clamp(2rem,3.8vw,3.2rem)] font-semibold">
             Know who owns <span className="zl-serif zl-grad-text">any</span> YouTube channel.
           </h2>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-(--zl-muted)">
+          <p className="mt-5 max-w-xl text-base leading-relaxed sm:text-lg text-(--zl-muted)">
             Paste a channel link and see which MCN or CMS network it belongs to, with the network&apos;s
             contact email. Built for labels and rights managers who need to reach the right people
             fast.

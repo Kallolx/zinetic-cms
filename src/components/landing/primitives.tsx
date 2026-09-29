@@ -104,8 +104,8 @@ export function SectionHeading({
       )}
     >
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-      <h2 className="zl-display text-[clamp(2.4rem,6vw,5.25rem)] font-semibold">{title}</h2>
-      {sub && <p className="max-w-2xl text-lg leading-relaxed text-(--zl-muted) sm:text-xl">{sub}</p>}
+      <h2 className="zl-display text-[clamp(2rem,4.4vw,3.6rem)] font-semibold">{title}</h2>
+      {sub && <p className="max-w-2xl text-base leading-relaxed text-(--zl-muted) sm:text-lg">{sub}</p>}
     </Reveal>
   );
 }

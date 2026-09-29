@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { animate, motion, useInView, useReducedMotion } from "motion/react";
-import { LuArrowRight, LuCheck, LuDisc3, LuSparkles } from "react-icons/lu";
+import { LuArrowRight, LuCheck, LuSparkles } from "react-icons/lu";
 import { AutoVideo, Eyebrow, Reveal } from "@/components/landing/primitives";
 import { MEDIA, SERVICES, formatPrice } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
@@ -78,28 +78,36 @@ export function MusicSection() {
       <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2 lg:gap-20">
         <Reveal>
           <Eyebrow>Music Distribution</Eyebrow>
-          <h2 className="zl-display mt-5 text-[clamp(2.4rem,5.2vw,4.6rem)] font-semibold">
+          <h2 className="zl-display mt-5 text-[clamp(2rem,3.8vw,3.2rem)] font-semibold">
             Distribute your music worldwide &amp; keep up to{" "}
-            <span className="zl-grad-text">90%</span> of your royalties.
+            <span className="zl-serif zl-grad-text">90%</span> of your royalties.
           </h2>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-(--zl-muted)">
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-(--zl-muted) sm:text-lg">
             Unlimited releases to the major streaming platforms, an analytics dashboard, and a
             royalty report every month. One yearly price, no per-release fees.
           </p>
 
-          <div className="mt-10 flex items-end gap-6">
-            <p className="zl-display text-[clamp(5rem,12vw,9rem)] font-bold leading-none">
+          <div className="mt-8 flex items-end gap-5">
+            <p className="zl-display text-[clamp(3.2rem,6vw,4.8rem)] font-bold leading-none">
               <CountUp to={90} suffix="%" />
             </p>
-            <p className="mb-4 max-w-[12rem] text-sm leading-snug text-(--zl-muted)">
+            <p className="mb-2 max-w-[11rem] text-sm leading-snug text-(--zl-muted)">
               of every royalty stays yours on the Label plan
             </p>
           </div>
+        </Reveal>
 
-          <div className="mt-8 flex flex-col gap-3">
+        <Reveal delay={0.15} className="mx-auto flex w-full max-w-[380px] flex-col items-center gap-8">
+          <div
+            className="relative aspect-square w-[62%] overflow-hidden rounded-full border-[6px] border-(--zl-surface-2) shadow-2xl"
+            style={{ animation: "zl-spin 14s linear infinite" }}
+          >
+            <Image src={MEDIA.amberVinyl} alt="" fill sizes="240px" className="object-cover" />
+          </div>
+          <div className="flex w-full flex-col gap-3">
             {ROYALTY.map((r, i) => (
               <div key={r.plan} className="flex items-center gap-4">
-                <span className="w-14 text-sm font-medium">{r.plan}</span>
+                <span className="w-12 text-sm font-medium">{r.plan}</span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-(--zl-surface-2)">
                   <motion.div
                     className="zl-grad-bg h-full rounded-full"
@@ -112,39 +120,6 @@ export function MusicSection() {
                 <span className="w-10 text-right text-sm tabular-nums text-(--zl-muted)">{r.share}%</span>
               </div>
             ))}
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.15} className="relative mx-auto aspect-square w-full max-w-[560px]">
-          <div className="absolute inset-[6%] rotate-[-6deg] overflow-hidden rounded-[28px] shadow-[0_40px_100px_-40px_rgb(0_0_0/0.7)]">
-            <Image src={MEDIA.purpleStage} alt="" fill sizes="560px" className="object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-tr from-black/60 to-transparent" />
-          </div>
-          <div
-            className="absolute top-[18%] -right-[4%] size-[58%] overflow-hidden rounded-full border-[6px] border-(--zl-bg) shadow-2xl"
-            style={{ animation: "zl-spin 14s linear infinite" }}
-          >
-            <Image src={MEDIA.amberVinyl} alt="" fill sizes="340px" className="object-cover" />
-          </div>
-          <div className="absolute bottom-[4%] left-[2%] w-[68%] rounded-2xl border border-(--zl-line) bg-(--zl-surface)/85 p-4 shadow-2xl backdrop-blur-xl">
-            <div className="flex items-center gap-3">
-              <span className="zl-grad-bg flex size-11 items-center justify-center rounded-xl text-white">
-                <LuDisc3 className="size-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">Your next single</p>
-                <p className="truncate text-xs text-(--zl-muted)">Delivering to streaming platforms</p>
-              </div>
-            </div>
-            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-(--zl-surface-2)">
-              <motion.div
-                className="zl-grad-bg h-full rounded-full"
-                initial={{ width: "8%" }}
-                whileInView={{ width: "100%" }}
-                viewport={{ once: true }}
-                transition={{ duration: 3, delay: 0.4, ease: "easeInOut" }}
-              />
-            </div>
           </div>
         </Reveal>
       </div>
@@ -170,7 +145,7 @@ export function MusicSection() {
                 )}
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] opacity-70">{tier.name}</p>
                 <p className="mt-4 flex items-baseline gap-1">
-                  <span className="zl-display text-5xl font-bold">{amount}</span>
+                  <span className="zl-display text-4xl font-bold">{amount}</span>
                   <span className="text-sm opacity-60">{suffix}</span>
                 </p>
                 <p className="mt-2 font-medium">{tier.quota}</p>
@@ -209,10 +184,10 @@ export function MusicSection() {
               <p className="inline-flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-white/60">
                 <LuSparkles className="size-3.5" /> AI Music Generator
               </p>
-              <h3 className="zl-display mt-5 text-[clamp(2.2rem,4.6vw,4rem)] font-semibold">
+              <h3 className="zl-display mt-5 text-[clamp(1.9rem,3.6vw,3rem)] font-semibold">
                 Describe it. <span className="zl-serif">Hear it.</span>
               </h3>
-              <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/70">{generator.blurb}</p>
+              <p className="mt-4 max-w-lg text-base leading-relaxed text-white/70">{generator.blurb}</p>
               <div className="mt-8 flex flex-wrap gap-2">
                 {MUSIC_PROMPTS.map((p) => (
                   <span

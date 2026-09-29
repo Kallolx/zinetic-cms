@@ -9,11 +9,12 @@ const PILLARS: {
   title: string;
   line: string;
   media: { kind: "video" | "image"; src: string };
+  tags?: string[];
 }[] = [
-  { id: "music", anchor: "#music", title: "Music", line: "Release it. Or make it from a prompt.", media: { kind: "image", src: MEDIA.concertOrange } },
+  { id: "music", anchor: "#music", title: "Music", line: "Release it. Or make it from a prompt.", media: { kind: "image", src: MEDIA.concertOrange }, tags: ["Music Distribution", "Music Generator", "Unlimited releases", "Worldwide reach", "Major streaming platforms", "Analytics dashboard", "Monthly royalty reports", "Up to 90% royalties", "Prompt-to-music", "Vocals & instrumentals"] },
   { id: "voice", anchor: "#voice", title: "AI Voice & Audio", line: "Voices, dubs, effects and clean sound.", media: { kind: "video", src: MEDIA.studioVocalist } },
   { id: "video", anchor: "#video", title: "AI Video", line: "Avatars, translation, lip sync and clips.", media: { kind: "video", src: MEDIA.womanTalking } },
-  { id: "creator", anchor: "#creator-tools", title: "Creator Tools", line: "Know who owns any YouTube channel.", media: { kind: "image", src: MEDIA.editTimeline } },
+  { id: "creator", anchor: "#creator-tools", title: "Creator Tools", line: "Know who owns any YouTube channel.", media: { kind: "image", src: MEDIA.editTimeline }, tags: ["MCN / CMS Checking", "Network ownership", "Network contact email", "Instant results", "Credit bundles", "Credits never expire", "YouTube channel lookup"] },
 ];
 
 export function Pillars() {
@@ -25,7 +26,7 @@ export function Pillars() {
           <>
             Everything a creator needs.
             <br />
-            <span className="text-(--zl-muted)">Nothing they don&apos;t.</span>
+            <span className="zl-serif zl-grad-text">Nothing they don&apos;t.</span>
           </>
         }
       />
@@ -56,17 +57,17 @@ export function Pillars() {
                 </div>
                 <div className="flex flex-1 flex-col p-6">
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="zl-display text-3xl font-semibold">{p.title}</h3>
+                    <h3 className="zl-display text-2xl font-semibold">{p.title}</h3>
                     <LuArrowUpRight className="mt-1 size-5 shrink-0 text-(--zl-muted) transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-(--zl-text)" />
                   </div>
-                  <p className="mt-2 text-(--zl-muted)">{p.line}</p>
+                  <p className="mt-1.5 text-sm text-(--zl-muted)">{p.line}</p>
                   <ul className="mt-6 flex flex-wrap gap-1.5">
-                    {services.map((s) => (
+                    {(p.tags ?? services.map((s) => s.name.replace(/^AI /, ""))).map((t) => (
                       <li
-                        key={s.id}
+                        key={t}
                         className="rounded-full border border-(--zl-line) px-2.5 py-1 text-xs text-(--zl-muted)"
                       >
-                        {s.name.replace(/^AI /, "")}
+                        {t}
                       </li>
                     ))}
                   </ul>

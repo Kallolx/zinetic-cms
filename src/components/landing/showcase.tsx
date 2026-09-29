@@ -16,7 +16,7 @@ const ITEMS: { kind: "video" | "image"; src: string; service: string; detail: st
 
 function ShowcaseCard({ item }: { item: (typeof ITEMS)[number] }) {
   return (
-    <figure className="group relative h-[420px] w-[270px] shrink-0 overflow-hidden rounded-[26px] border border-(--zl-line) bg-(--zl-surface) sm:h-[480px] sm:w-[310px]">
+    <figure className="group relative h-[380px] w-[250px] shrink-0 overflow-hidden rounded-[24px] border border-(--zl-line) bg-(--zl-surface) sm:h-[420px] sm:w-[280px]">
       {item.kind === "video" ? (
         <AutoVideo src={item.src} className="transition-transform duration-700 group-hover:scale-105" />
       ) : (
@@ -32,9 +32,9 @@ function ShowcaseCard({ item }: { item: (typeof ITEMS)[number] }) {
       <span className="absolute top-4 left-4 flex size-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition-transform group-hover:scale-110">
         <LuPlay className="size-4 translate-x-[1px] fill-white" />
       </span>
-      <figcaption className="absolute inset-x-0 bottom-0 p-5 text-white">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/60">{item.service}</p>
-        <p className="zl-display mt-2 text-2xl font-semibold leading-tight">{item.detail}</p>
+      <figcaption className="absolute inset-x-0 bottom-0 p-4 text-white">
+        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-white/60">{item.service}</p>
+        <p className="mt-1.5 text-[0.95rem] font-medium leading-snug text-white/95">{item.detail}</p>
       </figcaption>
     </figure>
   );
