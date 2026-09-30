@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 const API = "https://api.heygen.com";
 const UPLOAD = "https://upload.heygen.com";
 
@@ -41,32 +43,63 @@ const post = (body: unknown): RequestInit => ({
 export type Avatar = { id: string; name: string; gender?: string; preview: string };
 export type HeyGenVoice = { id: string; name: string; language: string; gender?: string; preview?: string };
 
-export async function listAvatars(): Promise<Avatar[]> {
-  const r = await call<{
-    avatars: { avatar_id: string; avatar_name: string; gender?: string; preview_image_url: string }[];
-  }>("/v2/avatars");
-  if (!r.ok) return [];
-  return r.data.avatars.map((a) => ({ id: a.avatar_id, name: a.avatar_name, gender: a.gender, preview: a.preview_image_url }));
-}
+// The avatar, voice and language lists almost never change and are slow to fetch
+// (hundreds of entries), so they are cached for hours. The slimmed-down lists are
+// what gets cached, so they stay well under the cache size limit. A failed fetch
+// throws inside the cached function, which means failures are never cached.
+const CATALOG = { revalidate: 6 * 60 * 60, tags: ["heygen-catalog"] };
 
-export async function listVoices(): Promise<HeyGenVoice[]> {
-  const r = await call<{
-    voices: { voice_id: string; name: string; language: string; gender?: string; preview_audio?: string }[];
-  }>("/v2/voices");
-  if (!r.ok) return [];
-  return r.data.voices.map((v) => ({
-    id: v.voice_id,
-    name: v.name,
-    language: v.language,
-    gender: v.gender,
-    preview: v.preview_audio,
-  }));
-}
+const fetchAvatars = unstable_cache(
+  async (): Promise<Avatar[]> => {
+    const r = await call<{
+      avatars: { avatar_id: string; avatar_name: string; gender?: string; preview_image_url: string }[];
+    }>("/v2/avatars");
+    if (!r.ok) throw new Error(r.error);
+    return r.data.avatars.map((a) => ({ id: a.avatar_id, name: a.avatar_name, gender: a.gender, preview: a.preview_image_url }));
+  },
+  ["heygen-avatars"],
+  CATALOG
+);
 
-export async function listTranslateLanguages(): Promise<string[]> {
-  const r = await call<{ languages: string[] }>("/v2/video_translate/target_languages");
-  return r.ok ? r.data.languages : [];
-}
+const fetchVoices = unstable_cache(
+  async (): Promise<HeyGenVoice[]> => {
+    const r = await call<{
+      voices: { voice_id: string; name: string; language: string; gender?: string; preview_audio?: string }[];
+    }>("/v2/voices");
+    if (!r.ok) throw new Error(r.error);
+    return r.data.voices.map((v) => ({
+      id: v.voice_id,
+      name: v.name,
+      language: v.language,
+      gender: v.gender,
+      preview: v.preview_audio,
+    }));
+  },
+  ["heygen-voices"],
+  CATALOG
+);
+
+const fetchLanguages = unstable_cache(
+  async (): Promise<string[]> => {
+    const r = await call<{ languages: string[] }>("/v2/video_translate/target_languages");
+    if (!r.ok) throw new Error(r.error);
+    return r.data.languages;
+  },
+  ["heygen-languages"],
+  CATALOG
+);
+
+const safe = async <T,>(fn: () => Promise<T[]>): Promise<T[]> => {
+  try {
+    return await fn();
+  } catch {
+    return [];
+  }
+};
+
+export const listAvatars = () => safe(fetchAvatars);
+export const listVoices = () => safe(fetchVoices);
+export const listTranslateLanguages = () => safe(fetchLanguages);
 
 /** Uploads a file to HeyGen's asset store so it can be referenced by URL or key. */
 export async function uploadAsset(

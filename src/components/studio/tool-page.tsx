@@ -17,8 +17,11 @@ export async function ToolPage({
 }) {
   const tool = TOOLS.find((t) => t.id === toolId)!;
   const { user } = await getDashboardSession();
-  const engines = (await enabledEngines(toolId)).map(toPublic);
-  const rows = tool.kinds && user ? await recentGenerations(user.id, tool.kinds) : [];
+  const [engineList, rows] = await Promise.all([
+    enabledEngines(toolId),
+    tool.kinds && user ? recentGenerations(user.id, tool.kinds) : Promise.resolve([]),
+  ]);
+  const engines = engineList.map(toPublic);
 
   return (
     <ToolProvider toolId={toolId} engines={engines}>

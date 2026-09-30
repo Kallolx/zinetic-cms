@@ -287,7 +287,9 @@ export function VoicePicker({ items, value, onChange }: { items: PickerItem[]; v
   }
 
   const needle = q.trim().toLowerCase();
-  const shown = needle ? items.filter((i) => `${i.name} ${i.meta ?? ""}`.toLowerCase().includes(needle)) : items;
+  const matches = needle ? items.filter((i) => `${i.name} ${i.meta ?? ""}`.toLowerCase().includes(needle)) : items;
+  // thousands of rows would freeze the page, so only the first ones are drawn, search narrows the rest
+  const shown = matches.slice(0, 100);
 
   return (
     <div className="flex flex-col gap-2">
@@ -297,6 +299,7 @@ export function VoicePicker({ items, value, onChange }: { items: PickerItem[]; v
       </div>
       <ul className="max-h-60 divide-y overflow-y-auto rounded-lg border">
         {shown.length === 0 && <li className="px-3 py-6 text-center text-sm text-muted-foreground">No voices found.</li>}
+        {matches.length > shown.length && <li className="px-3 py-2 text-center text-xs text-muted-foreground">Showing {shown.length} of {matches.length}. Search to narrow it down.</li>}
         {shown.map((v) => {
           const active = v.id === value;
           return (

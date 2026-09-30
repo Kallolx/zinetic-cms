@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CHECK_PRICE } from "@/lib/pricing-plans";
 import type { CostUnit } from "@/lib/studio/engine-catalog";
@@ -29,11 +30,22 @@ export type PublicEngine = Pick<
 
 const cast = (r: Record<string, unknown>): Engine => ({ ...(r as unknown as Engine), credit_cost: Number(r.credit_cost) });
 
+// Engines change rarely and every tool page reads them, so they are cached for a
+// minute and cleared right away when an admin saves (see revalidateTag in the admin actions).
+export const ENGINES_TAG = "studio-engines";
+
+const loadEngines = unstable_cache(
+  async (): Promise<Engine[]> => {
+    const { data } = await createAdminClient().from("studio_engines").select("*").order("service").order("sort");
+    return (data ?? []).map(cast);
+  },
+  ["studio-engines"],
+  { revalidate: 60, tags: [ENGINES_TAG] }
+);
+
 export async function listEngines(service?: string): Promise<Engine[]> {
-  let q = createAdminClient().from("studio_engines").select("*").order("service").order("sort");
-  if (service) q = q.eq("service", service);
-  const { data } = await q;
-  return (data ?? []).map(cast);
+  const all = await loadEngines();
+  return service ? all.filter((e) => e.service === service) : all;
 }
 
 export async function enabledEngines(service: string): Promise<Engine[]> {

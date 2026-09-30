@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -280,6 +280,7 @@ export async function saveEngine(input: EngineInput) {
     : await db.from("studio_engines").insert(row);
   if (error) return { error: error.code === "23505" ? "This service already has an engine with that key." : error.message };
 
+  revalidateTag("studio-engines", { expire: 0 });
   revalidatePath("/admin/engines");
   revalidatePath("/studio", "layout");
   return { error: null };
@@ -289,6 +290,7 @@ export async function setEngineEnabled(id: string, enabled: boolean) {
   await requireAdmin();
   const { error } = await createAdminClient().from("studio_engines").update({ enabled, updated_at: new Date().toISOString() }).eq("id", id);
   if (error) return { error: error.message };
+  revalidateTag("studio-engines", { expire: 0 });
   revalidatePath("/admin/engines");
   revalidatePath("/studio", "layout");
   return { error: null };
@@ -298,6 +300,7 @@ export async function deleteEngine(id: string) {
   await requireAdmin();
   const { error } = await createAdminClient().from("studio_engines").delete().eq("id", id);
   if (error) return { error: error.message };
+  revalidateTag("studio-engines", { expire: 0 });
   revalidatePath("/admin/engines");
   revalidatePath("/studio", "layout");
   return { error: null };
