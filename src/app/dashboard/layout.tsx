@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
-import { getMyProducts } from "@/lib/products";
+import { getMyProducts } from "@/lib/products-server";
 import { NoAccess } from "@/components/no-access";
 import { AppShell, type NavItem } from "@/components/app-shell";
 import {

@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { saveFile } from "@/lib/studio/storage";
-import { getMyProducts } from "@/lib/products";
+import { getMyProducts } from "@/lib/products-server";
 import { textToSpeech } from "@/lib/studio/elevenlabs";
 
 export const runtime = "nodejs";

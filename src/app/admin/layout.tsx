@@ -1,16 +1,40 @@
 import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/supabase/session";
 import { AppShell, type NavItem } from "@/components/app-shell";
-import { LuGauge, LuUsers, LuUserCheck, LuWalletCards, LuHistory, LuLayoutDashboard, LuAudioLines } from "react-icons/lu";
+import {
+  LuGauge,
+  LuUsers,
+  LuShieldCheck,
+  LuAudioLines,
+  LuDisc3,
+} from "react-icons/lu";
 
 const navItems: NavItem[] = [
   { href: "/admin", label: "Overview", icon: <LuGauge /> },
-  { href: "/admin/products", label: "Dashboards", icon: <LuLayoutDashboard /> },
-  { href: "/admin/users", label: "Users", icon: <LuUsers /> },
-  { href: "/admin/approvals", label: "Approvals", icon: <LuUserCheck /> },
-  { href: "/admin/topup", label: "Top Up", icon: <LuWalletCards /> },
-  { href: "/admin/checks", label: "All Checks", icon: <LuHistory /> },
-  { href: "/admin/studio", label: "Studio usage", icon: <LuAudioLines /> },
+  {
+    href: "/admin/users",
+    label: "Customers",
+    icon: <LuUsers />,
+    children: [
+      { href: "/admin/users", label: "All users", icon: null },
+      { href: "/admin/approvals", label: "Approvals", icon: null },
+      { href: "/admin/products", label: "Dashboard access", icon: null },
+      { href: "/admin/topup", label: "Wallets and top up", icon: null },
+    ],
+  },
+  {
+    href: "/admin/checks",
+    label: "Channel Checker",
+    icon: <LuShieldCheck />,
+    children: [{ href: "/admin/checks", label: "All checks", icon: null }],
+  },
+  {
+    href: "/admin/studio",
+    label: "AI Studio",
+    icon: <LuAudioLines />,
+    children: [{ href: "/admin/studio", label: "Usage", icon: null }],
+  },
+  { href: "#", label: "Music Distribution", icon: <LuDisc3 />, soon: true },
 ];
 
 export const dynamic = "force-dynamic";

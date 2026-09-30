@@ -24,6 +24,7 @@ import {
   LuSearch,
   LuCircleHelp,
   LuChevronsUpDown,
+  LuChevronDown,
   LuUserRoundX,
 } from "react-icons/lu";
 import { signOut } from "@/app/actions/auth";
@@ -35,8 +36,91 @@ export type NavItem = {
   href: string;
   label: string;
   icon: React.ReactNode;
+  /** submenu: the parent expands to show these, and opens by itself when one is active */
+  children?: NavItem[];
+  /** shown greyed out with a "Soon" tag, not clickable */
+  soon?: boolean;
 };
 
+const linkClass = (active: boolean, collapsed?: boolean) =>
+  cn(
+    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors [&_svg]:size-5 [&_svg]:shrink-0",
+    collapsed && "justify-center px-2",
+    active
+      ? "bg-primary text-primary-foreground shadow-sm"
+      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+  );
+
+function NavGroup({
+  item,
+  pathname,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavItem;
+  pathname: string;
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
+  const children = item.children ?? [];
+  const childActive = children.some((c) => pathname === c.href);
+  // null = follow the route (open while a child is active), once clicked = the user's choice
+  const [manual, setManual] = React.useState<boolean | null>(null);
+  const open = manual ?? childActive;
+
+  if (collapsed) {
+    return (
+      <Link
+        href={children[0]?.href ?? item.href}
+        onClick={onNavigate}
+        title={item.label}
+        className={linkClass(childActive, true)}
+      >
+        {item.icon}
+      </Link>
+    );
+  }
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setManual(!open)}
+        aria-expanded={open}
+        className={cn(
+          "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors [&_svg]:size-5 [&_svg]:shrink-0",
+          childActive ? "text-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+        )}
+      >
+        {item.icon}
+        <span className="flex-1 text-left">{item.label}</span>
+        <LuChevronDown className={cn("!size-4 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="mt-1 ml-[1.35rem] flex flex-col gap-0.5 border-l pl-3">
+          {children.map((c) => {
+            const active = pathname === c.href;
+            return (
+              <Link
+                key={c.href}
+                href={c.href}
+                onClick={onNavigate}
+                className={cn(
+                  "rounded-md px-3 py-2 text-sm transition-colors",
+                  active
+                    ? "bg-primary font-medium text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                {c.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function NavLinks({
   items,
@@ -52,20 +136,38 @@ function NavLinks({
   return (
     <nav className="flex flex-col gap-1">
       {items.map((item) => {
-        const active = pathname === item.href;
+        if (item.children) {
+          return (
+            <NavGroup key={item.label} item={item} pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} />
+          );
+        }
+        if (item.soon) {
+          return (
+            <div
+              key={item.label}
+              title={collapsed ? `${item.label} (soon)` : undefined}
+              className={cn(
+                "flex cursor-default items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground/50 [&_svg]:size-5 [&_svg]:shrink-0",
+                collapsed && "justify-center px-2"
+              )}
+            >
+              {item.icon}
+              {!collapsed && (
+                <>
+                  <span className="flex-1">{item.label}</span>
+                  <span className="text-[0.65rem] uppercase tracking-wider">Soon</span>
+                </>
+              )}
+            </div>
+          );
+        }
         return (
           <Link
             key={item.href}
             href={item.href}
             onClick={onNavigate}
             title={collapsed ? item.label : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors [&_svg]:size-5 [&_svg]:shrink-0",
-              collapsed && "justify-center px-2",
-              active
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            )}
+            className={linkClass(pathname === item.href, collapsed)}
           >
             {item.icon}
             {!collapsed && item.label}
