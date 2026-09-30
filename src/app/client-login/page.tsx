@@ -1,16 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  LuArrowLeft,
-  LuAudioLines,
-  LuClapperboard,
-  LuClock,
-  LuDisc3,
-  LuLifeBuoy,
-  LuMail,
-} from "react-icons/lu";
+import { LuArrowLeft, LuArrowRight, LuArrowUpRight, LuAudioLines, LuClapperboard, LuClock, LuDisc3 } from "react-icons/lu";
 import Aurora from "@/components/aurora";
-import { ZButton } from "@/components/landing/button";
 import { Reveal } from "@/components/landing/primitives";
 import { displayFont, serifFont } from "@/components/landing/fonts";
 import { TicketStatus } from "@/components/landing/ticket-status";
@@ -32,7 +23,7 @@ const DASHBOARDS: Dashboard[] = [
     name: "Music Distribution",
     description: "Releases, royalties and analytics.",
     logo: (
-      <span className="flex size-16 shrink-0 sm:size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#7c3aed] to-[#ec4899]">
+      <span className="flex size-16 shrink-0 items-center justify-center rounded-[20px] bg-gradient-to-br from-[#7c3aed] to-[#ec4899] sm:size-20 sm:rounded-[24px]">
         <LuDisc3 className="size-8 text-white sm:size-10" />
       </span>
     ),
@@ -41,7 +32,7 @@ const DASHBOARDS: Dashboard[] = [
     name: "AI Studio",
     description: "Voice, audio and video: dubbing, avatars, translation, lip sync and clips.",
     logo: (
-      <span className="relative flex size-16 shrink-0 sm:size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#2563eb] via-[#7c3aed] to-[#f97316]">
+      <span className="relative flex size-16 shrink-0 items-center justify-center rounded-[20px] bg-gradient-to-br from-[#2563eb] via-[#7c3aed] to-[#f97316] sm:size-20 sm:rounded-[24px]">
         <LuAudioLines className="size-7 -translate-x-1.5 -translate-y-1 text-white sm:size-9 sm:-translate-x-2" />
         <LuClapperboard className="absolute size-5 translate-x-3 translate-y-3 text-white/90 sm:size-7 sm:translate-x-4 sm:translate-y-3.5" />
       </span>
@@ -49,47 +40,86 @@ const DASHBOARDS: Dashboard[] = [
   },
   {
     name: "Channel Checker",
-    description: "YouTube MCN checker and copyright management (Content Manager).",
+    description: "YouTube MCN checker and copyright management.",
     href: "/login",
     logo: (
-      <span className="flex size-16 shrink-0 sm:size-20 items-center justify-center rounded-3xl bg-[#c2185b] shadow-[0_16px_40px_-14px_rgb(194_24_91/0.85)]">
+      <span className="flex size-16 shrink-0 items-center justify-center rounded-[20px] bg-[#c2185b] sm:size-20 sm:rounded-[24px]">
         <Image src="/brand/logo-slideBar.png" alt="" width={52} height={52} className="size-10 sm:size-[52px]" />
       </span>
     ),
   },
 ];
 
-function HelpDesk({ className }: { className?: string }) {
+function HelpDesk({ id, className }: { id: string; className?: string }) {
   return (
-    <section
-      aria-labelledby={className?.includes("md:hidden") ? "help-desk-mobile" : "help-desk"}
-      className={`relative overflow-hidden rounded-3xl border border-white/15 bg-black/35 p-5 backdrop-blur-xl sm:p-6 ${className ?? ""}`}
-    >
-      <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-[#ff3d86]/25 blur-3xl" />
-      <div className="relative flex items-start gap-4">
-        <span className="zl-grad-bg flex size-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_12px_30px_-12px_rgb(255_61_134/0.8)]">
-          <LuLifeBuoy className="size-6" />
+    <section aria-labelledby={id} className={className}>
+      <h2 id={id} className="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-white/55">
+        Help Desk
+      </h2>
+      <a
+        href="mailto:support@zineticmusic.com"
+        className="group mt-3 flex flex-wrap items-center gap-x-3 font-heading text-[1.6rem] leading-tight font-semibold sm:text-3xl"
+      >
+        <span className="break-all underline decoration-white/25 decoration-1 underline-offset-[6px] transition-colors group-hover:decoration-[#ff3d86]">
+          support@zineticmusic.com
         </span>
-        <div className="min-w-0">
-          <h2 id={className?.includes("md:hidden") ? "help-desk-mobile" : "help-desk"} className="font-heading text-xl font-bold">
-            Help Desk
-          </h2>
-          <p className="mt-1 text-sm text-white/65">Questions about a dashboard, your account or an order? Write to us.</p>
-          <a
-            href="mailto:support@zineticmusic.com"
-            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-white underline decoration-[#ff3d86] underline-offset-4"
-          >
-            <LuMail className="size-4" /> support@zineticmusic.com
-          </a>
-        </div>
-      </div>
+        <LuArrowUpRight className="size-6 shrink-0 text-[#ff3d86] transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+      </a>
+      <p className="mt-3 max-w-md text-sm leading-relaxed text-white/60">
+        Questions about a dashboard, your account or an order? Write to us.
+      </p>
 
-      <div className="relative mt-6 border-t border-white/10 pt-5">
-        <h3 className="font-semibold">Check Support Status</h3>
-        <p className="mt-1 mb-4 text-sm text-white/60">Enter the ticket ID from your submission confirmation.</p>
+      <div className="mt-10 max-w-md">
+        <h3 className="text-base font-semibold">Check Support Status</h3>
+        <p className="mt-1.5 mb-6 text-sm text-white/55">Enter the ticket ID from your submission confirmation.</p>
         <TicketStatus />
       </div>
     </section>
+  );
+}
+
+function Row({ d }: { d: Dashboard }) {
+  const body = (
+    <>
+      {d.logo}
+      <div className="min-w-0 flex-1">
+        <p
+          className={
+            d.href
+              ? "font-heading text-2xl font-semibold sm:text-[1.7rem]"
+              : "font-heading text-2xl font-semibold text-white/45 sm:text-[1.7rem]"
+          }
+        >
+          {d.name}
+        </p>
+        <p className={d.href ? "mt-1 text-sm text-white/60" : "mt-1 text-sm text-white/30"}>{d.description}</p>
+      </div>
+      {d.href ? (
+        <span className="flex shrink-0 items-center gap-2 text-sm font-semibold">
+          Open
+          <LuArrowRight className="size-5 text-[#ff3d86] transition-transform duration-300 group-hover:translate-x-1.5" />
+        </span>
+      ) : (
+        <span aria-disabled className="flex shrink-0 items-center gap-1.5 text-sm text-white/35">
+          <LuClock className="size-4" /> Soon
+        </span>
+      )}
+    </>
+  );
+
+  return d.href ? (
+    <Link
+      href={d.href}
+      className="group relative flex items-center gap-5 px-1 py-7 transition-all duration-500 hover:bg-white/[0.035] hover:pl-4 sm:gap-6"
+    >
+      {body}
+      <span
+        aria-hidden
+        className="zl-grad-bg absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 transition-transform duration-700 group-hover:scale-x-100"
+      />
+    </Link>
+  ) : (
+    <div className="flex items-center gap-5 px-1 py-7 sm:gap-6">{body}</div>
   );
 }
 
@@ -100,26 +130,24 @@ export default function ClientLoginPage() {
         <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-90">
           <Aurora colorStops={["#3d8bff", "#9b4dff", "#ff3d86"]} amplitude={1.2} blend={0.6} speed={0.8} />
         </div>
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-2/5 bg-gradient-to-t from-[#0f0f0f] to-transparent" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-3/5 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/80 to-transparent"
+        />
+
         <Link href="/" className="relative z-10 flex items-center gap-2.5">
           <Image src="/brand/logo.png" alt="" width={899} height={1140} style={{ height: 40, width: "auto" }} />
           <span className="font-heading text-lg font-semibold">Zinetic Music</span>
         </Link>
 
-        <div className="relative z-10 flex flex-col gap-7">
-          <div className="flex w-fit items-center gap-2 rounded-md bg-white/10 px-3 py-1.5 text-sm text-white/80">
-            <Image src="/brand/logo.png" alt="" width={899} height={1140} style={{ height: 20, width: "auto" }} />
-            One account, every dashboard
-          </div>
-          <h2 className="font-heading text-4xl leading-tight font-bold text-balance">
-            Music, AI and creator tools, all in one place
+        <div className="relative z-10 flex flex-col gap-10">
+          <h2 className="font-heading text-4xl leading-[1.1] font-bold text-balance">
+            Music, AI and creator tools, <span className="zl-serif zl-grad-text">all in one place</span>
           </h2>
-          <HelpDesk />
+          <HelpDesk id="help-desk" />
         </div>
 
-        <p className="relative z-10 text-xs text-white/40">
-          © {new Date().getFullYear()} Zinetic Music. All rights reserved.
-        </p>
+        <p className="relative z-10 text-xs text-white/40">© {new Date().getFullYear()} Zinetic Music. All rights reserved.</p>
       </div>
 
       <div className="flex min-w-0 flex-col bg-zinc-950 text-white">
@@ -137,63 +165,36 @@ export default function ClientLoginPage() {
           </Link>
         </header>
 
-        <main className="flex flex-1 items-center justify-center px-6 pb-16">
-          <div className="w-full max-w-lg">
+        <main className="flex flex-1 items-center justify-center px-6 pb-16 sm:px-10">
+          <div className="w-full max-w-xl">
             <Reveal>
-              <h1 className="font-heading text-3xl font-bold">Client login</h1>
-              <p className="mt-2 text-white/60">Choose the dashboard you want to open.</p>
+              <h1 className="font-heading text-5xl leading-none font-bold sm:text-6xl">
+                Client <span className="zl-serif zl-grad-text">login</span>
+              </h1>
+              <p className="mt-4 text-white/60">Choose the dashboard you want to open.</p>
             </Reveal>
 
-            <ul className="mt-8 flex flex-col gap-3.5">
-              {DASHBOARDS.map((d, i) => {
-                const locked = !d.href;
-                return (
-                  <li key={d.name}>
-                    <Reveal delay={0.08 + i * 0.07}>
-                      <div
-                        className={
-                          locked
-                            ? "flex items-center gap-4 rounded-3xl border border-white/8 bg-white/[0.02] p-4 sm:gap-5 sm:p-5"
-                            : "flex items-center gap-4 rounded-3xl border border-white/15 bg-white/[0.06] p-4 sm:gap-5 sm:p-5 shadow-[0_24px_60px_-34px_rgb(255_61_134/0.55)]"
-                        }
-                      >
-                        <span className={locked ? "opacity-45 saturate-50" : ""}>{d.logo}</span>
-                        <div className="min-w-0 flex-1">
-                          <p className={locked ? "text-lg font-semibold text-white/60" : "text-lg font-semibold"}>{d.name}</p>
-                          <p className={locked ? "mt-0.5 text-sm text-white/35" : "mt-0.5 text-sm text-white/60"}>
-                            {d.description}
-                          </p>
-                        </div>
-                        {locked ? (
-                          <span
-                            aria-disabled
-                            className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs font-medium text-white/45"
-                          >
-                            <LuClock className="size-3.5" /> Soon
-                          </span>
-                        ) : (
-                          <ZButton href={d.href!} size="sm" className="shrink-0">
-                            Open
-                          </ZButton>
-                        )}
-                      </div>
-                    </Reveal>
-                  </li>
-                );
-              })}
+            <ul className="mt-10 divide-y divide-white/10 border-y border-white/10">
+              {DASHBOARDS.map((d, i) => (
+                <li key={d.name}>
+                  <Reveal delay={0.08 + i * 0.07} y={16}>
+                    <Row d={d} />
+                  </Reveal>
+                </li>
+              ))}
             </ul>
 
             <Reveal delay={0.35}>
-              <HelpDesk className="mt-8 md:hidden" />
-            </Reveal>
-
-            <Reveal delay={0.4}>
-              <p className="mt-8 text-center text-sm text-white/50">
+              <p className="mt-8 text-sm text-white/50">
                 New here?{" "}
                 <Link href="/register" className="font-medium text-white underline decoration-[#ff3d86] underline-offset-4">
                   Create an account
                 </Link>
               </p>
+            </Reveal>
+
+            <Reveal delay={0.4}>
+              <HelpDesk id="help-desk-mobile" className="mt-14 border-t border-white/10 pt-10 md:hidden" />
             </Reveal>
           </div>
         </main>

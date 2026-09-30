@@ -1,10 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { LuCheck, LuLoaderCircle, LuSearch } from "react-icons/lu";
+import { LuArrowRight, LuLoaderCircle } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Received", "In review", "Resolved"];
+const STEPS = [
+  { label: "Received", note: "We have your request." },
+  { label: "In review", note: "Our team is looking into it." },
+  { label: "Resolved", note: "You will get an email when it is done." },
+];
 
 // Interface only: no tickets exist behind this form, every lookup shows the same sample result.
 export function TicketStatus() {
@@ -31,62 +35,71 @@ export function TicketStatus() {
 
   return (
     <div>
-      <form onSubmit={onSubmit} className="flex flex-col gap-2.5 sm:flex-row">
-        <div className="relative flex-1">
-          <LuSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-white/40" />
+      <form onSubmit={onSubmit} className="flex items-end gap-5">
+        <label className="min-w-0 flex-1">
+          <span className="sr-only">Ticket ID</span>
           <input
             value={id}
             onChange={(e) => setId(e.target.value)}
-            placeholder="Ticket ID, e.g. ZM-10482"
+            placeholder="ZM-10482"
             aria-label="Ticket ID"
-            className="h-12 w-full rounded-full border border-white/12 bg-white/[0.05] pr-4 pl-11 text-sm text-white outline-none transition-colors placeholder:text-white/35 focus:border-[#ff3d86]/70"
+            className="w-full border-b border-white/25 bg-transparent pb-3 font-heading text-xl text-white outline-none transition-colors placeholder:text-white/25 focus:border-[#ff3d86]"
           />
-        </div>
+        </label>
         <button
           type="submit"
           disabled={loading}
-          className="zl-btn zl-btn-primary zl-btn-md shrink-0 disabled:opacity-70"
+          className="group flex shrink-0 items-center gap-2 pb-3 text-sm font-semibold text-white disabled:opacity-60"
         >
-          {loading ? <LuLoaderCircle className="size-4 animate-spin" /> : null}
-          Check status
+          {loading ? (
+            <LuLoaderCircle className="size-4 animate-spin" />
+          ) : (
+            <>
+              Check
+              <LuArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </>
+          )}
         </button>
       </form>
-      {error && <p className="mt-2.5 text-sm text-[#ff6b8f]">{error}</p>}
+      {error && <p className="mt-3 text-sm text-[#ff6b8f]">{error}</p>}
 
       {result && (
-        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
-            <p className="min-w-0 truncate text-sm text-white/60">
+        <div className="mt-7">
+          <p className="flex items-baseline justify-between gap-4 text-xs uppercase tracking-[0.18em] text-white/45">
+            <span className="min-w-0 truncate">
               Ticket <span className="font-semibold text-white">{result}</span>
-            </p>
-            <span className="shrink-0 rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-semibold text-amber-300">
-              In review
             </span>
-          </div>
-          <ol className="mt-5 grid grid-cols-3 gap-2">
+            <span className="shrink-0 font-semibold text-amber-300">In review</span>
+          </p>
+          <ol className="mt-5">
             {STEPS.map((s, i) => {
               const done = i < 1;
               const current = i === 1;
               return (
-                <li key={s} className="flex flex-col items-center gap-2 text-center">
+                <li key={s.label} className="relative flex gap-4 pb-5 last:pb-0">
+                  {i < STEPS.length - 1 && (
+                    <span
+                      aria-hidden
+                      className={cn("absolute top-5 left-[5px] h-[calc(100%-12px)] w-px", done ? "bg-[#ff3d86]" : "bg-white/15")}
+                    />
+                  )}
                   <span
+                    aria-hidden
                     className={cn(
-                      "flex size-8 items-center justify-center rounded-full border text-xs font-semibold",
-                      done && "zl-grad-bg border-transparent text-white",
-                      current && "border-[#ff3d86] text-white shadow-[0_0_0_4px_rgb(255_61_134/0.18)]",
-                      !done && !current && "border-white/15 text-white/35"
+                      "relative mt-1 size-[11px] shrink-0 rounded-full",
+                      done && "zl-grad-bg",
+                      current && "bg-[#ff3d86] shadow-[0_0_0_5px_rgb(255_61_134/0.2)]",
+                      !done && !current && "border border-white/30"
                     )}
-                  >
-                    {done ? <LuCheck className="size-4" /> : i + 1}
-                  </span>
-                  <span className={cn("text-xs", current ? "font-semibold text-white" : "text-white/50")}>{s}</span>
+                  />
+                  <div>
+                    <p className={cn("text-sm font-semibold leading-none", !done && !current && "text-white/45")}>{s.label}</p>
+                    <p className={cn("mt-1.5 text-sm", current ? "text-white/70" : "text-white/40")}>{s.note}</p>
+                  </div>
                 </li>
               );
             })}
           </ol>
-          <p className="mt-5 text-sm leading-relaxed text-white/60">
-            Our team is looking into your request. You will get an email as soon as there is an update.
-          </p>
         </div>
       )}
     </div>
