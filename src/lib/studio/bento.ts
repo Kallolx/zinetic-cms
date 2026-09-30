@@ -22,4 +22,4 @@ export const LAYOUT: Record<string, [string, BentoSize, string][]> = {
   ],
 };
 
-export const GRID = "grid grid-flow-dense auto-rows-[11rem] grid-cols-2 gap-3 md:grid-cols-12 md:auto-rows-[10rem] xl:auto-rows-[10.75rem]";
+export const GRID = "grid grid-flow-dense auto-rows-[9.5rem] grid-cols-2 gap-4 md:grid-cols-12 md:gap-5 xl:auto-rows-[10.5rem]";

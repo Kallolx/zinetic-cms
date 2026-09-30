@@ -81,11 +81,25 @@ export function BentoTile({
       ref={ref}
       onMouseEnter={() => hover(true)}
       onMouseLeave={() => hover(false)}
-      className="group relative isolate flex h-full min-h-44 flex-col justify-between overflow-hidden rounded-[1.75rem] bg-zinc-900 p-5 text-white ring-1 ring-white/10 transition-shadow duration-500 hover:ring-white/30"
+      className="group relative isolate flex h-full min-h-44 flex-col justify-between overflow-hidden rounded-3xl bg-zinc-900 p-4 text-white ring-1 ring-white/10 transition-shadow duration-500 hover:ring-white/30"
     >
-      <div className={cn("absolute inset-0 -z-10 transition-transform duration-700", tool.href && "group-hover:scale-[1.06]", tool.soon && "grayscale")}>
+      <div
+        className={cn(
+          "absolute inset-0 -z-10 transition-[transform,filter] duration-700",
+          tool.href && "group-hover:scale-[1.04]",
+          custom && "brightness-[.72] saturate-[.85] group-hover:brightness-100 group-hover:saturate-100",
+          tool.soon && "grayscale"
+        )}
+      >
         <MediaBg media={art} playOnHover />
       </div>
+      {custom && (
+        <>
+          {/* calms the busy artwork: dark at rest, clears on hover */}
+          <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-black/10 to-black/30 transition-opacity duration-500 group-hover:opacity-30" />
+          <div aria-hidden className="absolute inset-0 -z-10 rounded-3xl shadow-[inset_0_0_60px_rgb(0_0_0/0.45)]" />
+        </>
+      )}
       {!custom && <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/25 to-black/5" />}
       {!custom && size === "lg" && <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-black/55 to-transparent" />}
       {!custom && isAudio && size !== "sm" && (
@@ -111,6 +125,11 @@ export function BentoTile({
         )}
       </div>
 
+      {custom && (
+        <p className="translate-y-2 text-sm leading-snug text-white/95 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+          {tool.soon ? "Coming soon" : tool.blurb}
+        </p>
+      )}
       {!custom && (
       <div>
         <p className={cn("font-heading leading-tight font-semibold", size === "lg" ? "text-3xl sm:text-4xl" : size === "md" ? "text-2xl" : "text-lg")}>{tool.name}</p>

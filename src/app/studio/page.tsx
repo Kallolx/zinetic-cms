@@ -28,7 +28,7 @@ export default async function StudioHome() {
   const art = allArt();
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="mx-auto flex max-w-6xl flex-col gap-16">
       <section className={GRID}>
         <div className="col-span-2 row-span-2 md:col-span-8">
           <HomeHero name={profile?.full_name ?? ""} art={Object.fromEntries(TOOLS.map((t) => [t.id, t.media]))} />
@@ -65,7 +65,7 @@ export default async function StudioHome() {
       </section>
 
       {GROUPS.map((g) => (
-        <section key={g.id} className="flex flex-col gap-5">
+        <section key={g.id} className="flex flex-col gap-6">
           <div>
             <h2 className="font-heading text-2xl font-semibold">{g.label}</h2>
             <p className="mt-1 text-sm text-white/55">{g.blurb}</p>
