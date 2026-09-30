@@ -10,11 +10,12 @@ import type { Profile } from "@/lib/types";
  */
 export const getSessionProfile = cache(async () => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { user: null, profile: null };
+  // getClaims checks the signed token locally (no round trip to Supabase Auth),
+  // the middleware has already refreshed it if it was about to expire
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) return { user: null, profile: null };
+  const user = { id: claims.sub, email: (claims.email as string | undefined) ?? "" };
 
   const { data: profile } = await supabase
     .from("profiles")

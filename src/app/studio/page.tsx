@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { LuArrowRight, LuFolderOpen, LuLifeBuoy, LuWallet } from "react-icons/lu";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createClient } from "@/lib/supabase/server";
@@ -12,19 +13,32 @@ import { WaveArt } from "@/components/studio/audio-player";
 
 const PANEL = "relative flex h-full flex-col justify-between overflow-hidden rounded-[1.75rem] bg-white/[0.04] p-6 ring-1 ring-white/10";
 
-export default async function StudioHome() {
-  const { user, profile } = await getDashboardSession();
+// Only this tile needs the database, so it streams in after the rest of Home is on screen.
+async function LibraryTile({ userId }: { userId: string }) {
   const supabase = await createClient();
   const [{ count }, { data: latest }] = await Promise.all([
-    supabase.from("studio_generations").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
-    supabase
-      .from("studio_generations")
-      .select("title")
-      .eq("user_id", user!.id)
-      .eq("status", "done")
-      .order("created_at", { ascending: false })
-      .limit(1),
+    supabase.from("studio_generations").select("id", { count: "exact", head: true }).eq("user_id", userId),
+    supabase.from("studio_generations").select("title").eq("user_id", userId).eq("status", "done").order("created_at", { ascending: false }).limit(1),
   ]);
+  return (
+    <Link href="/studio/library" className={`${PANEL} group col-span-2 md:col-span-4 transition-colors hover:bg-white/[0.07]`}>
+      <div aria-hidden className="absolute inset-x-6 top-6 h-12 opacity-50">
+        <WaveArt animate={false} />
+      </div>
+      <LuFolderOpen className="relative size-6 text-white/70" />
+      <div>
+        <p className="font-heading text-4xl font-bold tabular-nums">{count ?? 0}</p>
+        <p className="mt-1 flex items-center justify-between text-sm text-white/60">
+          <span className="line-clamp-1">{latest?.[0]?.title ? `Latest: ${latest[0].title}` : "generations in your Library"}</span>
+          <LuArrowRight className="size-4 shrink-0 transition-transform group-hover:translate-x-1" />
+        </p>
+      </div>
+    </Link>
+  );
+}
+
+export default async function StudioHome() {
+  const { user, profile } = await getDashboardSession();
   const art = allArt();
 
   return (
@@ -34,19 +48,9 @@ export default async function StudioHome() {
           <HomeHero name={profile?.full_name ?? ""} art={Object.fromEntries(TOOLS.map((t) => [t.id, t.media]))} />
         </div>
 
-        <Link href="/studio/library" className={`${PANEL} group col-span-2 md:col-span-4 transition-colors hover:bg-white/[0.07]`}>
-          <div aria-hidden className="absolute inset-x-6 top-6 h-12 opacity-50">
-            <WaveArt animate={false} />
-          </div>
-          <LuFolderOpen className="relative size-6 text-white/70" />
-          <div>
-            <p className="font-heading text-4xl font-bold tabular-nums">{count ?? 0}</p>
-            <p className="mt-1 flex items-center justify-between text-sm text-white/60">
-              <span className="line-clamp-1">{latest?.[0]?.title ? `Latest: ${latest[0].title}` : "generations in your Library"}</span>
-              <LuArrowRight className="size-4 shrink-0 transition-transform group-hover:translate-x-1" />
-            </p>
-          </div>
-        </Link>
+        <Suspense fallback={<div className={`${PANEL} col-span-2 md:col-span-4`} />}>
+          <LibraryTile userId={user!.id} />
+        </Suspense>
 
         <div className={`${PANEL} col-span-1 md:col-span-2`}>
           <LuWallet className="size-6 text-white/70" />

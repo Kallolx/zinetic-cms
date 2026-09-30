@@ -25,9 +25,10 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims verifies the signed token locally and refreshes the session when it is
+  // close to expiring, so a page navigation no longer waits on Supabase Auth
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims?.sub ? { id: claimsData.claims.sub as string } : null;
 
   const path = request.nextUrl.pathname;
   const isAuthRoute =
