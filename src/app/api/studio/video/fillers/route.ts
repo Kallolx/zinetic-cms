@@ -7,7 +7,7 @@ import { fillerRanges, invert, merge, pauseRanges, span } from "@/lib/studio/edi
 import { authorize, begin, fail, failGeneration, finishWithFile, mb, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
-export const maxDuration = 600;
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const auth = await requireStudioUser();

@@ -8,7 +8,7 @@ import { pickClips } from "@/lib/studio/editing";
 import { authorize, begin, fail, failGeneration, finishWithFile, mb, refundAuthz, requireStudioUser, tooBig, uploadedFile, type Authz } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
-export const maxDuration = 600;
+export const maxDuration = 300;
 
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
