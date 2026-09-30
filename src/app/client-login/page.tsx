@@ -30,7 +30,9 @@ const DASHBOARDS: Dashboard[] = [
   },
   {
     name: "AI Studio",
-    description: "Voice, audio and video: dubbing, avatars, translation, lip sync and clips.",
+    description: "Voice, audio and video: dubbing, avatars, translation, music and clips.",
+    // AI Studio lives on its own subdomain, so send people straight to its sign in
+    href: process.env.NEXT_PUBLIC_STUDIO_URL ? `${process.env.NEXT_PUBLIC_STUDIO_URL.replace(/\/$/, "")}/login` : "/studio",
     logo: (
       <span className="relative flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#2563eb] via-[#7c3aed] to-[#f97316] sm:size-20 sm:rounded-[24px]">
         <LuAudioLines className="size-5 -translate-x-1 -translate-y-0.5 text-white sm:size-9 sm:-translate-x-2 sm:-translate-y-1" />
