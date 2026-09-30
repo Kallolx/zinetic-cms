@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useJob } from "@/components/studio/use-job";
-import { AudioResult, Field, Output, Segmented, SubmitButton, TextArea, Workspace } from "@/components/studio/ui";
+import { AudioResult, Field, Output, Segmented, SubmitButton, TextArea, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 const IDEAS = [
   "Warm lo-fi hip hop with soft piano and vinyl crackle",
@@ -15,11 +15,13 @@ export function MusicForm() {
   const [prompt, setPrompt] = React.useState("");
   const [seconds, setSeconds] = React.useState("30");
   const { state, run } = useJob();
+  const eng = useEngine();
 
   return (
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Describe the track" hint="Genre, mood, instruments, vocals">
             <TextArea value={prompt} onChange={setPrompt} max={1500} rows={7} placeholder="An energetic synthwave track with a soaring female vocal" />
             <div className="flex flex-col items-start gap-2">
@@ -56,7 +58,7 @@ export function MusicForm() {
                 fetch("/api/studio/music", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ prompt, seconds: Number(seconds) }),
+                  body: JSON.stringify({ engine: eng.key, prompt, seconds: Number(seconds) }),
                 })
               )
             }

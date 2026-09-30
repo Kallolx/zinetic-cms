@@ -1,12 +1,19 @@
-import { hasHeyGen, listTranslateLanguages } from "@/lib/studio/heygen";
 import { ToolPage } from "@/components/studio/tool-page";
-import { TranslateForm } from "./form";
+import { TranslateForm } from "@/components/studio/translate-form";
+import { languagesFor } from "@/lib/studio/languages";
 
 export default async function Page() {
-  const languages = await listTranslateLanguages();
   return (
-    <ToolPage toolId="video-translation" notice={!hasHeyGen() ? "HeyGen is not connected yet. Add HEYGEN_API_KEY to the environment and restart." : null}>
-      <TranslateForm languages={languages} />
+    <ToolPage toolId="video-translation">
+      <TranslateForm
+        endpoint="/api/studio/video/translate"
+        field="video"
+        accept="video/*"
+        hint="The speaker is translated and keeps their own voice."
+        busyMessage="Translating your video"
+        languagesByEngine={await languagesFor("video-translation")}
+        resultName="translated"
+      />
     </ToolPage>
   );
 }

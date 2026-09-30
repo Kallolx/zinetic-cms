@@ -2,15 +2,17 @@
 
 import * as React from "react";
 import { useJob } from "@/components/studio/use-job";
-import { AudioResult, Field, FileDrop, Output, SubmitButton, useObjectUrl, Workspace } from "@/components/studio/ui";
+import { AudioResult, Field, FileDrop, Output, SubmitButton, useObjectUrl, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 export function CleanerForm() {
   const [file, setFile] = React.useState<File | null>(null);
   const { state, run } = useJob();
+  const eng = useEngine();
   const original = useObjectUrl(file);
 
   function submit() {
     const fd = new FormData();
+    fd.append("engine", eng.key);
     fd.append("audio", file!);
     return run(() => fetch("/api/studio/isolate", { method: "POST", body: fd }));
   }
@@ -19,6 +21,7 @@ export function CleanerForm() {
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Audio" hint="MP3, WAV, M4A">
             <FileDrop accept="audio/*" file={file} onFile={setFile} hint="Background noise is removed and the voice is isolated." />
           </Field>

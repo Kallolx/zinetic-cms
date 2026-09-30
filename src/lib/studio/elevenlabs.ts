@@ -72,34 +72,34 @@ export function textToSpeech(opts: { text: string; voiceId: string; modelId?: st
   });
 }
 
-export function voiceChanger(opts: { audio: Blob; filename: string; voiceId: string }) {
+export function voiceChanger(opts: { audio: Blob; filename: string; voiceId: string; modelId?: string }) {
   const form = new FormData();
   form.append("audio", opts.audio, opts.filename);
-  form.append("model_id", "eleven_multilingual_sts_v2");
+  form.append("model_id", opts.modelId ?? "eleven_multilingual_sts_v2");
   return audioCall(`${BASE}/speech-to-speech/${encodeURIComponent(opts.voiceId)}?output_format=mp3_44100_128`, {
     method: "POST",
     body: form,
   });
 }
 
-export function soundEffect(opts: { text: string; durationSeconds?: number; loop?: boolean }) {
+export function soundEffect(opts: { text: string; durationSeconds?: number; loop?: boolean; modelId?: string }) {
   return audioCall(`${BASE}/sound-generation?output_format=mp3_44100_128`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       text: opts.text,
-      model_id: "eleven_text_to_sound_v2",
+      model_id: opts.modelId ?? "eleven_text_to_sound_v2",
       ...(opts.durationSeconds ? { duration_seconds: opts.durationSeconds } : {}),
       ...(opts.loop ? { loop: true } : {}),
     }),
   });
 }
 
-export function composeMusic(opts: { prompt: string; seconds: number }) {
+export function composeMusic(opts: { prompt: string; seconds: number; modelId?: string }) {
   return audioCall(`${BASE}/music?output_format=mp3_44100_128`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt: opts.prompt, music_length_ms: Math.round(opts.seconds * 1000) }),
+    body: JSON.stringify({ prompt: opts.prompt, music_length_ms: Math.round(opts.seconds * 1000), ...(opts.modelId ? { model_id: opts.modelId } : {}) }),
   });
 }
 
@@ -120,12 +120,13 @@ export async function transcribe(opts: {
   filename: string;
   language?: string;
   diarize?: boolean;
+  modelId?: string;
 }): Promise<Ok<{ transcript: Transcript }> | Fail> {
   const k = key();
   if (!k) return NOT_CONFIGURED;
   const form = new FormData();
   form.append("file", opts.file, opts.filename);
-  form.append("model_id", "scribe_v1");
+  form.append("model_id", opts.modelId ?? "scribe_v1");
   form.append("timestamps_granularity", "word");
   form.append("tag_audio_events", "false");
   if (opts.diarize) form.append("diarize", "true");

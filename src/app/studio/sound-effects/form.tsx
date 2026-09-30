@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useJob } from "@/components/studio/use-job";
-import { AudioResult, Field, Output, Segmented, SubmitButton, TextArea, Workspace } from "@/components/studio/ui";
+import { AudioResult, Field, Output, Segmented, SubmitButton, TextArea, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 const IDEAS = ["Heavy rain on a tin roof", "Cinematic bass drop with a long tail", "Crowd cheering in a stadium", "Footsteps on gravel"];
 
@@ -11,11 +11,13 @@ export function SfxForm() {
   const [seconds, setSeconds] = React.useState("auto");
   const [loop, setLoop] = React.useState("no");
   const { state, run } = useJob();
+  const eng = useEngine();
 
   return (
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Describe the sound">
             <TextArea value={text} onChange={setText} max={450} rows={5} placeholder="A wooden door creaking open in an empty hall" />
             <div className="flex flex-wrap gap-2">
@@ -44,9 +46,11 @@ export function SfxForm() {
               ]}
             />
           </Field>
+          {eng.has("loop") && (
           <Field label="Seamless loop">
             <Segmented value={loop} onChange={setLoop} options={[{ value: "no", label: "Off" }, { value: "yes", label: "On" }]} />
           </Field>
+          )}
           <SubmitButton
             busy={state.phase === "working"}
             disabled={!text.trim()}
@@ -56,7 +60,7 @@ export function SfxForm() {
                 fetch("/api/studio/sfx", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ text, seconds: seconds === "auto" ? undefined : Number(seconds), loop: loop === "yes" }),
+                  body: JSON.stringify({ engine: eng.key, text, seconds: seconds === "auto" ? undefined : Number(seconds), loop: loop === "yes" }),
                 })
               )
             }

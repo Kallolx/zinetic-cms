@@ -19,6 +19,7 @@ const PAGE_SIZE = 15;
 const typeLabel: Record<string, string> = {
   topup: "Top-up",
   check_charge: "MCN check",
+  studio_charge: "AI Studio",
   refund: "Refund",
   adjustment: "Adjustment",
 };

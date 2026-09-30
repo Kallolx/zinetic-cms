@@ -3,12 +3,12 @@ import { randomUUID } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadAsset } from "@/lib/studio/heygen";
 import { saveFile } from "@/lib/studio/storage";
-import { fail, extFor, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
+import { authorize, extFor, fail, mb, refundAuthz, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
 
-// Creates a reusable photo avatar: the photo goes to HeyGen (its image key is
-// what Avatar IV uses) and a copy stays in our own storage for the preview.
+// Creates a reusable photo avatar: the photo goes to the provider (its image key is
+// what photo videos use) and a copy stays in our own storage for the preview.
 export async function POST(request: Request) {
   const auth = await requireStudioUser();
   if ("error" in auth) return auth.error;
@@ -20,9 +20,14 @@ export async function POST(request: Request) {
   if (!photo.type.startsWith("image/")) return fail("The avatar must be an image.");
   if (tooBig(photo)) return fail("That photo is too large.");
 
+  const z = await authorize(auth.userId, "avatar-creator", String(form.get("engine") ?? ""), { fileMb: mb(photo) }, "Avatar creator");
+  if ("error" in z) return z.error;
+
   const up = await uploadAsset(photo, photo.type);
-  if (!up.ok) return fail(up.error, 502);
-  if (!up.imageKey) return fail("HeyGen did not accept that photo. Try a clearer, front-facing image.", 502);
+  if (!up.ok || !up.imageKey) {
+    await refundAuthz(z.authz, "Avatar creator");
+    return fail(up.ok ? "That photo was not accepted. Try a clearer, front-facing image." : up.error, 502);
+  }
 
   const id = randomUUID();
   const ext = extFor(photo.type);

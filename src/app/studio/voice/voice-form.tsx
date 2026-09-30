@@ -3,12 +3,13 @@
 import * as React from "react";
 import type { Voice } from "@/lib/studio/elevenlabs";
 import { useJob } from "@/components/studio/use-job";
-import { AudioResult, Field, Output, SubmitButton, TextArea, VoicePicker, Workspace } from "@/components/studio/ui";
+import { AudioResult, Field, Output, SubmitButton, TextArea, VoicePicker, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 export function VoiceForm({ voices }: { voices: Voice[] }) {
   const [text, setText] = React.useState("");
   const [voiceId, setVoiceId] = React.useState(voices[0]?.id ?? "");
   const { state, run } = useJob();
+  const eng = useEngine();
 
   const items = voices.map((v) => ({ id: v.id, name: v.name, meta: v.labels ?? v.category, preview: v.previewUrl }));
 
@@ -16,6 +17,7 @@ export function VoiceForm({ voices }: { voices: Voice[] }) {
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Script">
             <TextArea value={text} onChange={setText} max={5000} rows={9} placeholder="Type or paste what the voice should say." />
           </Field>
@@ -31,7 +33,7 @@ export function VoiceForm({ voices }: { voices: Voice[] }) {
                 fetch("/api/studio/voice", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ text, voiceId }),
+                  body: JSON.stringify({ engine: eng.key, text, voiceId }),
                 })
               )
             }

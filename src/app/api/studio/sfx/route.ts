@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { soundEffect } from "@/lib/studio/elevenlabs";
-import { begin, fail, failGeneration, finishWithFile, requireStudioUser } from "@/lib/studio/run";
+import { authorize, begin, fail, failGeneration, finishWithFile, requireStudioUser } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
 
@@ -8,13 +8,16 @@ export async function POST(request: Request) {
   const auth = await requireStudioUser();
   if ("error" in auth) return auth.error;
 
-  const b = (await request.json().catch(() => null)) as { text?: string; seconds?: number; loop?: boolean } | null;
+  const b = (await request.json().catch(() => null)) as { text?: string; seconds?: number; loop?: boolean; engine?: string } | null;
   const text = b?.text?.trim() ?? "";
   if (!text) return fail("Describe the sound you need.");
   const seconds = b?.seconds ? Math.min(30, Math.max(0.5, Number(b.seconds))) : undefined;
 
-  const g = await begin(auth.userId, "sfx", "elevenlabs", text.slice(0, 80), { text, seconds, loop: Boolean(b?.loop) });
-  const r = await soundEffect({ text, durationSeconds: seconds, loop: b?.loop });
+  const z = await authorize(auth.userId, "sound-effects", b?.engine, { chars: text.length, seconds }, "Sound effects");
+  if ("error" in z) return z.error;
+
+  const g = await begin(auth.userId, "sfx", z.authz.engine.provider, text.slice(0, 80), { text, seconds, loop: Boolean(b?.loop) }, undefined, z.authz);
+  const r = await soundEffect({ text, durationSeconds: seconds, loop: b?.loop, modelId: z.authz.engine.model ?? undefined });
   if (!r.ok) {
     await failGeneration(g, r.error);
     return fail(r.error, 502);

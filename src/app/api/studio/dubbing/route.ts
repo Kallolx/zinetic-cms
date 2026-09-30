@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { startDubbing } from "@/lib/studio/elevenlabs";
-import { begin, fail, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
+import { startTranslation } from "@/lib/studio/translate";
+import { authorize, begin, fail, mb, mediaSeconds, refundAuthz, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -11,14 +11,22 @@ export async function POST(request: Request) {
 
   const form = await request.formData();
   const file = uploadedFile(form, "file");
-  const targetLang = String(form.get("targetLang") ?? "");
-  if (!file || !targetLang) return fail("Upload a file and choose the language to dub into.");
+  const language = String(form.get("language") ?? "");
+  if (!file || !language) return fail("Upload a file and choose a language.");
   if (tooBig(file)) return fail("That file is too large.");
 
-  const r = await startDubbing({ file, filename: file.name, targetLang });
-  if (!r.ok) return fail(r.error, 502);
+  const z = await authorize(auth.userId, "dubbing", String(form.get("engine") ?? ""), { seconds: await mediaSeconds(file), fileMb: mb(file) }, "Dubbing");
+  if ("error" in z) return z.error;
+
+  // lip sync only applies when the engine offers it
+  const lipsync = form.get("lipsync") !== "false" && z.authz.engine.features.includes("lipsync");
+  const job = await startTranslation({ provider: z.authz.engine.provider, file, language, lipsync });
+  if (!job.ok) {
+    await refundAuthz(z.authz, "Dubbing");
+    return fail(job.error, 502);
+  }
 
   // processing rows are finished by /api/studio/jobs/[id]
-  const g = await begin(auth.userId, "dubbing", "elevenlabs", file.name, { filename: file.name, targetLang }, r.dubbingId);
+  const g = await begin(auth.userId, "dubbing", job.provider, file.name, { filename: file.name, targetLang: language, lipsync }, job.jobId, z.authz);
   return NextResponse.json({ id: g.id });
 }

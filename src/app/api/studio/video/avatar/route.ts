@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateAvatarVideo, generatePhotoVideo } from "@/lib/studio/heygen";
-import { begin, fail, requireStudioUser } from "@/lib/studio/run";
+import { authorize, begin, fail, refundAuthz, requireStudioUser } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
 
@@ -15,12 +15,12 @@ export async function POST(request: Request) {
     voiceId?: string;
     script?: string;
     ratio?: "16:9" | "9:16" | "1:1";
+    engine?: string;
   } | null;
   const script = b?.script?.trim() ?? "";
   if (!script || !b?.voiceId || (!b.avatarId && !b.myAvatarId)) return fail("Choose an avatar, a voice and write a script.");
-  if (script.length > 4000) return fail("Keep the script under 4,000 characters.");
 
-  let job;
+  let imageKey: string | null = null;
   if (b.myAvatarId) {
     const { data } = await createAdminClient()
       .from("studio_avatars")
@@ -29,12 +29,20 @@ export async function POST(request: Request) {
       .eq("user_id", auth.userId)
       .single();
     if (!data) return fail("That avatar was not found.", 404);
-    job = await generatePhotoVideo({ imageKey: data.image_key, voiceId: b.voiceId, script });
-  } else {
-    job = await generateAvatarVideo({ avatarId: b.avatarId!, voiceId: b.voiceId, script, ratio: b.ratio ?? "16:9" });
+    imageKey = data.image_key;
   }
-  if (!job.ok) return fail(job.error, 502);
 
-  const g = await begin(auth.userId, "avatar-video", "heygen", script.slice(0, 80), { ...b, script }, job.videoId);
+  const z = await authorize(auth.userId, "avatar-video", b.engine, { chars: script.length }, "Avatar video");
+  if ("error" in z) return z.error;
+
+  const job = imageKey
+    ? await generatePhotoVideo({ imageKey, voiceId: b.voiceId, script })
+    : await generateAvatarVideo({ avatarId: b.avatarId!, voiceId: b.voiceId, script, ratio: b.ratio ?? "16:9" });
+  if (!job.ok) {
+    await refundAuthz(z.authz, "Avatar video");
+    return fail(job.error, 502);
+  }
+
+  const g = await begin(auth.userId, "avatar-video", z.authz.engine.provider, script.slice(0, 80), { ...b, script }, job.videoId, z.authz);
   return NextResponse.json({ id: g.id });
 }

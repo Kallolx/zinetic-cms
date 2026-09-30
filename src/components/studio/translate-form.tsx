@@ -1,0 +1,99 @@
+"use client";
+
+import * as React from "react";
+import { useJob } from "@/components/studio/use-job";
+import {
+  AudioResult,
+  EnginePicker,
+  Field,
+  FileDrop,
+  inputClass,
+  Output,
+  Segmented,
+  SubmitButton,
+  useEngine,
+  VideoResult,
+  Workspace,
+} from "@/components/studio/ui";
+
+export type LanguageOption = { value: string; label: string };
+
+/**
+ * Dubbing and video translation are one screen: the same job can run on either
+ * provider, so the engine choice decides the language list and whether lip sync
+ * is offered.
+ */
+export function TranslateForm({
+  endpoint,
+  field,
+  accept,
+  hint,
+  busyMessage,
+  languagesByEngine,
+  resultName,
+}: {
+  endpoint: string;
+  field: string;
+  accept: string;
+  hint: string;
+  busyMessage: string;
+  languagesByEngine: Record<string, LanguageOption[]>;
+  resultName: string;
+}) {
+  const eng = useEngine();
+  const [file, setFile] = React.useState<File | null>(null);
+  const [picked, setPicked] = React.useState("");
+  const [lipsync, setLipsync] = React.useState("yes");
+  const { state, run } = useJob();
+
+  const languages = languagesByEngine[eng.key] ?? [];
+  const language = languages.some((l) => l.value === picked)
+    ? picked
+    : (languages.find((l) => l.label.startsWith("English"))?.value ?? languages[0]?.value ?? "");
+  const isVideo = Boolean(file?.type.startsWith("video"));
+
+  function submit() {
+    const fd = new FormData();
+    fd.append("engine", eng.key);
+    fd.append(field, file!);
+    fd.append("language", language);
+    fd.append("lipsync", eng.has("lipsync") && lipsync === "yes" ? "true" : "false");
+    return run(() => fetch(endpoint, { method: "POST", body: fd }), { async: true, message: busyMessage });
+  }
+
+  return (
+    <Workspace
+      form={
+        <>
+          <EnginePicker />
+          <Field label={accept.includes("audio") ? "Audio or video" : "Video"} hint="Up to 200 MB">
+            <FileDrop accept={accept} file={file} onFile={setFile} hint={hint} />
+          </Field>
+          <Field label="Translate into">
+            <select value={language} onChange={(e) => setPicked(e.target.value)} className={inputClass}>
+              {languages.length === 0 && <option value="">Languages unavailable</option>}
+              {languages.map((l) => (
+                <option key={l.value} value={l.value}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {eng.has("lipsync") && (
+            <Field label="Lip sync" hint="Match the mouth to the new language">
+              <Segmented value={lipsync} onChange={setLipsync} options={[{ value: "yes", label: "On" }, { value: "no", label: "Off" }]} />
+            </Field>
+          )}
+          <SubmitButton busy={state.phase === "working"} disabled={!file || !language} busyLabel="Working" onClick={submit}>
+            Start
+          </SubmitButton>
+        </>
+      }
+      output={
+        <Output state={state} idle="The result appears here." working="This takes a few minutes. You can leave this page, it will be in your Library.">
+          {state.phase === "done" && (isVideo || accept === "video/*" ? <VideoResult id={state.id} name={`${resultName}.mp4`} /> : <AudioResult id={state.id} name={`${resultName}.mp3`} />)}
+        </Output>
+      }
+    />
+  );
+}

@@ -15,6 +15,8 @@ import {
 } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import { TOOLS, type StudioTool } from "@/lib/studio/tools";
+import type { PublicEngine } from "@/lib/studio/engines";
+import { FEATURE_LABELS } from "@/lib/studio/engine-catalog";
 import { AudioPlayer, WaveArt } from "@/components/studio/audio-player";
 import { MediaBg } from "@/components/studio/media";
 import type { JobState } from "@/components/studio/use-job";
@@ -28,18 +30,101 @@ export function useObjectUrl(file: File | null) {
   return url;
 }
 
-const ToolContext = React.createContext<{ id: string; art: StudioTool["media"] } | null>(null);
+type ToolCtx = { id: string; art: StudioTool["media"]; engines: PublicEngine[]; key: string; setKey: (k: string) => void };
+const ToolContext = React.createContext<ToolCtx | null>(null);
 
-/** Lets the banner and output stage know which tool they belong to, and its artwork. */
-export function ToolProvider({ toolId, art, children }: { toolId: string; art: StudioTool["media"]; children: React.ReactNode }) {
-  const value = React.useMemo(() => ({ id: toolId, art }), [toolId, art]);
+/** Lets the banner, stage and forms know which tool they belong to, its artwork and its engines. */
+export function ToolProvider({
+  toolId,
+  art,
+  engines,
+  children,
+}: {
+  toolId: string;
+  art: StudioTool["media"];
+  engines: PublicEngine[];
+  children: React.ReactNode;
+}) {
+  const [key, setKey] = React.useState(engines[0]?.key ?? "");
+  const value = React.useMemo(() => ({ id: toolId, art, engines, key, setKey }), [toolId, art, engines, key]);
   return <ToolContext.Provider value={value}>{children}</ToolContext.Provider>;
 }
+
 const useTool = () => {
   const ctx = React.useContext(ToolContext);
   const tool = TOOLS.find((t) => t.id === ctx?.id) ?? TOOLS[0];
   return { ...tool, media: ctx?.art ?? tool.media };
 };
+
+/** The engine the customer picked for this tool, plus what it supports. */
+export function useEngine() {
+  const ctx = React.useContext(ToolContext);
+  const engine = ctx?.engines.find((e) => e.key === ctx.key) ?? ctx?.engines[0];
+  return {
+    key: engine?.key ?? "",
+    engine,
+    has: (feature: string) => Boolean(engine?.features.includes(feature)),
+  };
+}
+
+export function costLabel(e: PublicEngine) {
+  const unit = e.cost_unit === "minute" ? " / min" : e.cost_unit === "1k_chars" ? " / 1,000 characters" : "";
+  if (e.credit_cost === 0) return "Free";
+  return `${e.credit_cost} ${e.credit_cost === 1 ? "credit" : "credits"}${unit}`;
+}
+
+/** Engine choice. One engine: a quiet price line. Two or more: a selectable card each. */
+export function EnginePicker() {
+  const ctx = React.useContext(ToolContext);
+  if (!ctx || ctx.engines.length === 0) return null;
+
+  if (ctx.engines.length === 1) {
+    const e = ctx.engines[0];
+    return (
+      <p className="flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2 text-xs text-white/60 ring-1 ring-white/10">
+        <span>{e.label}{e.description ? ` · ${e.description}` : ""}</span>
+        <span className="font-medium text-white">{costLabel(e)}</span>
+      </p>
+    );
+  }
+
+  return (
+    <Field label="Engine">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        {ctx.engines.map((e) => {
+          const active = e.key === ctx.key;
+          return (
+            <button
+              key={e.key}
+              type="button"
+              onClick={() => ctx.setKey(e.key)}
+              className={cn(
+                "flex cursor-pointer flex-col gap-1.5 rounded-xl p-3 text-left ring-1 transition-colors",
+                active ? "bg-white/10 ring-white/40" : "bg-white/[0.03] ring-white/10 hover:bg-white/[0.06]"
+              )}
+            >
+              <span className="flex items-center justify-between gap-2">
+                <span className="text-sm font-semibold">{e.label}</span>
+                {active && <LuCheck className="size-4" />}
+              </span>
+              {e.description && <span className="text-xs text-white/55">{e.description}</span>}
+              <span className="text-xs font-medium text-white/85">{costLabel(e)}</span>
+              {e.features.length > 0 && (
+                <span className="flex flex-wrap gap-1">
+                  {e.features.map((f) => (
+                    <span key={f} className="rounded-full bg-white/10 px-2 py-0.5 text-[0.65rem] text-white/60">
+                      {FEATURE_LABELS[f] ?? f}
+                    </span>
+                  ))}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </Field>
+  );
+}
 
 /** Cinematic banner: the tool's clip behind, gradient icon tile, name and blurb. */
 export function ToolHeader() {

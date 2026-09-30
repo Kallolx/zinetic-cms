@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useJob } from "@/components/studio/use-job";
-import { Field, Output, SubmitButton, TextArea, VideoResult, Workspace } from "@/components/studio/ui";
+import { Field, Output, SubmitButton, TextArea, VideoResult, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 const IDEAS = [
   "A 30 second promo for a new lo-fi album release, calm and cinematic",
@@ -13,11 +13,13 @@ const IDEAS = [
 export function PromptVideoForm() {
   const [prompt, setPrompt] = React.useState("");
   const { state, run } = useJob();
+  const eng = useEngine();
 
   return (
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Describe your video" hint="Topic, tone, length">
             <TextArea value={prompt} onChange={setPrompt} max={2000} rows={8} placeholder="A 45 second video explaining..." />
             <div className="flex flex-col items-start gap-2">
@@ -43,7 +45,7 @@ export function PromptVideoForm() {
                   fetch("/api/studio/video/agent", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt }),
+                    body: JSON.stringify({ engine: eng.key, prompt }),
                   }),
                 { async: true, message: "Your video is being made" }
               )

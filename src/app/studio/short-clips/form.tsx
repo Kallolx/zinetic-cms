@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useJob } from "@/components/studio/use-job";
-import { DownloadLink, Field, FileDrop, Output, Segmented, SubmitButton, Workspace } from "@/components/studio/ui";
+import { DownloadLink, Field, FileDrop, Output, Segmented, SubmitButton, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 export function ClipsForm() {
   const [file, setFile] = React.useState<File | null>(null);
@@ -10,9 +10,11 @@ export function ClipsForm() {
   const [length, setLength] = React.useState("45");
   const [format, setFormat] = React.useState("vertical");
   const { state, run } = useJob<{ ids: string[] }>();
+  const eng = useEngine();
 
   function submit() {
     const fd = new FormData();
+    fd.append("engine", eng.key);
     fd.append("video", file!);
     fd.append("count", count);
     fd.append("length", length);
@@ -26,6 +28,7 @@ export function ClipsForm() {
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Long video" hint="Up to 200 MB">
             <FileDrop accept="video/*" file={file} onFile={setFile} hint="Podcasts, interviews, talks and tutorials work best." />
           </Field>

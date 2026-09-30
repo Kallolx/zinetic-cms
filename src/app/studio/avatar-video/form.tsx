@@ -3,7 +3,7 @@
 import * as React from "react";
 import { AvatarPicker, type AvatarItem } from "@/components/studio/avatar-picker";
 import { useJob } from "@/components/studio/use-job";
-import { Field, Output, Segmented, SubmitButton, TextArea, VideoResult, VoicePicker, Workspace, type PickerItem } from "@/components/studio/ui";
+import { Field, Output, Segmented, SubmitButton, TextArea, VideoResult, VoicePicker, Workspace, type PickerItem, EnginePicker, useEngine } from "@/components/studio/ui";
 
 export function AvatarVideoForm({ avatars, voices }: { avatars: AvatarItem[]; voices: PickerItem[] }) {
   const [avatarId, setAvatarId] = React.useState(avatars[0]?.id ?? "");
@@ -12,6 +12,7 @@ export function AvatarVideoForm({ avatars, voices }: { avatars: AvatarItem[]; vo
   const [script, setScript] = React.useState("");
   const [ratio, setRatio] = React.useState("16:9");
   const { state, run } = useJob();
+  const eng = useEngine();
 
   function submit() {
     return run(
@@ -19,7 +20,7 @@ export function AvatarVideoForm({ avatars, voices }: { avatars: AvatarItem[]; vo
         fetch("/api/studio/video/avatar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ [mine ? "myAvatarId" : "avatarId"]: avatarId, voiceId, script, ratio }),
+          body: JSON.stringify({ engine: eng.key, [mine ? "myAvatarId" : "avatarId"]: avatarId, voiceId, script, ratio }),
         }),
       { async: true, message: "Your video is being made" }
     );
@@ -29,6 +30,7 @@ export function AvatarVideoForm({ avatars, voices }: { avatars: AvatarItem[]; vo
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Avatar">
             <AvatarPicker items={avatars} value={avatarId} onChange={(id, m) => { setAvatarId(id); setMine(m); }} />
           </Field>

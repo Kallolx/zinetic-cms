@@ -4,7 +4,7 @@ import * as React from "react";
 import { LuDownload } from "react-icons/lu";
 import type { Transcript } from "@/lib/studio/elevenlabs";
 import { useJob } from "@/components/studio/use-job";
-import { Field, FileDrop, Output, Segmented, SubmitButton, Workspace } from "@/components/studio/ui";
+import { Field, FileDrop, Output, Segmented, SubmitButton, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 const clock = (s: number) => {
   const m = Math.floor(s / 60);
@@ -48,9 +48,11 @@ export function TranscribeForm() {
   const [file, setFile] = React.useState<File | null>(null);
   const [speakers, setSpeakers] = React.useState("yes");
   const { state, run } = useJob<{ transcript: Transcript }>();
+  const eng = useEngine();
 
   function submit() {
     const fd = new FormData();
+    fd.append("engine", eng.key);
     fd.append("file", file!);
     fd.append("diarize", speakers === "yes" ? "true" : "false");
     return run(() => fetch("/api/studio/transcribe", { method: "POST", body: fd }));
@@ -64,12 +66,15 @@ export function TranscribeForm() {
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Audio or video" hint="Up to 200 MB">
             <FileDrop accept="audio/*,video/*" file={file} onFile={setFile} hint="The language is detected automatically." />
           </Field>
+          {eng.has("speakers") && (
           <Field label="Label speakers">
             <Segmented value={speakers} onChange={setSpeakers} options={[{ value: "yes", label: "Yes" }, { value: "no", label: "No" }]} />
           </Field>
+          )}
           <SubmitButton busy={state.phase === "working"} disabled={!file} busyLabel="Transcribing" onClick={submit}>
             Transcribe
           </SubmitButton>

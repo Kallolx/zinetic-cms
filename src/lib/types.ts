@@ -16,7 +16,7 @@ export type Profile = {
   blocked_by: string | null;
 };
 
-export type WalletTxType = "topup" | "check_charge" | "refund" | "adjustment";
+export type WalletTxType = "topup" | "check_charge" | "studio_charge" | "refund" | "adjustment";
 
 export type WalletTransaction = {
   id: string;

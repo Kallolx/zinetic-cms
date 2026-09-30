@@ -38,6 +38,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   const g = { id: row.id, userId: row.user_id, kind: row.kind, provider: row.provider, title: row.title };
 
+  // dubbing and video translation run on either provider, the row remembers which
   if (row.provider === "elevenlabs") {
     const s = await dubbingStatus(row.provider_job_id);
     if (s.status === "failed") {
@@ -56,10 +57,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ status: "processing" });
   }
 
-  const s: JobState =
-    row.kind === "video-translation" || row.kind === "translation-lipsync"
-      ? await translateStatus(row.provider_job_id)
-      : await videoStatus(row.provider_job_id);
+  const isTranslation = row.kind === "dubbing" || row.kind === "video-translation" || row.kind === "translation-lipsync";
+  const s: JobState = isTranslation ? await translateStatus(row.provider_job_id) : await videoStatus(row.provider_job_id);
 
   if (s.status === "failed") {
     await failGeneration(g, s.error ?? "Failed");

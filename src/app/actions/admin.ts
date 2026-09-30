@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { IMPERSONATE_COOKIE } from "@/lib/supabase/dashboard-session";
+import { COST_UNITS, providerSupports } from "@/lib/studio/engine-catalog";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -222,5 +223,82 @@ export async function setUserProduct(userId: string, product: string, enabled: b
 
   if (error) return { error: error.message };
   revalidatePath("/admin/products");
+  return { error: null };
+}
+
+export type EngineInput = {
+  id?: string;
+  service: string;
+  key: string;
+  label: string;
+  description: string;
+  provider: string;
+  model: string;
+  credit_cost: number;
+  cost_unit: string;
+  enabled: boolean;
+  features: string[];
+  max_duration_seconds: number | null;
+  max_file_mb: number | null;
+  max_chars: number | null;
+  options: Record<string, unknown>;
+  sort: number;
+};
+
+/** Creates or updates one AI Studio engine. Everything about it is data, not code. */
+export async function saveEngine(input: EngineInput) {
+  await requireAdmin();
+  const key = input.key.trim().toLowerCase();
+  if (!input.service || !/^[a-z0-9-]{1,24}$/.test(key)) return { error: "Engine key must be short letters or numbers, like v1 or v2." };
+  if (!input.label.trim()) return { error: "Give the engine a name customers will see." };
+  if (!providerSupports(input.provider, input.service)) return { error: "That provider has no adapter for this service yet." };
+  if (!(input.credit_cost >= 0)) return { error: "Credit cost must be zero or more." };
+  if (!COST_UNITS.some((u) => u.value === input.cost_unit)) return { error: "Choose how the cost is counted." };
+
+  const row = {
+    service: input.service,
+    key,
+    label: input.label.trim(),
+    description: input.description.trim() || null,
+    provider: input.provider,
+    model: input.model.trim() || null,
+    credit_cost: input.credit_cost,
+    cost_unit: input.cost_unit,
+    enabled: input.enabled,
+    features: input.features.map((f) => f.trim()).filter(Boolean),
+    max_duration_seconds: input.max_duration_seconds || null,
+    max_file_mb: input.max_file_mb || null,
+    max_chars: input.max_chars || null,
+    options: input.options ?? {},
+    sort: input.sort || 0,
+    updated_at: new Date().toISOString(),
+  };
+
+  const db = createAdminClient();
+  const { error } = input.id
+    ? await db.from("studio_engines").update(row).eq("id", input.id)
+    : await db.from("studio_engines").insert(row);
+  if (error) return { error: error.code === "23505" ? "This service already has an engine with that key." : error.message };
+
+  revalidatePath("/admin/engines");
+  revalidatePath("/studio", "layout");
+  return { error: null };
+}
+
+export async function setEngineEnabled(id: string, enabled: boolean) {
+  await requireAdmin();
+  const { error } = await createAdminClient().from("studio_engines").update({ enabled, updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/engines");
+  revalidatePath("/studio", "layout");
+  return { error: null };
+}
+
+export async function deleteEngine(id: string) {
+  await requireAdmin();
+  const { error } = await createAdminClient().from("studio_engines").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/engines");
+  revalidatePath("/studio", "layout");
   return { error: null };
 }

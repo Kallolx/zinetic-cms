@@ -3,10 +3,11 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { LuCheck } from "react-icons/lu";
-import { Field, FileDrop, inputClass, SubmitButton, useObjectUrl, Workspace } from "@/components/studio/ui";
+import { Field, FileDrop, inputClass, SubmitButton, useObjectUrl, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 export function CreatorForm() {
   const router = useRouter();
+  const eng = useEngine();
   const [name, setName] = React.useState("");
   const [photo, setPhoto] = React.useState<File | null>(null);
   const [busy, setBusy] = React.useState(false);
@@ -19,6 +20,7 @@ export function CreatorForm() {
     setError(null);
     setDone(false);
     const fd = new FormData();
+    fd.append("engine", eng.key);
     fd.append("name", name);
     fd.append("photo", photo!);
     try {
@@ -42,6 +44,7 @@ export function CreatorForm() {
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Name">
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Anika, presenter" className={inputClass} />
           </Field>

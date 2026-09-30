@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useJob } from "@/components/studio/use-job";
-import { Field, FileDrop, Output, Segmented, SubmitButton, VideoResult, Workspace } from "@/components/studio/ui";
+import { Field, FileDrop, Output, Segmented, SubmitButton, VideoResult, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 type Report = { fillers: number; pauses: number; savedSeconds: number; originalSeconds: number };
 
@@ -11,9 +11,11 @@ export function FillerForm() {
   const [fillers, setFillers] = React.useState("yes");
   const [pauses, setPauses] = React.useState("1");
   const { state, run } = useJob<Report>();
+  const eng = useEngine();
 
   function submit() {
     const fd = new FormData();
+    fd.append("engine", eng.key);
     fd.append("video", file!);
     fd.append("fillers", fillers === "yes" ? "true" : "false");
     fd.append("pauses", pauses === "off" ? "0" : pauses);
@@ -26,6 +28,7 @@ export function FillerForm() {
     <Workspace
       form={
         <>
+          <EnginePicker />
           <Field label="Video" hint="Up to 200 MB">
             <FileDrop accept="video/*" file={file} onFile={setFile} hint="The speech is transcribed, then the ums and long pauses are cut out." />
           </Field>

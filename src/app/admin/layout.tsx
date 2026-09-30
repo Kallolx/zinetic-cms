@@ -32,7 +32,10 @@ const navItems: NavItem[] = [
     href: "/admin/studio",
     label: "AI Studio",
     icon: <LuAudioLines />,
-    children: [{ href: "/admin/studio", label: "Usage", icon: null }],
+    children: [
+      { href: "/admin/studio", label: "Usage", icon: null },
+      { href: "/admin/engines", label: "Engines and pricing", icon: null },
+    ],
   },
   { href: "#", label: "Music Distribution", icon: <LuDisc3 />, soon: true },
 ];
