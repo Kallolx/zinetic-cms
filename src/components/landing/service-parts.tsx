@@ -2,8 +2,9 @@ import Link from "next/link";
 import { LuArrowUpRight, LuCheck, LuPlus } from "react-icons/lu";
 import { AutoVideo, Reveal } from "@/components/landing/primitives";
 import { ZButton } from "@/components/landing/button";
-import { formatPrice, type Service } from "@/lib/landing-services";
-import { SERVICE_PAGES, fromPrice, serviceHref } from "@/lib/service-pages";
+import type { Service } from "@/lib/landing-services";
+import { SERVICE_PAGES, serviceHref } from "@/lib/service-pages";
+import { FromPrice, PriceBlock } from "@/components/landing/currency";
 import { cn } from "@/lib/utils";
 
 export function ServiceCard({ service, delay = 0 }: { service: Service; delay?: number }) {
@@ -18,7 +19,7 @@ export function ServiceCard({ service, delay = 0 }: { service: Service; delay?: 
           <AutoVideo src={page.hero} className="transition-transform duration-700 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
           <span className="absolute top-3.5 right-3.5 rounded-full bg-black/45 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
-            {fromPrice(service)}
+            <FromPrice service={service} />
           </span>
         </div>
         <div className="flex flex-1 flex-col p-5 sm:p-6">
@@ -45,7 +46,6 @@ export function TierCards({ service }: { service: Service }) {
       )}
     >
       {service.tiers.map((tier, i) => {
-        const { amount, suffix } = formatPrice(tier);
         const featured = i === featuredIndex;
         return (
           <Reveal key={tier.name} delay={i * 0.06} className="min-w-0">
@@ -61,10 +61,7 @@ export function TierCards({ service }: { service: Service }) {
                 </span>
               )}
               <p className="text-sm font-semibold uppercase tracking-[0.14em] opacity-70">{tier.name}</p>
-              <p className="mt-4 flex flex-wrap items-baseline gap-x-1">
-                <span className="zl-display text-[2.6rem] font-bold">{amount}</span>
-                <span className="text-sm opacity-60">{suffix}</span>
-              </p>
+              <PriceBlock usd={tier.price} period={tier.period} size="xl" className="mt-4" />
               <p className="mt-1 font-medium">{tier.quota}</p>
               {tier.perks && (
                 <ul className="mt-5 flex flex-col gap-2 text-sm">

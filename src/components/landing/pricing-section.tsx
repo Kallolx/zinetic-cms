@@ -4,8 +4,9 @@ import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { LuCheck, LuShieldCheck } from "react-icons/lu";
 import { Reveal, SectionHeading } from "@/components/landing/primitives";
-import { CATEGORIES, formatPrice, servicesIn, type ServiceCategory } from "@/lib/landing-services";
+import { CATEGORIES, servicesIn, type ServiceCategory } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
+import { PriceBlock } from "@/components/landing/currency";
 import { ZButton } from "@/components/landing/button";
 
 export function PricingSection() {
@@ -103,7 +104,6 @@ export function PricingSection() {
               )}
             >
               {service.tiers.map((tier, i) => {
-                const { amount, suffix } = formatPrice(tier);
                 const featured = i === featuredIndex;
                 return (
                   <div
@@ -121,10 +121,7 @@ export function PricingSection() {
                       </span>
                     )}
                     <p className="text-sm font-semibold uppercase tracking-[0.14em] opacity-70">{tier.name}</p>
-                    <p className="mt-4 flex flex-wrap items-baseline gap-x-1">
-                      <span className="zl-display text-[2.6rem] font-bold">{amount}</span>
-                      <span className="text-sm opacity-60">{suffix}</span>
-                    </p>
+                    <PriceBlock usd={tier.price} period={tier.period} size="xl" className="mt-4" />
                     <p className="mt-1 font-medium">{tier.quota}</p>
                     {tier.perks && (
                       <ul className="mt-5 flex flex-col gap-2 text-sm">

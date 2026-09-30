@@ -3,28 +3,22 @@ import Image from "next/image";
 import {
   LuArrowLeft,
   LuAudioLines,
-  LuChartBar,
   LuClapperboard,
-  LuDisc3,
   LuClock,
+  LuDisc3,
+  LuLifeBuoy,
   LuMail,
-  LuShieldCheck,
 } from "react-icons/lu";
 import Aurora from "@/components/aurora";
 import { ZButton } from "@/components/landing/button";
 import { Reveal } from "@/components/landing/primitives";
 import { displayFont, serifFont } from "@/components/landing/fonts";
+import { TicketStatus } from "@/components/landing/ticket-status";
 
 export const metadata = {
   title: "Client Login | Zinetic Music",
   description: "Choose the Zinetic Music dashboard you want to open.",
 };
-
-const points = [
-  { icon: LuShieldCheck, text: "Instantly check which network a channel belongs to" },
-  { icon: LuMail, text: "Get the network's contact email in seconds" },
-  { icon: LuChartBar, text: "Track every check, claim, and wallet transaction in one place" },
-];
 
 type Dashboard = {
   name: string;
@@ -34,16 +28,6 @@ type Dashboard = {
 };
 
 const DASHBOARDS: Dashboard[] = [
-  {
-    name: "Content Manager",
-    description: "YouTube MCN checker and copyright management.",
-    href: "/login",
-    logo: (
-      <span className="flex size-16 shrink-0 sm:size-20 items-center justify-center rounded-3xl bg-[#c2185b] shadow-[0_16px_40px_-14px_rgb(194_24_91/0.85)]">
-        <Image src="/brand/logo-slideBar.png" alt="" width={52} height={52} className="size-10 sm:size-[52px]" />
-      </span>
-    ),
-  },
   {
     name: "Music Distribution",
     description: "Releases, royalties and analytics.",
@@ -63,12 +47,56 @@ const DASHBOARDS: Dashboard[] = [
       </span>
     ),
   },
+  {
+    name: "Channel Checker",
+    description: "YouTube MCN checker and copyright management (Content Manager).",
+    href: "/login",
+    logo: (
+      <span className="flex size-16 shrink-0 sm:size-20 items-center justify-center rounded-3xl bg-[#c2185b] shadow-[0_16px_40px_-14px_rgb(194_24_91/0.85)]">
+        <Image src="/brand/logo-slideBar.png" alt="" width={52} height={52} className="size-10 sm:size-[52px]" />
+      </span>
+    ),
+  },
 ];
+
+function HelpDesk({ className }: { className?: string }) {
+  return (
+    <section
+      aria-labelledby={className?.includes("md:hidden") ? "help-desk-mobile" : "help-desk"}
+      className={`relative overflow-hidden rounded-3xl border border-white/15 bg-black/35 p-5 backdrop-blur-xl sm:p-6 ${className ?? ""}`}
+    >
+      <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-[#ff3d86]/25 blur-3xl" />
+      <div className="relative flex items-start gap-4">
+        <span className="zl-grad-bg flex size-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_12px_30px_-12px_rgb(255_61_134/0.8)]">
+          <LuLifeBuoy className="size-6" />
+        </span>
+        <div className="min-w-0">
+          <h2 id={className?.includes("md:hidden") ? "help-desk-mobile" : "help-desk"} className="font-heading text-xl font-bold">
+            Help Desk
+          </h2>
+          <p className="mt-1 text-sm text-white/65">Questions about a dashboard, your account or an order? Write to us.</p>
+          <a
+            href="mailto:support@zineticmusic.com"
+            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-white underline decoration-[#ff3d86] underline-offset-4"
+          >
+            <LuMail className="size-4" /> support@zineticmusic.com
+          </a>
+        </div>
+      </div>
+
+      <div className="relative mt-6 border-t border-white/10 pt-5">
+        <h3 className="font-semibold">Check Support Status</h3>
+        <p className="mt-1 mb-4 text-sm text-white/60">Enter the ticket ID from your submission confirmation.</p>
+        <TicketStatus />
+      </div>
+    </section>
+  );
+}
 
 export default function ClientLoginPage() {
   return (
     <div className={`zl dark ${displayFont.variable} ${serifFont.variable} grid min-h-screen grid-cols-1 md:grid-cols-2`}>
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-[#0f0f0f] p-10 text-white md:flex">
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-[#0f0f0f] p-10 text-white md:sticky md:top-0 md:flex md:h-screen">
         <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-90">
           <Aurora colorStops={["#3d8bff", "#9b4dff", "#ff3d86"]} amplitude={1.2} blend={0.6} speed={0.8} />
         </div>
@@ -78,30 +106,15 @@ export default function ClientLoginPage() {
           <span className="font-heading text-lg font-semibold">Zinetic Music</span>
         </Link>
 
-        <div className="relative z-10 flex flex-col gap-8">
+        <div className="relative z-10 flex flex-col gap-7">
           <div className="flex w-fit items-center gap-2 rounded-md bg-white/10 px-3 py-1.5 text-sm text-white/80">
-            <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"
-                fill="#FF0000"
-              />
-              <polygon points="9.545,15.568 15.818,12 9.545,8.432" fill="#FFFFFF" />
-            </svg>
-            Built for YouTube
+            <Image src="/brand/logo.png" alt="" width={899} height={1140} style={{ height: 20, width: "auto" }} />
+            One account, every dashboard
           </div>
           <h2 className="font-heading text-4xl leading-tight font-bold text-balance">
-            YouTube MCN Checker &amp; Copyright Management
+            Music, AI and creator tools, all in one place
           </h2>
-          <ul className="flex flex-col gap-4">
-            {points.map((p) => (
-              <li key={p.text} className="flex items-start gap-3 text-white/80">
-                <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10">
-                  <p.icon className="size-4" />
-                </div>
-                <span className="text-[0.95rem] leading-relaxed">{p.text}</span>
-              </li>
-            ))}
-          </ul>
+          <HelpDesk />
         </div>
 
         <p className="relative z-10 text-xs text-white/40">
@@ -169,6 +182,10 @@ export default function ClientLoginPage() {
                 );
               })}
             </ul>
+
+            <Reveal delay={0.35}>
+              <HelpDesk className="mt-8 md:hidden" />
+            </Reveal>
 
             <Reveal delay={0.4}>
               <p className="mt-8 text-center text-sm text-white/50">

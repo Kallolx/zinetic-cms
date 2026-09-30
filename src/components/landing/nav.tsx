@@ -11,7 +11,8 @@ import { cn } from "@/lib/utils";
 import { ZButton } from "@/components/landing/button";
 import { displayFont, serifFont } from "@/components/landing/fonts";
 import { CATEGORIES, servicesIn } from "@/lib/landing-services";
-import { fromPrice, serviceHref } from "@/lib/service-pages";
+import { CurrencyToggle, FromPrice } from "@/components/landing/currency";
+import { serviceHref } from "@/lib/service-pages";
 
 const LINKS = [
   { label: "Pricing", href: "/#pricing" },
@@ -51,7 +52,9 @@ function MegaMenu({ onNavigate }: { onNavigate: () => void }) {
                         <span className="block text-[0.95rem] font-medium leading-snug text-white/95 group-hover:text-white">
                           {s.name}
                         </span>
-                        <span className="mt-0.5 block text-xs text-white/45">{fromPrice(s)}</span>
+                        <span className="mt-0.5 block text-xs text-white/45">
+                          <FromPrice service={s} />
+                        </span>
                       </span>
                       <LuArrowUpRight className="mt-1 size-4 shrink-0 -translate-x-1 text-white/0 transition-all duration-300 group-hover:translate-x-0 group-hover:text-[#ff5b8a]" />
                     </Link>
@@ -212,6 +215,10 @@ export function LandingNav() {
               </nav>
 
               <div className="relative flex flex-col gap-3 border-t border-(--zl-line) px-6 py-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-(--zl-muted)">Currency</span>
+                  <CurrencyToggle />
+                </div>
                 <ZButton href="/client-login" variant="outline" arrow={false} className="w-full" onClick={() => setSheetOpen(false)}>
                   Log in
                 </ZButton>
@@ -254,7 +261,8 @@ export function LandingNav() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="hidden sm:block">
+          <CurrencyToggle className="hidden sm:flex" />
+          <span className="hidden md:block">
             <ZButton href="/client-login" variant="glass" size="sm" arrow={false}>
               Log in
             </ZButton>

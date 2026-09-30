@@ -7,6 +7,7 @@ import { Eyebrow, Reveal } from "@/components/landing/primitives";
 import { SERVICES } from "@/lib/landing-services";
 import { CHECK_PRICE } from "@/lib/pricing-plans";
 import { serviceHref } from "@/lib/service-pages";
+import { PriceText } from "@/components/landing/currency";
 import { ZButton } from "@/components/landing/button";
 
 const mcn = SERVICES.find((s) => s.id === "mcn-checker")!;
@@ -104,7 +105,7 @@ export function CreatorSection() {
               Learn more
             </ZButton>
             <p className="text-sm text-(--zl-muted)">
-              ${CHECK_PRICE} per check, down to less with credit bundles
+              <PriceText usd={CHECK_PRICE} /> per check, down to less with credit bundles
             </p>
           </div>
         </Reveal>

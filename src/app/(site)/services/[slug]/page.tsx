@@ -8,7 +8,8 @@ import { ServiceCard, ServiceFaq, TierCards } from "@/components/landing/service
 import { ZButton } from "@/components/landing/button";
 import { FinalCta } from "@/components/landing/closing";
 import { CATEGORIES, SERVICES } from "@/lib/landing-services";
-import { SERVICE_PAGES, fromPrice, getService } from "@/lib/service-pages";
+import { FromPrice } from "@/components/landing/currency";
+import { SERVICE_PAGES, getService } from "@/lib/service-pages";
 
 export function generateStaticParams() {
   return SERVICES.map((s) => ({ slug: s.id }));
@@ -62,7 +63,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
             <ZButton href="#plans" variant="outline" size="lg" arrow={false}>
               See pricing
             </ZButton>
-            <span className="text-sm text-(--zl-muted)">{fromPrice(service)}</span>
+            <FromPrice service={service} className="text-sm text-(--zl-muted)" />
           </div>
         }
         aside={

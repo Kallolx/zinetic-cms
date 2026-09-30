@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PasswordInput } from "@/components/password-input";
 import { ZButton } from "@/components/landing/button";
-import { formatPrice, type Service } from "@/lib/landing-services";
+import type { Service } from "@/lib/landing-services";
+import { USD_TO_BDT_RATE, formatMoney, periodSuffix } from "@/lib/currency";
+import { PriceBlock, useCurrency } from "@/components/landing/currency";
 import { cn } from "@/lib/utils";
 
 function billing(period: "year" | "month" | "avatar" | null | undefined) {
@@ -28,7 +30,9 @@ export function CheckoutForm({ service, initialPlan }: { service: Service; initi
   const [doneEmail, setDoneEmail] = React.useState<string | null>(null);
 
   const tier = service.tiers.find((t) => t.name === planName) ?? service.tiers[0];
-  const { amount, suffix } = formatPrice(tier);
+  const { currency } = useCurrency();
+  const amount = formatMoney(tier.price, currency);
+  const suffix = periodSuffix(tier.period);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -76,7 +80,6 @@ export function CheckoutForm({ service, initialPlan }: { service: Service; initi
           <p className="mt-1 text-sm text-(--zl-muted)">{service.name}</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {service.tiers.map((t) => {
-              const p = formatPrice(t);
               const active = t.name === tier.name;
               return (
                 <button
@@ -95,10 +98,7 @@ export function CheckoutForm({ service, initialPlan }: { service: Service; initi
                     <span className="block font-semibold">{t.name}</span>
                     <span className="block text-sm text-(--zl-muted)">{t.quota}</span>
                   </span>
-                  <span className="shrink-0 text-right">
-                    <span className="zl-display block text-lg font-bold">{p.amount}</span>
-                    <span className="block text-xs text-(--zl-muted)">{p.suffix}</span>
-                  </span>
+                  <PriceBlock usd={t.price} period={t.period} size="lg" align="right" className="shrink-0" />
                 </button>
               );
             })}
@@ -208,7 +208,7 @@ export function CheckoutForm({ service, initialPlan }: { service: Service; initi
                 {tier.name} plan, {tier.quota}
               </p>
             </div>
-            <p className="shrink-0 font-semibold">{amount}</p>
+            <p className="shrink-0 font-semibold">{amount}{suffix}</p>
           </div>
           {tier.perks && (
             <ul className="mt-5 flex flex-col gap-2 border-t border-(--zl-line) pt-5 text-sm">
@@ -225,13 +225,10 @@ export function CheckoutForm({ service, initialPlan }: { service: Service; initi
               <p className="text-sm text-(--zl-muted)">Total</p>
               <p className="text-xs text-(--zl-muted)">{billing(tier.period)}</p>
             </div>
-            <p className="zl-display text-3xl font-bold">
-              {amount}
-              <span className="text-sm font-medium text-(--zl-muted)">{suffix}</span>
-            </p>
+            <PriceBlock usd={tier.price} period={tier.period} size="xl" align="right" />
           </div>
           <p className="mt-5 text-xs leading-relaxed text-(--zl-muted)">
-            Prices are in USD. Payments are made in BDT through SSLCommerz.
+            Prices are in USD. Payments are made in BDT through SSLCommerz. BDT amounts use a rate of $1 = ৳{USD_TO_BDT_RATE}.
           </p>
         </div>
       </aside>

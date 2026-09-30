@@ -5,18 +5,14 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { LuScissors, LuSparkles, LuWandSparkles } from "react-icons/lu";
 import { AutoVideo, Reveal, SectionHeading } from "@/components/landing/primitives";
-import { MEDIA, SERVICES, formatPrice, type Service } from "@/lib/landing-services";
+import { MEDIA, SERVICES, type Service } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
 import { serviceHref } from "@/lib/service-pages";
+import { FromPrice } from "@/components/landing/currency";
 import { ZButton, ZLink } from "@/components/landing/button";
 
 const byId = (id: string) => SERVICES.find((s) => s.id === id)!;
 
-function fromPrice(s: Service) {
-  const min = s.tiers.reduce((a, b) => (b.price < a.price ? b : a));
-  const { amount, suffix } = formatPrice(min);
-  return `From ${amount}${suffix}`;
-}
 
 function CardHead({ service }: { service: Service }) {
   return (
@@ -24,7 +20,7 @@ function CardHead({ service }: { service: Service }) {
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <h3 className="zl-display text-2xl font-semibold sm:text-[1.7rem]">{service.name}</h3>
         <span className="shrink-0 rounded-full bg-(--zl-surface-2) px-2.5 py-1 text-xs font-medium text-(--zl-muted)">
-          {fromPrice(service)}
+          <FromPrice service={service} />
         </span>
       </div>
       <p className="mt-3 text-(--zl-muted)">{service.blurb}</p>

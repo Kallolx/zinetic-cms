@@ -5,9 +5,10 @@ import Image from "next/image";
 import { animate, motion, useInView, useReducedMotion } from "motion/react";
 import { LuCheck, LuSparkles } from "react-icons/lu";
 import { AutoVideo, Eyebrow, Reveal } from "@/components/landing/primitives";
-import { MEDIA, SERVICES, formatPrice } from "@/lib/landing-services";
+import { MEDIA, SERVICES } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
 import { serviceHref } from "@/lib/service-pages";
+import { PriceBlock } from "@/components/landing/currency";
 import { ZButton } from "@/components/landing/button";
 
 const distribution = SERVICES.find((s) => s.id === "distribution")!;
@@ -133,7 +134,6 @@ export function MusicSection() {
 
       <div className="mx-auto mt-20 grid max-w-7xl gap-5 md:grid-cols-3">
         {distribution.tiers.map((tier, i) => {
-          const { amount, suffix } = formatPrice(tier);
           const featured = i === 1;
           return (
             <Reveal key={tier.name} delay={i * 0.08}>
@@ -151,10 +151,7 @@ export function MusicSection() {
                   </span>
                 )}
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] opacity-70">{tier.name}</p>
-                <p className="mt-4 flex items-baseline gap-1">
-                  <span className="zl-display text-4xl font-bold">{amount}</span>
-                  <span className="text-sm opacity-60">{suffix}</span>
-                </p>
+                <PriceBlock usd={tier.price} period={tier.period} size="xl" className="mt-4" />
                 <p className="mt-2 font-medium">{tier.quota}</p>
                 <ul className="mt-6 flex flex-1 flex-col gap-2.5 text-sm">
                   {tier.perks?.map((perk) => (
@@ -208,7 +205,6 @@ export function MusicSection() {
             </div>
             <div className="flex flex-col justify-end gap-3">
               {generator.tiers.map((tier) => {
-                const { amount, suffix } = formatPrice(tier);
                 return (
                   <div
                     key={tier.name}
@@ -218,10 +214,7 @@ export function MusicSection() {
                       <p className="font-semibold">{tier.name}</p>
                       <p className="text-sm text-white/60">{tier.quota}</p>
                     </div>
-                    <p className="text-right">
-                      <span className="zl-display text-2xl font-bold">{amount}</span>
-                      <span className="text-xs text-white/60">{suffix}</span>
-                    </p>
+                    <PriceBlock usd={tier.price} period={tier.period} size="lg" align="right" />
                   </div>
                 );
               })}
