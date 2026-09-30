@@ -77,7 +77,11 @@ export function TierCards({ service }: { service: Service }) {
                 </ul>
               )}
               <div className="mt-auto pt-8">
-                <ZButton href="/client-login" variant={featured ? "primary" : "solid"} className="w-full">
+                <ZButton
+                  href={`/checkout?service=${service.id}&plan=${encodeURIComponent(tier.name)}`}
+                  variant={featured ? "primary" : "solid"}
+                  className="w-full"
+                >
                   {service.cta}
                 </ZButton>
               </div>

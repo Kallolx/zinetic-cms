@@ -138,7 +138,7 @@ export function PricingSection() {
                     )}
                     <div className="mt-auto pt-8">
                       <ZButton
-                        href="/client-login"
+                        href={`/checkout?service=${service.id}&plan=${encodeURIComponent(tier.name)}`}
                         variant={featured ? "primary" : "solid"}
                         className="w-full"
                       >

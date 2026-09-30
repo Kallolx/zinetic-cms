@@ -165,7 +165,7 @@ export function MusicSection() {
                   ))}
                 </ul>
                 <ZButton
-                  href="/client-login"
+                  href={`/checkout?service=distribution&plan=${encodeURIComponent(tier.name)}`}
                   variant={featured ? "primary" : "solid"}
                   className="mt-8 w-full"
                 >
@@ -225,7 +225,7 @@ export function MusicSection() {
                   </div>
                 );
               })}
-              <ZButton href="/client-login" className="mt-2 w-full">
+              <ZButton href="/checkout?service=music-generator" className="mt-2 w-full">
                 {generator.cta}
               </ZButton>
               <ZButton href={serviceHref("music-generator")} variant="glass" arrow={false} className="w-full">
