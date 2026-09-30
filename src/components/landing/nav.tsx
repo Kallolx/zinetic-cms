@@ -20,7 +20,6 @@ const LINKS = [
   { label: "FAQ", href: "/#faq", wide: true },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
-  { label: "Help Desk", href: "/client-login#help-desk" },
 ];
 
 const linkClass =

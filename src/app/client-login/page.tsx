@@ -23,8 +23,8 @@ const DASHBOARDS: Dashboard[] = [
     name: "Music Distribution",
     description: "Releases, royalties and analytics.",
     logo: (
-      <span className="flex size-16 shrink-0 items-center justify-center rounded-[20px] bg-gradient-to-br from-[#7c3aed] to-[#ec4899] sm:size-20 sm:rounded-[24px]">
-        <LuDisc3 className="size-8 text-white sm:size-10" />
+      <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#7c3aed] to-[#ec4899] sm:size-20 sm:rounded-[24px]">
+        <LuDisc3 className="size-6 text-white sm:size-10" />
       </span>
     ),
   },
@@ -32,9 +32,9 @@ const DASHBOARDS: Dashboard[] = [
     name: "AI Studio",
     description: "Voice, audio and video: dubbing, avatars, translation, lip sync and clips.",
     logo: (
-      <span className="relative flex size-16 shrink-0 items-center justify-center rounded-[20px] bg-gradient-to-br from-[#2563eb] via-[#7c3aed] to-[#f97316] sm:size-20 sm:rounded-[24px]">
-        <LuAudioLines className="size-7 -translate-x-1.5 -translate-y-1 text-white sm:size-9 sm:-translate-x-2" />
-        <LuClapperboard className="absolute size-5 translate-x-3 translate-y-3 text-white/90 sm:size-7 sm:translate-x-4 sm:translate-y-3.5" />
+      <span className="relative flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#2563eb] via-[#7c3aed] to-[#f97316] sm:size-20 sm:rounded-[24px]">
+        <LuAudioLines className="size-5 -translate-x-1 -translate-y-0.5 text-white sm:size-9 sm:-translate-x-2 sm:-translate-y-1" />
+        <LuClapperboard className="absolute size-4 translate-x-2.5 translate-y-2 text-white/90 sm:size-7 sm:translate-x-4 sm:translate-y-3.5" />
       </span>
     ),
   },
@@ -43,8 +43,8 @@ const DASHBOARDS: Dashboard[] = [
     description: "YouTube MCN checker and copyright management.",
     href: "/login",
     logo: (
-      <span className="flex size-16 shrink-0 items-center justify-center rounded-[20px] bg-[#c2185b] sm:size-20 sm:rounded-[24px]">
-        <Image src="/brand/logo-slideBar.png" alt="" width={52} height={52} className="size-10 sm:size-[52px]" />
+      <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-[#c2185b] sm:size-20 sm:rounded-[24px]">
+        <Image src="/brand/logo-slideBar.png" alt="" width={52} height={52} className="size-7 sm:size-[52px]" />
       </span>
     ),
   },
@@ -58,7 +58,7 @@ function HelpDesk({ id, className }: { id: string; className?: string }) {
       </h2>
       <a
         href="mailto:support@zineticmusic.com"
-        className="group mt-3 flex flex-wrap items-center gap-x-3 font-heading text-[1.6rem] leading-tight font-semibold sm:text-3xl"
+        className="group mt-3 flex flex-wrap items-center gap-x-3 font-heading text-xl leading-tight font-semibold sm:text-3xl"
       >
         <span className="break-all underline decoration-white/25 decoration-1 underline-offset-[6px] transition-colors group-hover:decoration-[#ff3d86]">
           support@zineticmusic.com
@@ -86,21 +86,21 @@ function Row({ d }: { d: Dashboard }) {
         <p
           className={
             d.href
-              ? "font-heading text-2xl font-semibold sm:text-[1.7rem]"
-              : "font-heading text-2xl font-semibold text-white/45 sm:text-[1.7rem]"
+              ? "font-heading text-base font-semibold sm:text-[1.7rem]"
+              : "font-heading text-base font-semibold text-white/45 sm:text-[1.7rem]"
           }
         >
           {d.name}
         </p>
-        <p className={d.href ? "mt-1 text-sm text-white/60" : "mt-1 text-sm text-white/30"}>{d.description}</p>
+        <p className={d.href ? "mt-0.5 text-xs text-white/60 sm:mt-1 sm:text-sm" : "mt-0.5 text-xs text-white/30 sm:mt-1 sm:text-sm"}>{d.description}</p>
       </div>
       {d.href ? (
-        <span className="flex shrink-0 items-center gap-2 text-sm font-semibold">
+        <span className="zl-btn zl-btn-primary zl-btn-sm shrink-0">
           Open
-          <LuArrowRight className="size-5 text-[#ff3d86] transition-transform duration-300 group-hover:translate-x-1.5" />
+          <LuArrowRight className="size-4" />
         </span>
       ) : (
-        <span aria-disabled className="flex shrink-0 items-center gap-1.5 text-sm text-white/35">
+        <span aria-disabled className="flex shrink-0 items-center gap-1.5 text-xs text-white/35 sm:text-sm">
           <LuClock className="size-4" /> Soon
         </span>
       )}
@@ -110,7 +110,7 @@ function Row({ d }: { d: Dashboard }) {
   return d.href ? (
     <Link
       href={d.href}
-      className="group relative flex items-center gap-5 px-1 py-7 transition-all duration-500 hover:bg-white/[0.035] hover:pl-4 sm:gap-6"
+      className="group relative flex items-center gap-3.5 px-1 py-4 transition-all duration-500 hover:bg-white/[0.035] sm:gap-6 sm:py-7 sm:hover:pl-4"
     >
       {body}
       <span
@@ -119,7 +119,7 @@ function Row({ d }: { d: Dashboard }) {
       />
     </Link>
   ) : (
-    <div className="flex items-center gap-5 px-1 py-7 sm:gap-6">{body}</div>
+    <div className="flex items-center gap-3.5 px-1 py-4 sm:gap-6 sm:py-7">{body}</div>
   );
 }
 
@@ -168,13 +168,18 @@ export default function ClientLoginPage() {
         <main className="flex flex-1 items-center justify-center px-6 pb-16 sm:px-10">
           <div className="w-full max-w-xl">
             <Reveal>
-              <h1 className="font-heading text-5xl leading-none font-bold sm:text-6xl">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-white/50 md:hidden">Client login</p>
+              <h2 className="mt-2 font-heading text-[clamp(1rem,5.3vw,1.65rem)] leading-tight font-bold md:hidden">
+                <span className="block whitespace-nowrap">Music, AI and creator tools,</span>
+                <span className="zl-serif zl-grad-text block whitespace-nowrap">all in one place</span>
+              </h2>
+              <h1 className="hidden font-heading text-5xl leading-none font-bold sm:text-6xl md:block">
                 Client <span className="zl-serif zl-grad-text">login</span>
               </h1>
-              <p className="mt-4 text-white/60">Choose the dashboard you want to open.</p>
+              <p className="mt-3 text-sm text-white/60 sm:mt-4 sm:text-base">Choose the dashboard you want to open.</p>
             </Reveal>
 
-            <ul className="mt-10 divide-y divide-white/10 border-y border-white/10">
+            <ul className="mt-7 divide-y divide-white/10 border-y border-white/10 sm:mt-10">
               {DASHBOARDS.map((d, i) => (
                 <li key={d.name}>
                   <Reveal delay={0.08 + i * 0.07} y={16}>

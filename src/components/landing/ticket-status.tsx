@@ -35,7 +35,7 @@ export function TicketStatus() {
 
   return (
     <div>
-      <form onSubmit={onSubmit} className="flex items-end gap-5">
+      <form onSubmit={onSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
         <label className="min-w-0 flex-1">
           <span className="sr-only">Ticket ID</span>
           <input
@@ -49,14 +49,14 @@ export function TicketStatus() {
         <button
           type="submit"
           disabled={loading}
-          className="group flex shrink-0 items-center gap-2 pb-3 text-sm font-semibold text-white disabled:opacity-60"
+          className="zl-btn zl-btn-primary zl-btn-md w-full shrink-0 disabled:opacity-70 sm:w-auto"
         >
           {loading ? (
             <LuLoaderCircle className="size-4 animate-spin" />
           ) : (
             <>
-              Check
-              <LuArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+              Check status
+              <LuArrowRight className="size-4" />
             </>
           )}
         </button>
