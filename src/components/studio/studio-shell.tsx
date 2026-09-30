@@ -26,7 +26,7 @@ function Row({ href, active, onNavigate, children }: { href: string; active: boo
   );
 }
 
-function Sidebar({ userName, userEmail, balance, impersonating, onNavigate }: { userName: string; userEmail: string; balance?: number; impersonating: boolean; onNavigate: () => void }) {
+function Sidebar({ onNavigate }: { onNavigate: () => void }) {
   const pathname = usePathname();
   const chip = "flex size-7 shrink-0 items-center justify-center rounded-lg [&_svg]:size-4";
 
@@ -74,27 +74,51 @@ function Sidebar({ userName, userEmail, balance, impersonating, onNavigate }: { 
         <Row href="/dashboard/support" active={false} onNavigate={onNavigate}>
           <span className={cn(chip, "bg-white/10")}><LuLifeBuoy /></span> Support
         </Row>
+      </div>
+    </div>
+  );
+}
+
+function TopBar({ userName, userEmail, balance, impersonating }: { userName: string; userEmail: string; balance?: number; impersonating: boolean }) {
+  const pathname = usePathname();
+  const tool = TOOLS.find((t) => t.href === pathname);
+  const title = pathname === "/studio" ? "Home" : pathname === "/studio/library" ? "Library" : (tool?.name ?? "AI Studio");
+  const label = userName || userEmail;
+
+  return (
+    <header className="sticky top-0 z-20 hidden h-16 items-center justify-between gap-4 border-b border-white/10 bg-[#08070a]/80 px-8 backdrop-blur-xl lg:flex">
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-white/45">AI Studio</span>
+        <span className="text-white/25">/</span>
+        <span className="font-medium">{title}</span>
+      </div>
+      <div className="flex items-center gap-3">
         {typeof balance === "number" && (
-          <div className="rounded-xl bg-white/5 px-3 py-2.5 text-xs text-white/60">
-            Balance <span className="float-right font-medium text-white">{formatCredits(balance)}</span>
-          </div>
-        )}
-        <form action={impersonating ? stopImpersonating : signOut} className="flex items-center gap-2.5 px-1.5">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500 text-xs font-semibold">
-            {(userName || userEmail).slice(0, 1).toUpperCase()}
+          <span className="flex h-9 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-sm ring-1 ring-white/10">
+            <span className="size-1.5 rounded-full bg-emerald-400" />
+            <span className="text-white/60">Balance</span>
+            <span className="font-medium">{formatCredits(balance)}</span>
           </span>
-          <span className="min-w-0 flex-1 truncate text-xs text-white/60">{userName || userEmail}</span>
+        )}
+        <Link href="/dashboard/support" className="flex h-9 items-center gap-2 rounded-full px-3 text-sm text-white/60 transition-colors hover:bg-white/5 hover:text-white">
+          <LuLifeBuoy className="size-4" /> Support
+        </Link>
+        <form action={impersonating ? stopImpersonating : signOut} className="flex items-center gap-2 rounded-full bg-white/[0.06] py-1 pr-1 pl-1 ring-1 ring-white/10">
+          <span className="flex size-7 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500 text-xs font-semibold">
+            {label.slice(0, 1).toUpperCase()}
+          </span>
+          <span className="hidden max-w-40 truncate text-sm xl:block">{label}</span>
           <button
             type="submit"
             aria-label={impersonating ? "Stop impersonating" : "Sign out"}
             title={impersonating ? "Stop impersonating" : "Sign out"}
-            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white"
+            className="flex size-7 cursor-pointer items-center justify-center rounded-full text-white/55 hover:bg-white/10 hover:text-white"
           >
             {impersonating ? <LuUserRoundX className="size-4" /> : <LuLogOut className="size-4" />}
           </button>
         </form>
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -113,7 +137,7 @@ export function StudioShell({
 }) {
   const [open, setOpen] = React.useState(false);
   const close = () => setOpen(false);
-  const props = { userName, userEmail, balance, impersonating, onNavigate: close };
+  const props = { onNavigate: close };
 
   return (
     <div className="zl dark min-h-screen bg-[#08070a] text-white">
@@ -129,6 +153,11 @@ export function StudioShell({
           <Image src="/brand/logo.png" alt="" width={899} height={1140} style={{ height: 24, width: "auto" }} />
           <span className="font-heading text-sm font-semibold">AI Studio</span>
         </Link>
+        <form action={impersonating ? stopImpersonating : signOut} className="ml-auto">
+          <button type="submit" aria-label="Sign out" className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white">
+            {impersonating ? <LuUserRoundX className="size-5" /> : <LuLogOut className="size-5" />}
+          </button>
+        </form>
       </header>
 
       {open && (
@@ -144,6 +173,7 @@ export function StudioShell({
       )}
 
       <main className="lg:pl-64">
+        <TopBar userName={userName} userEmail={userEmail} balance={balance} impersonating={impersonating} />
         {impersonating && (
           <p className="bg-amber-500/15 px-4 py-2 text-center text-xs text-amber-200">You are viewing this dashboard as a customer.</p>
         )}
