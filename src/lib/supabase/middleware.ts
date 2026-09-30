@@ -35,38 +35,63 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/register") ||
     path.startsWith("/forgot-password") ||
     path.startsWith("/reset-password");
-  const isProtectedRoute =
-    path.startsWith("/dashboard") || path.startsWith("/admin") || path.startsWith("/pending");
 
-  // the app's own subdomain (e.g. cms.zineticmusic.com) is the service,
-  // every other host (the marketing domain, the .vercel.app domain) is
-  // informational only and keeps its own landing page at "/". Any actual
-  // app route reached from a non-app host always bounces over to the app
-  // host, so auth and the app itself never actually run anywhere else.
-  const appHost = (() => {
+  // every dashboard is its own subdomain of the same app. The CMS lives on
+  // NEXT_PUBLIC_APP_URL, AI Studio on NEXT_PUBLIC_STUDIO_URL. Auth, admin and
+  // Supabase are shared, only the home route differs per host.
+  const hostOf = (value?: string) => {
     try {
-      return new URL(process.env.NEXT_PUBLIC_APP_URL ?? "").hostname;
+      return new URL(value ?? "").hostname;
     } catch {
       return "";
     }
-  })();
+  };
+  const cmsHost = hostOf(process.env.NEXT_PUBLIC_APP_URL);
+  const studioHost = hostOf(process.env.NEXT_PUBLIC_STUDIO_URL);
   const requestHost = (request.headers.get("host") ?? "").split(":")[0];
-  const isAppHost = Boolean(appHost) && requestHost === appHost;
+  const isStudioHost = Boolean(studioHost) && requestHost === studioHost;
+  const isAppHost = (Boolean(cmsHost) && requestHost === cmsHost) || isStudioHost;
+  const home = isStudioHost ? "/studio" : "/dashboard";
 
-  if (appHost && !isAppHost && (isAuthRoute || isProtectedRoute)) {
+  const isProtectedRoute =
+    path.startsWith("/dashboard") ||
+    path.startsWith("/admin") ||
+    path.startsWith("/pending") ||
+    path.startsWith("/studio") ||
+    path.startsWith("/api/studio");
+
+  // any other host (marketing domain, .vercel.app) stays informational, app
+  // routes reached there bounce to the CMS host.
+  if (cmsHost && !isAppHost && (isAuthRoute || isProtectedRoute)) {
     const url = request.nextUrl.clone();
-    url.host = appHost;
+    url.host = path.startsWith("/studio") && studioHost ? studioHost : cmsHost;
+    url.port = "";
+    return NextResponse.redirect(url);
+  }
+
+  // the two dashboards never serve each other's pages
+  if (isStudioHost && path.startsWith("/dashboard")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/studio";
+    return NextResponse.redirect(url);
+  }
+  if (isAppHost && !isStudioHost && path.startsWith("/studio") && studioHost) {
+    const url = request.nextUrl.clone();
+    url.host = studioHost;
     url.port = "";
     return NextResponse.redirect(url);
   }
 
   if (isAppHost && path === "/") {
     const url = request.nextUrl.clone();
-    url.pathname = user ? "/dashboard" : "/login";
+    url.pathname = user ? home : "/login";
     return NextResponse.redirect(url);
   }
 
   if (!user && isProtectedRoute) {
+    if (path.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -74,7 +99,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = home;
     return NextResponse.redirect(url);
   }
 

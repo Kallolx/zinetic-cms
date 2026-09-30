@@ -61,7 +61,12 @@ export async function signIn(formData: FormData): Promise<AuthResult> {
   if (profile?.status !== "approved") {
     redirect("/pending");
   }
-  redirect("/dashboard");
+  const host = ((await headers()).get("host") ?? "").split(":")[0];
+  let studioHost = "";
+  try {
+    studioHost = new URL(process.env.NEXT_PUBLIC_STUDIO_URL ?? "").hostname;
+  } catch {}
+  redirect(studioHost && host === studioHost ? "/studio" : "/dashboard");
 }
 
 export async function requestPasswordReset(formData: FormData): Promise<AuthResult> {
