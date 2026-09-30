@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // keeps the ffmpeg binary path real instead of a bundler-rewritten one
+  serverExternalPackages: ["ffmpeg-static"],
   // lets the marketing landing page be previewed locally at 127.0.0.1, since
   // "localhost" itself is treated as the app host by the middleware
   allowedDevOrigins: ["127.0.0.1"],

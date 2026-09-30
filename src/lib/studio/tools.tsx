@@ -56,8 +56,8 @@ export const TOOLS: StudioTool[] = [
   { id: "video-translation", name: "Video translation", blurb: "Translate a video, with optional lip sync.", group: "video", icon: LuVideo, href: "/studio/video-translation", kinds: ["video-translation", "translation-lipsync"], media: { type: "video", src: MEDIA.womanTalking }, accent: "from-cyan-500 to-blue-600" },
   { id: "prompt-video", name: "Prompt to video", blurb: "Describe a video and get it made.", group: "video", icon: LuSparkles, href: "/studio/prompt-video", kinds: ["prompt-video"], media: { type: "video", src: MEDIA.neonDancer }, accent: "from-fuchsia-500 to-indigo-600" },
   { id: "lip-sync", name: "Lip sync", blurb: "Match a video to new audio.", group: "video", icon: LuSmile, soon: "Needs a lip-sync provider", media: { type: "video", src: MEDIA.smilingSinger }, accent: "from-pink-500 to-red-500" },
-  { id: "short-clips", name: "Short clip generator", blurb: "Cut a long video into Shorts, Reels and TikToks.", group: "video", icon: LuScissors, soon: "Coming next", media: { type: "video", src: MEDIA.gimbalPhone }, accent: "from-lime-500 to-emerald-600" },
-  { id: "filler-remover", name: "Filler word remover", blurb: "Remove ums, ahs and long silences.", group: "video", icon: LuEraser, soon: "Coming next", media: { type: "video", src: MEDIA.ringLight }, accent: "from-yellow-500 to-orange-500" },
+  { id: "short-clips", name: "Short clip generator", blurb: "Cut a long video into Shorts, Reels and TikToks.", group: "video", icon: LuScissors, href: "/studio/short-clips", kinds: ["short-clips"], media: { type: "video", src: MEDIA.gimbalPhone }, accent: "from-lime-500 to-emerald-600" },
+  { id: "filler-remover", name: "Filler word remover", blurb: "Remove ums, ahs and long silences.", group: "video", icon: LuEraser, href: "/studio/filler-remover", kinds: ["filler-remover"], media: { type: "video", src: MEDIA.ringLight }, accent: "from-yellow-500 to-orange-500" },
 ];
 
 export const toolByHref = (href: string) => TOOLS.find((t) => t.href === href);
