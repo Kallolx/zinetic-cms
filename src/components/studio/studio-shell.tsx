@@ -4,76 +4,75 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LuClock, LuFolderOpen, LuHouse, LuLifeBuoy, LuLogOut, LuMenu, LuUserRoundX, LuX } from "react-icons/lu";
+import { LuFolderOpen, LuHouse, LuLifeBuoy, LuLogOut, LuMenu, LuUserRoundX, LuX } from "react-icons/lu";
 import { signOut } from "@/app/actions/auth";
 import { stopImpersonating } from "@/app/actions/admin";
 import { cn } from "@/lib/utils";
 import { GROUPS, TOOLS } from "@/lib/studio/tools";
 import { formatCredits } from "@/lib/credits";
 
-function Row({ href, active, onNavigate, children }: { href: string; active: boolean; onNavigate: () => void; children: React.ReactNode }) {
+// One neutral style for every item: quiet icon, light text, a soft highlight and a thin bar when active.
+function Row({ href, active, onNavigate, icon, children }: { href: string; active: boolean; onNavigate: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <Link
       href={href}
       onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm transition-colors",
-        active ? "bg-white/10 font-medium text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
+        "group relative flex items-center gap-3 rounded-lg px-3 py-[7px] text-[0.8125rem] transition-colors [&_svg]:size-[1.05rem] [&_svg]:shrink-0",
+        active ? "bg-white/[0.08] text-white" : "text-white/55 hover:bg-white/[0.04] hover:text-white"
       )}
     >
+      {active && <span aria-hidden className="absolute top-1/2 left-0 h-4 w-[2px] -translate-y-1/2 rounded-full bg-white" />}
+      <span className={cn("transition-colors", active ? "text-white" : "text-white/40 group-hover:text-white/80")}>{icon}</span>
       {children}
     </Link>
   );
 }
 
+function Label({ children }: { children: React.ReactNode }) {
+  return <p className="px-3 pb-1.5 text-[0.68rem] font-medium tracking-wide text-white/30">{children}</p>;
+}
+
 function Sidebar({ onNavigate }: { onNavigate: () => void }) {
   const pathname = usePathname();
-  const chip = "flex size-7 shrink-0 items-center justify-center rounded-lg [&_svg]:size-4";
 
   return (
-    <div className="flex h-full flex-col gap-5 overflow-y-auto p-4">
-      <Link href="/studio" onClick={onNavigate} className="flex items-center gap-2.5 px-1.5 pt-1">
-        <Image src="/brand/logo.png" alt="" width={899} height={1140} style={{ height: 30, width: "auto" }} />
-        <span className="leading-tight">
-          <span className="block font-heading text-[0.95rem] font-semibold">Zinetic Music</span>
-          <span className="zl-grad-text block text-xs font-semibold">AI Studio</span>
+    <div className="flex h-full flex-col gap-6 overflow-y-auto px-3 py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <Link href="/studio" onClick={onNavigate} className="flex items-center gap-2.5 px-3">
+        <Image src="/brand/logo.png" alt="" width={899} height={1140} style={{ height: 28, width: "auto" }} />
+        <span className="font-heading text-[0.95rem] font-semibold">
+          Zinetic <span className="font-normal text-white/50">Studio</span>
         </span>
       </Link>
 
       <nav className="flex flex-col gap-0.5">
-        <Row href="/studio" active={pathname === "/studio"} onNavigate={onNavigate}>
-          <span className={cn(chip, "bg-white/10")}><LuHouse /></span> Home
-        </Row>
-        <Row href="/studio/library" active={pathname === "/studio/library"} onNavigate={onNavigate}>
-          <span className={cn(chip, "bg-white/10")}><LuFolderOpen /></span> Library
-        </Row>
+        <Row href="/studio" active={pathname === "/studio"} onNavigate={onNavigate} icon={<LuHouse />}>Home</Row>
+        <Row href="/studio/library" active={pathname === "/studio/library"} onNavigate={onNavigate} icon={<LuFolderOpen />}>Library</Row>
       </nav>
 
       {GROUPS.map((g) => (
         <nav key={g.id} className="flex flex-col gap-0.5">
-          <p className="px-2.5 pb-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-white/35">{g.label}</p>
+          <Label>{g.label}</Label>
           {TOOLS.filter((t) => t.group === g.id).map((t) => {
             const Icon = t.icon;
-            const tile = <span className={cn(chip, "bg-gradient-to-br text-white", t.accent)}><Icon /></span>;
             return t.href ? (
-              <Row key={t.id} href={t.href} active={pathname === t.href} onNavigate={onNavigate}>
-                {tile} {t.name}
+              <Row key={t.id} href={t.href} active={pathname === t.href} onNavigate={onNavigate} icon={<Icon />}>
+                {t.name}
               </Row>
             ) : (
-              <div key={t.id} className="flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm text-white/30">
-                <span className="opacity-40">{tile}</span>
+              <div key={t.id} className="flex items-center gap-3 px-3 py-[7px] text-[0.8125rem] text-white/25 [&_svg]:size-[1.05rem]">
+                <Icon />
                 <span className="flex-1">{t.name}</span>
-                <LuClock className="size-3.5" />
+                <span className="text-[0.65rem]">Soon</span>
               </div>
             );
           })}
         </nav>
       ))}
 
-      <div className="mt-auto flex flex-col gap-2 border-t border-white/10 pt-4">
-        <Row href="/dashboard/support" active={false} onNavigate={onNavigate}>
-          <span className={cn(chip, "bg-white/10")}><LuLifeBuoy /></span> Support
-        </Row>
+      <div className="mt-auto border-t border-white/10 pt-4">
+        <Row href="/dashboard/support" active={false} onNavigate={onNavigate} icon={<LuLifeBuoy />}>Support</Row>
       </div>
     </div>
   );
