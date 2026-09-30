@@ -39,8 +39,8 @@ const DASHBOARDS: Dashboard[] = [
     description: "YouTube MCN checker and copyright management.",
     href: "/login",
     logo: (
-      <span className="flex size-20 shrink-0 items-center justify-center rounded-3xl bg-[#c2185b] shadow-[0_16px_40px_-14px_rgb(194_24_91/0.85)]">
-        <Image src="/brand/logo-slideBar.png" alt="" width={52} height={52} />
+      <span className="flex size-16 shrink-0 sm:size-20 items-center justify-center rounded-3xl bg-[#c2185b] shadow-[0_16px_40px_-14px_rgb(194_24_91/0.85)]">
+        <Image src="/brand/logo-slideBar.png" alt="" width={52} height={52} className="size-10 sm:size-[52px]" />
       </span>
     ),
   },
@@ -48,8 +48,8 @@ const DASHBOARDS: Dashboard[] = [
     name: "Music Distribution",
     description: "Releases, royalties and analytics.",
     logo: (
-      <span className="flex size-20 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-[#7c3aed] to-[#ec4899]">
-        <LuDisc3 className="size-10 text-white" />
+      <span className="flex size-16 shrink-0 sm:size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#7c3aed] to-[#ec4899]">
+        <LuDisc3 className="size-8 text-white sm:size-10" />
       </span>
     ),
   },
@@ -57,9 +57,9 @@ const DASHBOARDS: Dashboard[] = [
     name: "AI Studio",
     description: "Voice, audio and video: dubbing, avatars, translation, lip sync and clips.",
     logo: (
-      <span className="relative flex size-20 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-[#2563eb] via-[#7c3aed] to-[#f97316]">
-        <LuAudioLines className="size-9 -translate-x-2 -translate-y-1 text-white" />
-        <LuClapperboard className="absolute size-7 translate-x-4 translate-y-3.5 text-white/90" />
+      <span className="relative flex size-16 shrink-0 sm:size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#2563eb] via-[#7c3aed] to-[#f97316]">
+        <LuAudioLines className="size-7 -translate-x-1.5 -translate-y-1 text-white sm:size-9 sm:-translate-x-2" />
+        <LuClapperboard className="absolute size-5 translate-x-3 translate-y-3 text-white/90 sm:size-7 sm:translate-x-4 sm:translate-y-3.5" />
       </span>
     ),
   },
@@ -67,7 +67,7 @@ const DASHBOARDS: Dashboard[] = [
 
 export default function ClientLoginPage() {
   return (
-    <div className={`zl dark ${displayFont.variable} ${serifFont.variable} grid min-h-screen md:grid-cols-2`}>
+    <div className={`zl dark ${displayFont.variable} ${serifFont.variable} grid min-h-screen grid-cols-1 md:grid-cols-2`}>
       <div className="relative hidden flex-col justify-between overflow-hidden bg-[#0f0f0f] p-10 text-white md:flex">
         <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-90">
           <Aurora colorStops={["#3d8bff", "#9b4dff", "#ff3d86"]} amplitude={1.2} blend={0.6} speed={0.8} />
@@ -109,7 +109,7 @@ export default function ClientLoginPage() {
         </p>
       </div>
 
-      <div className="flex flex-col bg-zinc-950 text-white">
+      <div className="flex min-w-0 flex-col bg-zinc-950 text-white">
         <header className="flex items-center gap-3 px-6 py-5">
           <Link
             href="/"
@@ -140,8 +140,8 @@ export default function ClientLoginPage() {
                       <div
                         className={
                           locked
-                            ? "flex items-center gap-5 rounded-3xl border border-white/8 bg-white/[0.02] p-5"
-                            : "flex items-center gap-5 rounded-3xl border border-white/15 bg-white/[0.06] p-5 shadow-[0_24px_60px_-34px_rgb(255_61_134/0.55)]"
+                            ? "flex items-center gap-4 rounded-3xl border border-white/8 bg-white/[0.02] p-4 sm:gap-5 sm:p-5"
+                            : "flex items-center gap-4 rounded-3xl border border-white/15 bg-white/[0.06] p-4 sm:gap-5 sm:p-5 shadow-[0_24px_60px_-34px_rgb(255_61_134/0.55)]"
                         }
                       >
                         <span className={locked ? "opacity-45 saturate-50" : ""}>{d.logo}</span>
