@@ -1,5 +1,6 @@
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { TOOLS } from "@/lib/studio/tools";
+import { toolArt } from "@/lib/studio/art";
 import { recentGenerations } from "@/lib/studio/queries";
 import { History, ToolHeader, ToolProvider } from "@/components/studio/ui";
 
@@ -18,9 +19,9 @@ export async function ToolPage({
   const rows = tool.kinds && user ? await recentGenerations(user.id, tool.kinds) : [];
 
   return (
-    <ToolProvider toolId={toolId}>
+    <ToolProvider toolId={toolId} art={toolArt(toolId)}>
     <div className="flex flex-col gap-8">
-      <ToolHeader toolId={toolId} />
+      <ToolHeader />
       {notice && (
         <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm">{notice}</p>
       )}

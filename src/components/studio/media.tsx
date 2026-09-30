@@ -6,6 +6,7 @@ import Link from "next/link";
 import { LuArrowUpRight, LuClock } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import { TOOLS, type StudioTool } from "@/lib/studio/tools";
+import { WaveArt } from "@/components/studio/audio-player";
 
 /** Looping muted clip (or still) that fills its parent. Plays only while visible. */
 export function MediaBg({
@@ -46,9 +47,20 @@ export function MediaBg({
   );
 }
 
-/** Big poster card for a tool: clip behind, gradient icon tile, name and blurb. */
+export type BentoSize = "lg" | "md" | "sm";
+
 // takes an id, not the tool: tool objects hold icon components, which cannot cross from a server page
-export function ToolCard({ toolId, className }: { toolId: string; className?: string }) {
+export function BentoTile({
+  toolId,
+  art,
+  size = "sm",
+  className,
+}: {
+  toolId: string;
+  art: StudioTool["media"];
+  size?: BentoSize;
+  className?: string;
+}) {
   const tool = TOOLS.find((t) => t.id === toolId)!;
   const Icon = tool.icon;
   const ref = React.useRef<HTMLDivElement>(null);
@@ -60,24 +72,28 @@ export function ToolCard({ toolId, className }: { toolId: string; className?: st
     else v.pause();
   };
 
+  const isAudio = tool.group === "audio";
+
   const inner = (
     <div
       ref={ref}
       onMouseEnter={() => hover(true)}
       onMouseLeave={() => hover(false)}
-      className={cn(
-        "group relative isolate flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl bg-zinc-900 text-white ring-1 ring-white/10 transition-transform duration-500",
-        tool.href && "hover:-translate-y-1",
-        className
-      )}
+      className="group relative isolate flex h-full min-h-44 flex-col justify-between overflow-hidden rounded-[1.75rem] bg-zinc-900 p-5 text-white ring-1 ring-white/10 transition-shadow duration-500 hover:ring-white/30"
     >
-      <div className={cn("absolute inset-0 -z-10 transition-transform duration-700", tool.href && "group-hover:scale-105", tool.soon && "grayscale")}>
-        <MediaBg media={tool.media} playOnHover />
+      <div className={cn("absolute inset-0 -z-10 transition-transform duration-700", tool.href && "group-hover:scale-[1.06]", tool.soon && "grayscale")}>
+        <MediaBg media={art} playOnHover />
       </div>
-      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/25 to-black/5" />
+      {size === "lg" && <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-black/55 to-transparent" />}
+      {isAudio && size !== "sm" && (
+        <div aria-hidden className="absolute inset-x-5 top-5 -z-10 h-10 opacity-0 transition-opacity duration-500 group-hover:opacity-70">
+          <WaveArt accent="from-white to-white/60" />
+        </div>
+      )}
 
-      <div className="flex items-start justify-between p-4">
-        <span className={cn("flex size-10 items-center justify-center rounded-xl bg-gradient-to-br shadow-lg [&_svg]:size-5", tool.accent)}>
+      <div className="flex items-start justify-between">
+        <span className={cn("flex items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg [&_svg]:size-5", tool.accent, size === "sm" ? "size-10" : "size-12")}>
           <Icon />
         </span>
         {tool.soon ? (
@@ -85,18 +101,22 @@ export function ToolCard({ toolId, className }: { toolId: string; className?: st
             <LuClock className="size-3" /> Soon
           </span>
         ) : (
-          <span className="flex size-8 items-center justify-center rounded-full bg-white/15 opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
+          <span className="flex size-9 items-center justify-center rounded-full bg-white/15 backdrop-blur transition-all duration-300 group-hover:bg-white group-hover:text-black">
             <LuArrowUpRight className="size-4" />
           </span>
         )}
       </div>
 
-      <div className="mt-auto p-4 pt-16">
-        <p className="font-heading text-lg leading-tight font-semibold">{tool.name}</p>
-        <p className="mt-1 line-clamp-2 text-[0.8rem] leading-snug text-white/70">{tool.blurb}</p>
+      <div>
+        <p className={cn("font-heading leading-tight font-semibold", size === "lg" ? "text-3xl sm:text-4xl" : size === "md" ? "text-2xl" : "text-lg")}>{tool.name}</p>
+        <p className={cn("mt-1.5 text-white/70", size === "lg" ? "max-w-sm text-sm sm:text-base" : size === "md" ? "line-clamp-3 text-sm" : "line-clamp-1 text-[0.8rem]")}>
+          {tool.blurb}
+        </p>
       </div>
     </div>
   );
 
-  return tool.href ? <Link href={tool.href}>{inner}</Link> : inner;
+  return (
+    <div className={className}>{tool.href ? <Link href={tool.href} className="block h-full">{inner}</Link> : inner}</div>
+  );
 }

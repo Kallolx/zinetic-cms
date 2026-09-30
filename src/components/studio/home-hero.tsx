@@ -5,14 +5,14 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { LuArrowRight } from "react-icons/lu";
 import { cn } from "@/lib/utils";
-import { TOOLS } from "@/lib/studio/tools";
+import { TOOLS, type StudioTool } from "@/lib/studio/tools";
 import { MediaBg } from "@/components/studio/media";
 
 const FEATURED = ["music", "avatar-video", "voice", "video-translation"]
   .map((id) => TOOLS.find((t) => t.id === id)!)
   .filter(Boolean);
 
-export function HomeHero({ name }: { name: string }) {
+export function HomeHero({ name, art }: { name: string; art: Record<string, StudioTool["media"]> }) {
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
     const t = setInterval(() => setI((n) => (n + 1) % FEATURED.length), 6500);
@@ -22,7 +22,7 @@ export function HomeHero({ name }: { name: string }) {
   const Icon = tool.icon;
 
   return (
-    <section className="relative isolate overflow-hidden rounded-3xl bg-zinc-900 ring-1 ring-white/10">
+    <section className="relative isolate h-full overflow-hidden rounded-[1.75rem] bg-zinc-900 ring-1 ring-white/10">
       <AnimatePresence mode="sync">
         <motion.div
           key={tool.id}
@@ -32,16 +32,16 @@ export function HomeHero({ name }: { name: string }) {
           transition={{ duration: 1 }}
           className="absolute inset-0 -z-10"
         >
-          <MediaBg media={tool.media} />
+          <MediaBg media={art[tool.id] ?? tool.media} />
         </motion.div>
       </AnimatePresence>
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-black/90 via-black/55 to-transparent" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/60 to-transparent" />
 
-      <div className="flex min-h-[22rem] flex-col justify-end gap-6 p-7 sm:min-h-[26rem] sm:p-12">
+      <div className="flex h-full min-h-[24rem] flex-col justify-end gap-6 p-7 sm:p-10">
         <div>
           <p className="text-sm text-white/70">{name ? `Welcome back, ${name.split(" ")[0]}` : "Welcome back"}</p>
-          <h1 className="mt-2 max-w-2xl font-heading text-4xl leading-[1.05] font-bold text-balance sm:text-6xl">
+          <h1 className="mt-2 max-w-2xl font-heading text-4xl leading-[1.05] font-bold text-balance sm:text-5xl">
             What will you <span className="zl-serif zl-grad-text">create</span> today?
           </h1>
         </div>

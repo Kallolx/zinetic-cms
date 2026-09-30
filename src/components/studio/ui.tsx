@@ -14,7 +14,7 @@ import {
   LuX,
 } from "react-icons/lu";
 import { cn } from "@/lib/utils";
-import { TOOLS } from "@/lib/studio/tools";
+import { TOOLS, type StudioTool } from "@/lib/studio/tools";
 import { AudioPlayer, WaveArt } from "@/components/studio/audio-player";
 import { MediaBg } from "@/components/studio/media";
 import type { JobState } from "@/components/studio/use-job";
@@ -28,20 +28,22 @@ export function useObjectUrl(file: File | null) {
   return url;
 }
 
-const ToolContext = React.createContext<string | null>(null);
+const ToolContext = React.createContext<{ id: string; art: StudioTool["media"] } | null>(null);
 
-/** Lets the output stage know which tool it belongs to, so it can show that tool's artwork. */
-export function ToolProvider({ toolId, children }: { toolId: string; children: React.ReactNode }) {
-  return <ToolContext.Provider value={toolId}>{children}</ToolContext.Provider>;
+/** Lets the banner and output stage know which tool they belong to, and its artwork. */
+export function ToolProvider({ toolId, art, children }: { toolId: string; art: StudioTool["media"]; children: React.ReactNode }) {
+  const value = React.useMemo(() => ({ id: toolId, art }), [toolId, art]);
+  return <ToolContext.Provider value={value}>{children}</ToolContext.Provider>;
 }
 const useTool = () => {
-  const id = React.useContext(ToolContext);
-  return TOOLS.find((t) => t.id === id) ?? TOOLS[0];
+  const ctx = React.useContext(ToolContext);
+  const tool = TOOLS.find((t) => t.id === ctx?.id) ?? TOOLS[0];
+  return { ...tool, media: ctx?.art ?? tool.media };
 };
 
 /** Cinematic banner: the tool's clip behind, gradient icon tile, name and blurb. */
-export function ToolHeader({ toolId }: { toolId: string }) {
-  const tool = TOOLS.find((t) => t.id === toolId)!;
+export function ToolHeader() {
+  const tool = useTool();
   const Icon = tool.icon;
   return (
     <div className="relative isolate overflow-hidden rounded-3xl ring-1 ring-white/10">
