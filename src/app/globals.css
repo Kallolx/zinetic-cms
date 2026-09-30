@@ -535,3 +535,9 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Checkout receipt: torn zig-zag bottom edge */
+.zl-receipt {
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 18px 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 18px 100%;
+}

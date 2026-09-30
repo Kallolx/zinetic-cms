@@ -16,8 +16,11 @@ import { serviceHref } from "@/lib/service-pages";
 
 const LINKS = [
   { label: "Pricing", href: "/#pricing" },
+  { label: "How it works", href: "/#how-it-works", wide: true },
+  { label: "FAQ", href: "/#faq", wide: true },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
+  { label: "Help Desk", href: "/client-login#help-desk" },
 ];
 
 const linkClass =
@@ -222,7 +225,7 @@ export function LandingNav() {
                 <ZButton href="/client-login" variant="outline" arrow={false} className="w-full" onClick={() => setSheetOpen(false)}>
                   Log in
                 </ZButton>
-                <ZButton href="/client-login" className="w-full" onClick={() => setSheetOpen(false)}>
+                <ZButton href="/checkout" className="w-full" onClick={() => setSheetOpen(false)}>
                   Start now
                 </ZButton>
                 <a
@@ -254,7 +257,7 @@ export function LandingNav() {
             <AnimatePresence>{menuOpen && <MegaMenu onNavigate={() => setMenuOpen(false)} />}</AnimatePresence>
           </div>
           {LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className={linkClass}>
+            <Link key={l.href} href={l.href} className={cn(linkClass, l.wide && "hidden xl:block")}>
               {l.label}
             </Link>
           ))}
@@ -267,7 +270,7 @@ export function LandingNav() {
               Log in
             </ZButton>
           </span>
-          <ZButton href="/client-login" size="sm" arrow="up-right">
+          <ZButton href="/checkout" size="sm" arrow="up-right">
             Start now
           </ZButton>
         </div>

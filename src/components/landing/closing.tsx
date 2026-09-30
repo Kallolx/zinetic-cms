@@ -52,7 +52,7 @@ const FAQ = [
 
 export function HowItWorks() {
   return (
-    <section className="px-5 py-24 sm:py-32">
+    <section id="how-it-works" className="scroll-mt-24 px-5 py-24 sm:py-32">
       <SectionHeading eyebrow="How it works" title="From idea to download in three steps." />
       <div className="mx-auto mt-16 grid max-w-7xl gap-px overflow-hidden rounded-[28px] border border-(--zl-line) bg-(--zl-line) md:grid-cols-3">
         {STEPS.map((s, i) => (

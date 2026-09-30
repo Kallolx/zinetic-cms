@@ -60,7 +60,7 @@ export function SiteFooter() {
             Let&apos;s make something <span className="zl-serif zl-grad-text">people hear.</span>
           </h2>
           <div className="flex flex-wrap gap-3">
-            <ZButton href="/client-login" size="lg">
+            <ZButton href="/checkout" size="lg">
               Start now
             </ZButton>
             <ZButton href="/contact" variant="outline" size="lg" arrow={false}>
