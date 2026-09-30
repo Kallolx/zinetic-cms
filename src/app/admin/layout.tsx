@@ -1,14 +1,16 @@
 import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/supabase/session";
 import { AppShell, type NavItem } from "@/components/app-shell";
-import { LuGauge, LuUsers, LuUserCheck, LuWalletCards, LuHistory } from "react-icons/lu";
+import { LuGauge, LuUsers, LuUserCheck, LuWalletCards, LuHistory, LuLayoutDashboard, LuAudioLines } from "react-icons/lu";
 
 const navItems: NavItem[] = [
   { href: "/admin", label: "Overview", icon: <LuGauge /> },
+  { href: "/admin/products", label: "Dashboards", icon: <LuLayoutDashboard /> },
   { href: "/admin/users", label: "Users", icon: <LuUsers /> },
   { href: "/admin/approvals", label: "Approvals", icon: <LuUserCheck /> },
   { href: "/admin/topup", label: "Top Up", icon: <LuWalletCards /> },
   { href: "/admin/checks", label: "All Checks", icon: <LuHistory /> },
+  { href: "/admin/studio", label: "Studio usage", icon: <LuAudioLines /> },
 ];
 
 export const dynamic = "force-dynamic";

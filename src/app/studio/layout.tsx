@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
+import { getMyProducts } from "@/lib/products";
+import { NoAccess } from "@/components/no-access";
 import { AppShell, type NavItem } from "@/components/app-shell";
 import { LuAudioLines, LuFolderOpen, LuLayoutGrid, LuLifeBuoy } from "react-icons/lu";
 
@@ -19,6 +21,7 @@ export default async function StudioLayout({ children }: { children: React.React
   if (!user || !profile) redirect("/login");
   if (!isImpersonating && profile.role === "admin") redirect("/admin");
   if (profile.status !== "approved") redirect("/pending");
+  const hasAccess = (await getMyProducts(user.id)).has("studio");
 
   return (
     <AppShell
@@ -31,7 +34,7 @@ export default async function StudioLayout({ children }: { children: React.React
       title="AI Studio"
       impersonating={isImpersonating}
     >
-      {children}
+      {hasAccess ? children : <NoAccess product="AI Studio" />}
     </AppShell>
   );
 }

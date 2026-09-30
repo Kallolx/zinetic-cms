@@ -42,6 +42,12 @@ export async function reviewUser(
 
   if (error) return { error: error.message };
 
+  if (decision === "approved") {
+    await supabaseAdmin
+      .from("user_products")
+      .upsert({ user_id: userId, product: "cms", granted_by: admin.id }, { onConflict: "user_id,product", ignoreDuplicates: true });
+  }
+
   revalidatePath("/admin");
   revalidatePath("/admin/users");
   return { error: null };
@@ -200,5 +206,21 @@ export async function topUpWallet(userId: string, amount: number, note?: string)
 
   revalidatePath("/admin");
   revalidatePath("/admin/users");
+  return { error: null };
+}
+
+export async function setUserProduct(userId: string, product: string, enabled: boolean) {
+  const admin = await requireAdmin();
+  if (!["cms", "studio", "distribution"].includes(product)) return { error: "Unknown product." };
+  const supabaseAdmin = createAdminClient();
+
+  const { error } = enabled
+    ? await supabaseAdmin
+        .from("user_products")
+        .upsert({ user_id: userId, product, granted_by: admin.id }, { onConflict: "user_id,product" })
+    : await supabaseAdmin.from("user_products").delete().eq("user_id", userId).eq("product", product);
+
+  if (error) return { error: error.message };
+  revalidatePath("/admin/products");
   return { error: null };
 }

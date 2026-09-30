@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
+import { getMyProducts } from "@/lib/products";
+import { NoAccess } from "@/components/no-access";
 import { AppShell, type NavItem } from "@/components/app-shell";
 import {
   LuShieldCheck,
@@ -41,6 +43,7 @@ export default async function DashboardLayout({
   // with an admin role belongs in /admin instead
   if (!isImpersonating && profile.role === "admin") redirect("/admin");
   if (profile.status !== "approved") redirect("/pending");
+  const hasAccess = (await getMyProducts(user.id)).has("cms");
 
   return (
     <AppShell
@@ -53,7 +56,7 @@ export default async function DashboardLayout({
       title="Dashboard"
       impersonating={isImpersonating}
     >
-      {children}
+      {hasAccess ? children : <NoAccess product="the Channel Checker" />}
     </AppShell>
   );
 }

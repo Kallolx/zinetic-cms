@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { saveFile } from "@/lib/studio/storage";
+import { getMyProducts } from "@/lib/products";
 import { textToSpeech } from "@/lib/studio/elevenlabs";
 
 export const runtime = "nodejs";
@@ -12,6 +13,10 @@ export async function POST(request: Request) {
   const { user, profile } = await getDashboardSession();
   if (!user || !profile || profile.status !== "approved") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!(await getMyProducts(user.id)).has("studio")) {
+    return NextResponse.json({ error: "Your account does not include AI Studio." }, { status: 403 });
   }
 
   const body = (await request.json().catch(() => null)) as { text?: string; voiceId?: string } | null;
