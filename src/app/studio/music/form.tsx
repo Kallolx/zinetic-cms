@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 import { useJob } from "@/components/studio/use-job";
 import { AudioResult, Field, Output, Segmented, SubmitButton, TextArea, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
@@ -24,16 +25,9 @@ export function MusicForm() {
           <EnginePicker />
           <Field label="Describe the track" hint="Genre, mood, instruments, vocals">
             <TextArea value={prompt} onChange={setPrompt} max={1500} rows={7} placeholder="An energetic synthwave track with a soaring female vocal" />
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-wrap gap-2">
               {IDEAS.map((i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setPrompt(i)}
-                  className="cursor-pointer text-left text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                >
-                  {i}
-                </button>
+                <Button key={i} variant="outline" size="xs" className="h-auto justify-start whitespace-normal py-1.5 text-left" onClick={() => setPrompt(i)}>{i}</Button>
               ))}
             </div>
           </Field>

@@ -2,8 +2,10 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { LuCheck } from "react-icons/lu";
-import { Field, FileDrop, inputClass, SubmitButton, useObjectUrl, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { EnginePicker, Field, FileDrop, ImageFrame, SubmitButton, TextInput, useEngine, useObjectUrl, Workspace } from "@/components/studio/ui";
 
 export function CreatorForm() {
   const router = useRouter();
@@ -46,7 +48,7 @@ export function CreatorForm() {
         <>
           <EnginePicker />
           <Field label="Name">
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Anika, presenter" className={inputClass} />
+            <TextInput value={name} onChange={(e) => setName(e.target.value)} placeholder="Anika, presenter" />
           </Field>
           <Field label="Photo" hint="JPG or PNG">
             <FileDrop accept="image/*" file={photo} onFile={setPhoto} hint="A clear, front-facing photo with good light works best." />
@@ -58,18 +60,23 @@ export function CreatorForm() {
         </>
       }
       output={
-        <div className="flex min-h-64 flex-col items-center justify-center gap-4 text-center">
-          {preview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={preview} alt="" className="max-h-80 rounded-lg object-cover" />
-          ) : done ? (
-            <p className="flex items-center gap-2 text-sm font-medium">
-              <LuCheck className="size-4 text-emerald-500" /> Avatar saved. Use it in Avatar video.
-            </p>
-          ) : (
-            <p className="max-w-xs text-sm text-muted-foreground">Your photo preview appears here. Saved avatars show up in Avatar video under Yours.</p>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-base">Preview</CardTitle>
+              <Badge variant={done ? "default" : "outline"}>{done ? "Saved" : preview ? "Ready" : "Waiting"}</Badge>
+            </div>
+            <CardDescription>Your photo appears here. Saved avatars show up in Avatar video under Yours.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <ImageFrame src={preview} />
+            {done && (
+              <Alert>
+                <AlertDescription>Avatar saved. You can use it in Avatar video now.</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
       }
     />
   );

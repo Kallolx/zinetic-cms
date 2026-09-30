@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 import { useJob } from "@/components/studio/use-job";
 import { Field, Output, SubmitButton, TextArea, VideoResult, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
@@ -24,14 +25,7 @@ export function PromptVideoForm() {
             <TextArea value={prompt} onChange={setPrompt} max={2000} rows={8} placeholder="A 45 second video explaining..." />
             <div className="flex flex-col items-start gap-2">
               {IDEAS.map((i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setPrompt(i)}
-                  className="cursor-pointer text-left text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                >
-                  {i}
-                </button>
+                <Button key={i} variant="outline" size="xs" className="h-auto justify-start whitespace-normal py-1.5 text-left" onClick={() => setPrompt(i)}>{i}</Button>
               ))}
             </div>
           </Field>

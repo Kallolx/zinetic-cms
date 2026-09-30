@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { VideoPlayer } from "@/components/studio/video-player";
 import { useJob } from "@/components/studio/use-job";
-import { DownloadLink, Field, FileDrop, Output, Segmented, SubmitButton, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
+import { Field, FileDrop, Output, Segmented, SubmitButton, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
 export function ClipsForm() {
   const [file, setFile] = React.useState<File | null>(null);
@@ -52,8 +53,7 @@ export function ClipsForm() {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {ids.map((id, n) => (
                 <div key={id} className="flex flex-col gap-2">
-                  <video controls preload="metadata" src={`/api/studio/files/${id}`} className={format === "vertical" ? "aspect-[9/16] w-full rounded-2xl bg-black ring-1 ring-white/10" : "aspect-video w-full rounded-2xl bg-black ring-1 ring-white/10"} />
-                  <DownloadLink id={id} name={`clip-${n + 1}.mp4`} />
+                  <VideoPlayer compact vertical={format === "vertical"} src={`/api/studio/files/${id}`} name={`clip-${n + 1}.mp4`} />
                 </div>
               ))}
             </div>

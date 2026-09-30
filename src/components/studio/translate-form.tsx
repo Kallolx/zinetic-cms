@@ -7,8 +7,8 @@ import {
   EnginePicker,
   Field,
   FileDrop,
-  inputClass,
   Output,
+  SelectField,
   Segmented,
   SubmitButton,
   useEngine,
@@ -70,14 +70,7 @@ export function TranslateForm({
             <FileDrop accept={accept} file={file} onFile={setFile} hint={hint} />
           </Field>
           <Field label="Translate into">
-            <select value={language} onChange={(e) => setPicked(e.target.value)} className={inputClass}>
-              {languages.length === 0 && <option value="">Languages unavailable</option>}
-              {languages.map((l) => (
-                <option key={l.value} value={l.value}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
+            <SelectField value={language} onChange={setPicked} options={languages} placeholder="Languages unavailable" />
           </Field>
           {eng.has("lipsync") && (
             <Field label="Lip sync" hint="Match the mouth to the new language">

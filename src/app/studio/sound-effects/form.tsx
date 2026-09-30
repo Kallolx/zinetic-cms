@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 import { useJob } from "@/components/studio/use-job";
 import { AudioResult, Field, Output, Segmented, SubmitButton, TextArea, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
@@ -22,14 +23,7 @@ export function SfxForm() {
             <TextArea value={text} onChange={setText} max={450} rows={5} placeholder="A wooden door creaking open in an empty hall" />
             <div className="flex flex-wrap gap-2">
               {IDEAS.map((i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setText(i)}
-                  className="cursor-pointer rounded-full border px-3 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {i}
-                </button>
+                <Button key={i} variant="outline" size="xs" onClick={() => setText(i)}>{i}</Button>
               ))}
             </div>
           </Field>

@@ -1,8 +1,10 @@
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createClient } from "@/lib/supabase/server";
 import { TOOLS } from "@/lib/studio/tools";
-import { AudioPlayer, WaveArt } from "@/components/studio/audio-player";
-import { cn } from "@/lib/utils";
+import { AudioPlayer } from "@/components/studio/audio-player";
+import { VideoPlayer } from "@/components/studio/video-player";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Row = {
   id: string;
@@ -18,9 +20,8 @@ type Row = {
 const KIND_TOOL: Record<string, string> = {
   sfx: "sound-effects",
   "translation-lipsync": "video-translation",
-  "audio-cleaner": "audio-cleaner",
 };
-const toolFor = (kind: string) => TOOLS.find((t) => t.id === (KIND_TOOL[kind] ?? kind)) ?? TOOLS[0];
+const toolName = (kind: string) => TOOLS.find((t) => t.id === (KIND_TOOL[kind] ?? kind))?.name ?? kind;
 
 export default async function LibraryPage() {
   const { user } = await getDashboardSession();
@@ -34,50 +35,44 @@ export default async function LibraryPage() {
   const rows = (data ?? []) as Row[];
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <div>
-        <h1 className="font-heading text-4xl font-bold">Library</h1>
-        <p className="mt-1 text-white/60">Everything you have generated, newest first.</p>
+        <h1 className="font-heading text-2xl font-semibold">Library</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Everything you have generated, newest first.</p>
       </div>
 
       {rows.length === 0 ? (
-        <div className="flex min-h-72 flex-col items-center justify-center gap-2 rounded-3xl bg-white/[0.03] text-center ring-1 ring-white/10">
-          <div className="h-12 w-48 opacity-60">
-            <WaveArt animate={false} />
-          </div>
-          <p className="font-medium">Nothing here yet</p>
-          <p className="text-sm text-white/55">Make something in any tool and it will land here.</p>
-        </div>
+        <Card>
+          <CardContent className="py-10 text-center">
+            <p className="font-medium">Nothing here yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">Make something in any tool and it will land here.</p>
+          </CardContent>
+        </Card>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {rows.map((r) => {
-            const tool = toolFor(r.kind);
-            const Icon = tool.icon;
-            return (
-              <li key={r.id} className="overflow-hidden rounded-2xl bg-white/[0.04] ring-1 ring-white/10">
-                {r.status === "done" && r.mime_type?.startsWith("video") ? (
-                  <video controls preload="metadata" src={`/api/studio/files/${r.id}`} className="aspect-video w-full bg-black" />
-                ) : (
-                  <div className={cn("flex h-20 items-center gap-3 bg-gradient-to-br px-4", tool.accent)}>
-                    <Icon className="size-6 shrink-0" />
-                    <span className="text-sm font-semibold">{tool.name}</span>
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {rows.map((r) => (
+            <li key={r.id}>
+              <Card size="sm" className="h-full">
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <CardTitle className="line-clamp-1 text-sm">{r.title ?? "Untitled"}</CardTitle>
+                      <CardDescription>
+                        {toolName(r.kind)} · {new Date(r.created_at).toLocaleString()}
+                      </CardDescription>
+                    </div>
+                    {r.status !== "done" && <Badge variant={r.status === "failed" ? "destructive" : "secondary"}>{r.status === "failed" ? "Failed" : "Processing"}</Badge>}
                   </div>
-                )}
-                <div className="flex flex-col gap-3 p-4">
-                  <p className="line-clamp-1 font-medium">{r.title ?? "Untitled"}</p>
-                  {r.status === "done" && r.mime_type?.startsWith("audio") && (
-                    <AudioPlayer compact src={`/api/studio/files/${r.id}`} seed={r.id} name="audio.mp3" />
-                  )}
-                  {r.status === "done" && r.kind === "transcribe" && r.result?.text && (
-                    <p className="line-clamp-4 text-sm text-white/60">{r.result.text}</p>
-                  )}
-                  {r.status === "failed" && <p className="text-xs text-red-300">{r.error ?? "Failed"}</p>}
-                  {r.status === "processing" && <p className="text-xs text-white/55">Still processing</p>}
-                  <p className="text-xs text-white/40">{new Date(r.created_at).toLocaleString()}</p>
-                </div>
-              </li>
-            );
-          })}
+                </CardHeader>
+                <CardContent className="flex flex-col gap-3">
+                  {r.status === "done" && r.mime_type?.startsWith("audio") && <AudioPlayer compact src={`/api/studio/files/${r.id}`} seed={r.id} name="audio.mp3" />}
+                  {r.status === "done" && r.mime_type?.startsWith("video") && <VideoPlayer compact src={`/api/studio/files/${r.id}`} name="video.mp4" />}
+                  {r.status === "done" && r.kind === "transcribe" && r.result?.text && <p className="line-clamp-4 text-sm text-muted-foreground">{r.result.text}</p>}
+                  {r.status === "failed" && <p className="text-xs text-destructive">{r.error ?? "Failed"}</p>}
+                </CardContent>
+              </Card>
+            </li>
+          ))}
         </ul>
       )}
     </div>

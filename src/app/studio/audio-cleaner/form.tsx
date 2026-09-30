@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { AudioPlayer } from "@/components/studio/audio-player";
 import { useJob } from "@/components/studio/use-job";
 import { AudioResult, Field, FileDrop, Output, SubmitButton, useObjectUrl, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
@@ -27,7 +28,7 @@ export function CleanerForm() {
           </Field>
           {original && (
             <Field label="Original">
-              <audio controls src={original} className="w-full" />
+              <AudioPlayer compact src={original} seed="original" name="original.mp3" />
             </Field>
           )}
           <SubmitButton busy={state.phase === "working"} disabled={!file} busyLabel="Cleaning" onClick={submit}>

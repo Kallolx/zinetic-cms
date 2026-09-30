@@ -3,9 +3,12 @@
 import * as React from "react";
 import { LuDownload } from "react-icons/lu";
 import type { Transcript } from "@/lib/studio/elevenlabs";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useJob } from "@/components/studio/use-job";
 import { Field, FileDrop, Output, Segmented, SubmitButton, Workspace, EnginePicker, useEngine } from "@/components/studio/ui";
 
+const NL = String.fromCharCode(10);
 const clock = (s: number) => {
   const m = Math.floor(s / 60);
   return `${m}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -83,25 +86,25 @@ export function TranscribeForm() {
       output={
         <Output state={state} idle="The transcript will appear here with timestamps." working="Transcribing your file.">
           {transcript && (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-center gap-4 text-sm">
-                <span className="text-muted-foreground">Language: {transcript.language || "detected"}</span>
-                <button
-                  type="button"
-                  onClick={() => save("transcript.txt", lines.map((l) => `${l.speaker ? speakerName(l.speaker) + ": " : ""}${l.text}`).join("\n\n"))}
-                  className="inline-flex cursor-pointer items-center gap-1.5 font-medium underline underline-offset-4"
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline">Language: {transcript.language || "detected"}</Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => save("transcript.txt", lines.map((l) => `${l.speaker ? speakerName(l.speaker) + ": " : ""}${l.text}`).join(NL + NL))}
                 >
-                  <LuDownload className="size-4" /> TXT
-                </button>
-                <button
-                  type="button"
-                  onClick={() => save("transcript.srt", lines.map((l, i) => `${i + 1}\n${srtTime(l.start)} --> ${srtTime(l.end)}\n${l.text}\n`).join("\n"))}
-                  className="inline-flex cursor-pointer items-center gap-1.5 font-medium underline underline-offset-4"
+                  <LuDownload /> TXT
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => save("transcript.srt", lines.map((l, i) => `${i + 1}${NL}${srtTime(l.start)} --> ${srtTime(l.end)}${NL}${l.text}${NL}`).join(NL))}
                 >
-                  <LuDownload className="size-4" /> SRT
-                </button>
+                  <LuDownload /> SRT
+                </Button>
               </div>
-              <ol className="flex max-h-[32rem] flex-col gap-3 overflow-y-auto rounded-lg border p-4">
+              <ol className="flex max-h-[28rem] flex-col gap-3 overflow-y-auto rounded-lg border p-4">
                 {lines.map((l, i) => (
                   <li key={i} className="grid grid-cols-[3rem_1fr] gap-3 text-sm">
                     <span className="pt-0.5 text-xs tabular-nums text-muted-foreground">{clock(l.start)}</span>
