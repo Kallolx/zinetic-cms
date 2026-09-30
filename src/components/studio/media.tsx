@@ -73,6 +73,8 @@ export function BentoTile({
   };
 
   const isAudio = tool.group === "audio";
+  // artwork made for the tile carries its own title, so the overlay text and icon would double up
+  const custom = art.src.startsWith("/studio/");
 
   const inner = (
     <div
@@ -84,18 +86,20 @@ export function BentoTile({
       <div className={cn("absolute inset-0 -z-10 transition-transform duration-700", tool.href && "group-hover:scale-[1.06]", tool.soon && "grayscale")}>
         <MediaBg media={art} playOnHover />
       </div>
-      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/25 to-black/5" />
-      {size === "lg" && <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-black/55 to-transparent" />}
-      {isAudio && size !== "sm" && (
+      {!custom && <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/25 to-black/5" />}
+      {!custom && size === "lg" && <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-black/55 to-transparent" />}
+      {!custom && isAudio && size !== "sm" && (
         <div aria-hidden className="absolute inset-x-5 top-5 -z-10 h-10 opacity-0 transition-opacity duration-500 group-hover:opacity-70">
           <WaveArt accent="from-white to-white/60" />
         </div>
       )}
 
-      <div className="flex items-start justify-between">
+      <div className={cn("flex items-start", custom ? "justify-end" : "justify-between")}>
+        {!custom && (
         <span className={cn("flex items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg [&_svg]:size-5", tool.accent, size === "sm" ? "size-10" : "size-12")}>
           <Icon />
         </span>
+        )}
         {tool.soon ? (
           <span className="flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[0.7rem] backdrop-blur">
             <LuClock className="size-3" /> Soon
@@ -107,12 +111,14 @@ export function BentoTile({
         )}
       </div>
 
+      {!custom && (
       <div>
         <p className={cn("font-heading leading-tight font-semibold", size === "lg" ? "text-3xl sm:text-4xl" : size === "md" ? "text-2xl" : "text-lg")}>{tool.name}</p>
         <p className={cn("mt-1.5 text-white/70", size === "lg" ? "max-w-sm text-sm sm:text-base" : size === "md" ? "line-clamp-3 text-sm" : "line-clamp-1 text-[0.8rem]")}>
           {tool.blurb}
         </p>
       </div>
+      )}
     </div>
   );
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LuArrowRight, LuFolderOpen, LuLifeBuoy, LuWallet } from "react-icons/lu";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createClient } from "@/lib/supabase/server";
-import { GROUPS } from "@/lib/studio/tools";
+import { GROUPS, TOOLS } from "@/lib/studio/tools";
 import { allArt } from "@/lib/studio/art";
 import { formatCredits } from "@/lib/credits";
 import { HomeHero } from "@/components/studio/home-hero";
@@ -31,7 +31,7 @@ export default async function StudioHome() {
     <div className="flex flex-col gap-12">
       <section className={GRID}>
         <div className="col-span-2 row-span-2 md:col-span-8">
-          <HomeHero name={profile?.full_name ?? ""} art={art} />
+          <HomeHero name={profile?.full_name ?? ""} art={Object.fromEntries(TOOLS.map((t) => [t.id, t.media]))} />
         </div>
 
         <Link href="/studio/library" className={`${PANEL} group col-span-2 md:col-span-4 transition-colors hover:bg-white/[0.07]`}>
