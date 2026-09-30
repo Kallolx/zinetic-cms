@@ -1,6 +1,8 @@
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createClient } from "@/lib/supabase/server";
 import { TOOLS } from "@/lib/studio/tools";
+import { AudioPlayer, WaveArt } from "@/components/studio/audio-player";
+import { cn } from "@/lib/utils";
 
 type Row = {
   id: string;
@@ -13,14 +15,12 @@ type Row = {
   created_at: string;
 };
 
-const LABEL: Record<string, string> = {
-  voice: "Voice generator",
-  sfx: "Sound effects",
-  transcribe: "Speech to text",
-  "prompt-video": "Prompt to video",
-  "translation-lipsync": "Video translation",
+const KIND_TOOL: Record<string, string> = {
+  sfx: "sound-effects",
+  "translation-lipsync": "video-translation",
+  "audio-cleaner": "audio-cleaner",
 };
-const labelFor = (kind: string) => LABEL[kind] ?? TOOLS.find((t) => t.id === kind)?.name ?? kind;
+const toolFor = (kind: string) => TOOLS.find((t) => t.id === (KIND_TOOL[kind] ?? kind)) ?? TOOLS[0];
 
 export default async function LibraryPage() {
   const { user } = await getDashboardSession();
@@ -34,37 +34,50 @@ export default async function LibraryPage() {
   const rows = (data ?? []) as Row[];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div>
-        <h2 className="font-heading text-2xl font-semibold">Library</h2>
-        <p className="text-[0.925rem] text-muted-foreground">Everything you have generated, newest first.</p>
+        <h1 className="font-heading text-4xl font-bold">Library</h1>
+        <p className="mt-1 text-white/60">Everything you have generated, newest first.</p>
       </div>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Nothing yet. Generate something and it will appear here.</p>
+        <div className="flex min-h-72 flex-col items-center justify-center gap-2 rounded-3xl bg-white/[0.03] text-center ring-1 ring-white/10">
+          <div className="h-12 w-48 opacity-60">
+            <WaveArt animate={false} />
+          </div>
+          <p className="font-medium">Nothing here yet</p>
+          <p className="text-sm text-white/55">Make something in any tool and it will land here.</p>
+        </div>
       ) : (
-        <ul className="divide-y border-y">
-          {rows.map((r) => (
-            <li key={r.id} className="flex flex-col gap-2 py-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <span className="line-clamp-1 font-medium">{r.title ?? "Untitled"}</span>
-                <span className="text-xs text-muted-foreground">
-                  {labelFor(r.kind)} · {new Date(r.created_at).toLocaleString()}
-                </span>
-              </div>
-              {r.status === "done" && r.mime_type?.startsWith("audio") && (
-                <audio controls preload="none" src={`/api/studio/files/${r.id}`} className="w-full max-w-xl" />
-              )}
-              {r.status === "done" && r.mime_type?.startsWith("video") && (
-                <video controls preload="none" src={`/api/studio/files/${r.id}`} className="max-h-64 w-fit rounded-lg bg-black" />
-              )}
-              {r.status === "done" && r.kind === "transcribe" && r.result?.text && (
-                <p className="line-clamp-3 max-w-2xl text-sm text-muted-foreground">{r.result.text}</p>
-              )}
-              {r.status === "failed" && <p className="text-xs text-destructive">{r.error ?? "Failed"}</p>}
-              {r.status === "processing" && <p className="text-xs text-muted-foreground">Still processing</p>}
-            </li>
-          ))}
+        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {rows.map((r) => {
+            const tool = toolFor(r.kind);
+            const Icon = tool.icon;
+            return (
+              <li key={r.id} className="overflow-hidden rounded-2xl bg-white/[0.04] ring-1 ring-white/10">
+                {r.status === "done" && r.mime_type?.startsWith("video") ? (
+                  <video controls preload="metadata" src={`/api/studio/files/${r.id}`} className="aspect-video w-full bg-black" />
+                ) : (
+                  <div className={cn("flex h-20 items-center gap-3 bg-gradient-to-br px-4", tool.accent)}>
+                    <Icon className="size-6 shrink-0" />
+                    <span className="text-sm font-semibold">{tool.name}</span>
+                  </div>
+                )}
+                <div className="flex flex-col gap-3 p-4">
+                  <p className="line-clamp-1 font-medium">{r.title ?? "Untitled"}</p>
+                  {r.status === "done" && r.mime_type?.startsWith("audio") && (
+                    <AudioPlayer compact src={`/api/studio/files/${r.id}`} seed={r.id} name="audio.mp3" />
+                  )}
+                  {r.status === "done" && r.kind === "transcribe" && r.result?.text && (
+                    <p className="line-clamp-4 text-sm text-white/60">{r.result.text}</p>
+                  )}
+                  {r.status === "failed" && <p className="text-xs text-red-300">{r.error ?? "Failed"}</p>}
+                  {r.status === "processing" && <p className="text-xs text-white/55">Still processing</p>}
+                  <p className="text-xs text-white/40">{new Date(r.created_at).toLocaleString()}</p>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

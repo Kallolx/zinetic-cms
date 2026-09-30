@@ -541,3 +541,16 @@
   -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 18px 100%;
   mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 18px 100%;
 }
+
+/* AI Studio: pulsing waveform bars */
+@keyframes zl-wave {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+.zl-wave {
+  transform-origin: center;
+  animation: zl-wave 1.1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zl-wave { animation: none; }
+}

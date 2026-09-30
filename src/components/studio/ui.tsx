@@ -14,6 +14,9 @@ import {
   LuX,
 } from "react-icons/lu";
 import { cn } from "@/lib/utils";
+import { TOOLS } from "@/lib/studio/tools";
+import { AudioPlayer, WaveArt } from "@/components/studio/audio-player";
+import { MediaBg } from "@/components/studio/media";
 import type { JobState } from "@/components/studio/use-job";
 
 /** Blob URL for a picked file, revoked when the file changes or the page unmounts. */
@@ -25,32 +28,35 @@ export function useObjectUrl(file: File | null) {
   return url;
 }
 
-export function ToolHeader({
-  icon,
-  title,
-  blurb,
-  badge,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  blurb: string;
-  badge?: string;
-}) {
+const ToolContext = React.createContext<string | null>(null);
+
+/** Lets the output stage know which tool it belongs to, so it can show that tool's artwork. */
+export function ToolProvider({ toolId, children }: { toolId: string; children: React.ReactNode }) {
+  return <ToolContext.Provider value={toolId}>{children}</ToolContext.Provider>;
+}
+const useTool = () => {
+  const id = React.useContext(ToolContext);
+  return TOOLS.find((t) => t.id === id) ?? TOOLS[0];
+};
+
+/** Cinematic banner: the tool's clip behind, gradient icon tile, name and blurb. */
+export function ToolHeader({ toolId }: { toolId: string }) {
+  const tool = TOOLS.find((t) => t.id === toolId)!;
+  const Icon = tool.icon;
   return (
-    <div className="flex items-start gap-4">
-      <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary [&_svg]:size-6">
-        {icon}
-      </span>
-      <div>
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="font-heading text-2xl font-semibold">{title}</h2>
-          {badge && (
-            <span className="rounded-full border px-2.5 py-0.5 text-[0.7rem] font-medium text-muted-foreground">
-              {badge}
-            </span>
-          )}
+    <div className="relative isolate overflow-hidden rounded-3xl ring-1 ring-white/10">
+      <div className="absolute inset-0 -z-10">
+        <MediaBg media={tool.media} />
+      </div>
+      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-black/80 via-black/45 to-transparent" />
+      <div className="flex items-center gap-5 px-6 py-8 sm:px-10 sm:py-11">
+        <span className={cn("flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br shadow-xl [&_svg]:size-7", tool.accent)}>
+          <Icon />
+        </span>
+        <div className="min-w-0">
+          <h2 className="font-heading text-2xl leading-tight font-semibold sm:text-4xl">{tool.name}</h2>
+          <p className="mt-1.5 max-w-xl text-sm text-white/70 sm:text-base">{tool.blurb}</p>
         </div>
-        <p className="mt-1 max-w-2xl text-[0.925rem] text-muted-foreground">{blurb}</p>
       </div>
     </div>
   );
@@ -327,7 +333,10 @@ export function SubmitButton({
   );
 }
 
-/** Right-hand side: shows the idle hint, progress, error, or the finished result. */
+/**
+ * The stage on the right. Never blank: before a run it previews what the result
+ * looks like, while working it animates, and afterwards it shows the result.
+ */
 export function Output({
   state,
   idle,
@@ -339,46 +348,69 @@ export function Output({
   working?: string;
   children?: React.ReactNode;
 }) {
-  if (state.phase === "idle") {
-    return (
-      <div className="flex min-h-64 items-center justify-center text-center text-sm text-muted-foreground">
-        <p className="max-w-xs">{idle}</p>
-      </div>
-    );
-  }
-  if (state.phase === "working") {
-    return (
-      <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-center">
-        <LuLoaderCircle className="size-7 animate-spin text-primary" />
-        <p className="text-sm font-medium">{state.message ?? "Working on it"}</p>
-        <p className="max-w-xs text-xs text-muted-foreground">{working ?? "You can leave this page, it will be in your Library when done."}</p>
-      </div>
-    );
-  }
-  if (state.phase === "error") {
-    return (
-      <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-center">
-        <LuTriangleAlert className="size-7 text-destructive" />
-        <p className="max-w-sm text-sm text-destructive">{state.error}</p>
-      </div>
-    );
-  }
-  return <>{children}</>;
-}
+  const tool = useTool();
+  const isVideo = tool.group === "video" && tool.id !== "avatar-creator";
+  const Icon = tool.icon;
 
-export function AudioResult({ id, name }: { id: string; name: string }) {
+  if (state.phase === "done") return <>{children}</>;
+
+  const busy = state.phase === "working";
+  const failed = state.phase === "error";
+
   return (
     <div className="flex flex-col gap-4">
-      <audio controls src={`/api/studio/files/${id}`} className="w-full" />
-      <DownloadLink id={id} name={name} />
+      <div
+        className={cn(
+          "relative isolate flex items-center justify-center overflow-hidden rounded-3xl bg-zinc-900 ring-1 ring-white/10",
+          isVideo ? "aspect-video" : "min-h-[26rem]"
+        )}
+      >
+        {isVideo || tool.id === "avatar-creator" ? (
+          <div className={cn("absolute inset-0 -z-10 transition-opacity", busy ? "opacity-40" : "opacity-60")}>
+            <MediaBg media={tool.media} />
+          </div>
+        ) : (
+          <>
+            <div aria-hidden className={cn("absolute inset-0 -z-10 bg-gradient-to-br opacity-30", tool.accent)} />
+            <div className="absolute inset-x-8 top-10 -z-10 h-24 opacity-90">
+              <WaveArt animate={busy} accent={tool.accent} />
+            </div>
+          </>
+        )}
+        <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-black/20 to-black/40" />
+        {busy && <div aria-hidden className="absolute inset-0 -z-10 animate-pulse bg-white/5" />}
+
+        <div className={cn("flex max-w-sm flex-col items-center gap-3 px-6 text-center", !isVideo && tool.id !== "avatar-creator" && "mt-28")}>
+          <span className={cn("flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br shadow-xl [&_svg]:size-7", tool.accent)}>
+            {busy ? <LuLoaderCircle className="animate-spin" /> : failed ? <LuTriangleAlert /> : <Icon />}
+          </span>
+          {busy && (
+            <>
+              <p className="text-base font-semibold">{state.message ?? "Working on it"}</p>
+              <p className="text-sm text-white/65">{working ?? "You can leave this page, it will be in your Library when done."}</p>
+            </>
+          )}
+          {failed && <p className="text-sm text-red-300">{state.error}</p>}
+          {!busy && !failed && (
+            <>
+              <p className="text-base font-semibold">Your result appears here</p>
+              <p className="text-sm text-white/65">{idle}</p>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
+export function AudioResult({ id, name }: { id: string; name: string }) {
+  return <AudioPlayer src={`/api/studio/files/${id}`} seed={id} name={name} />;
+}
+
 export function VideoResult({ id, name }: { id: string; name: string }) {
   return (
-    <div className="flex flex-col gap-4">
-      <video controls src={`/api/studio/files/${id}`} className="max-h-[28rem] w-full rounded-lg bg-black" />
+    <div className="flex flex-col gap-3">
+      <video controls autoPlay src={`/api/studio/files/${id}`} className="aspect-video w-full rounded-3xl bg-black ring-1 ring-white/10" />
       <DownloadLink id={id} name={name} />
     </div>
   );
@@ -406,27 +438,35 @@ export type HistoryRow = {
   created_at: string;
 };
 
-/** Recent generations for one tool, shown under the workspace. */
+/** Recent generations for one tool, as a row of cards with cover art. */
 export function History({ rows }: { rows: HistoryRow[] }) {
+  const tool = useTool();
   if (rows.length === 0) return null;
   return (
-    <section className="flex flex-col gap-3 border-t pt-8">
-      <h3 className="text-sm font-semibold">Recent</h3>
-      <ul className="divide-y rounded-lg border">
+    <section className="flex flex-col gap-4 border-t border-white/10 pt-8">
+      <h3 className="font-heading text-lg font-semibold">Recent</h3>
+      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {rows.map((r) => (
-          <li key={r.id} className="flex flex-col gap-2 p-4">
-            <div className="flex items-baseline justify-between gap-4 text-sm">
-              <span className="line-clamp-1 font-medium">{r.title ?? "Untitled"}</span>
-              <span className="shrink-0 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+          <li key={r.id} className="overflow-hidden rounded-2xl bg-white/[0.04] ring-1 ring-white/10">
+            {r.status === "done" && r.mime_type?.startsWith("video") ? (
+              <video controls preload="metadata" src={`/api/studio/files/${r.id}`} className="aspect-video w-full bg-black" />
+            ) : (
+              <div className={cn("relative flex h-24 items-center justify-center bg-gradient-to-br", tool.accent)}>
+                <div className="absolute inset-x-6 inset-y-5 opacity-60">
+                  <WaveArt animate={false} accent="from-white to-white/70" />
+                </div>
+                {r.status === "processing" && <LuLoaderCircle className="relative size-6 animate-spin" />}
+                {r.status === "failed" && <LuTriangleAlert className="relative size-6" />}
+              </div>
+            )}
+            <div className="flex flex-col gap-2 p-3">
+              <p className="line-clamp-1 text-sm font-medium">{r.title ?? "Untitled"}</p>
+              {r.status === "done" && r.mime_type?.startsWith("audio") && (
+                <AudioPlayer compact src={`/api/studio/files/${r.id}`} seed={r.id} name="audio.mp3" />
+              )}
+              {r.status === "failed" && <p className="text-xs text-red-300">{r.error ?? "Failed"}</p>}
+              <p className="text-xs text-white/45">{new Date(r.created_at).toLocaleString()}</p>
             </div>
-            {r.status === "done" && r.mime_type?.startsWith("audio") && (
-              <audio controls preload="none" src={`/api/studio/files/${r.id}`} className="w-full" />
-            )}
-            {r.status === "done" && r.mime_type?.startsWith("video") && (
-              <video controls preload="none" src={`/api/studio/files/${r.id}`} className="max-h-60 rounded-lg bg-black" />
-            )}
-            {r.status === "failed" && <p className="text-xs text-destructive">{r.error ?? "Failed"}</p>}
-            {r.status === "processing" && <p className="text-xs text-muted-foreground">Still processing</p>}
           </li>
         ))}
       </ul>
