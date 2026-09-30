@@ -4,22 +4,54 @@ import { readFile } from "@/lib/studio/storage";
 
 export const runtime = "nodejs";
 
-// RLS on studio_generations means a user can only ever resolve their own rows.
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+// RLS on studio_generations and studio_avatars means a user can only ever
+// resolve their own rows (admins can see all).
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: row } = await supabase
-    .from("studio_generations")
-    .select("file_key, mime_type")
-    .eq("id", id)
-    .single();
-  if (!row?.file_key) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  let key: string | null = null;
+  let mime = "application/octet-stream";
+
+  const { data: gen } = await supabase.from("studio_generations").select("file_key, mime_type").eq("id", id).maybeSingle();
+  if (gen?.file_key) {
+    key = gen.file_key;
+    mime = gen.mime_type ?? mime;
+  } else {
+    const { data: avatar } = await supabase.from("studio_avatars").select("preview_file_key").eq("id", id).maybeSingle();
+    if (avatar?.preview_file_key) {
+      const pk: string = avatar.preview_file_key;
+      key = pk;
+      mime = pk.endsWith(".png") ? "image/png" : pk.endsWith(".webp") ? "image/webp" : "image/jpeg";
+    }
+  }
+  if (!key) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const fileKey: string = key;
+
+  let data: Buffer;
   try {
-    const data = await readFile(row.file_key);
-    return new NextResponse(new Uint8Array(data), {
-      headers: { "Content-Type": row.mime_type ?? "application/octet-stream", "Cache-Control": "private, max-age=3600" },
-    });
+    data = await readFile(fileKey);
   } catch {
     return NextResponse.json({ error: "File missing" }, { status: 404 });
   }
+
+  const headers: Record<string, string> = {
+    "Content-Type": mime,
+    "Accept-Ranges": "bytes",
+    "Cache-Control": "private, max-age=3600",
+  };
+
+  // byte ranges let video and audio players seek
+  const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.get("range") ?? "");
+  if (range) {
+    const start = range[1] ? parseInt(range[1], 10) : 0;
+    const end = range[2] ? Math.min(parseInt(range[2], 10), data.length - 1) : data.length - 1;
+    if (start <= end && start < data.length) {
+      return new NextResponse(new Uint8Array(data.subarray(start, end + 1)), {
+        status: 206,
+        headers: { ...headers, "Content-Range": `bytes ${start}-${end}/${data.length}`, "Content-Length": String(end - start + 1) },
+      });
+    }
+  }
+  return new NextResponse(new Uint8Array(data), { headers: { ...headers, "Content-Length": String(data.length) } });
 }

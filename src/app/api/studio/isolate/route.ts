@@ -1,0 +1,25 @@
+import { NextResponse } from "next/server";
+import { isolateAudio } from "@/lib/studio/elevenlabs";
+import { begin, fail, failGeneration, finishWithFile, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
+
+export const runtime = "nodejs";
+export const maxDuration = 300;
+
+export async function POST(request: Request) {
+  const auth = await requireStudioUser();
+  if ("error" in auth) return auth.error;
+
+  const form = await request.formData();
+  const file = uploadedFile(form, "audio");
+  if (!file) return fail("Upload the audio you want cleaned.");
+  if (tooBig(file)) return fail("That file is too large.");
+
+  const g = await begin(auth.userId, "audio-cleaner", "elevenlabs", file.name, { filename: file.name });
+  const r = await isolateAudio({ audio: file, filename: file.name });
+  if (!r.ok) {
+    await failGeneration(g, r.error);
+    return fail(r.error, 502);
+  }
+  await finishWithFile(g, r.audio, r.mime);
+  return NextResponse.json({ id: g.id });
+}

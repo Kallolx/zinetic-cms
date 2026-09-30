@@ -3,11 +3,19 @@ import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { getMyProducts } from "@/lib/products-server";
 import { NoAccess } from "@/components/no-access";
 import { AppShell, type NavItem } from "@/components/app-shell";
-import { LuAudioLines, LuFolderOpen, LuLayoutGrid, LuLifeBuoy } from "react-icons/lu";
+import { GROUPS, TOOLS } from "@/lib/studio/tools";
+import { LuAudioLines, LuClapperboard, LuFolderOpen, LuLayoutGrid, LuLifeBuoy } from "react-icons/lu";
+
+const groupIcon = { audio: <LuAudioLines />, video: <LuClapperboard /> };
 
 const navItems: NavItem[] = [
   { href: "/studio", label: "Overview", icon: <LuLayoutGrid /> },
-  { href: "/studio/voice", label: "Text to speech", icon: <LuAudioLines /> },
+  ...GROUPS.map((g) => ({
+    href: "#",
+    label: g.label,
+    icon: groupIcon[g.id],
+    children: TOOLS.filter((t) => t.group === g.id && t.href).map((t) => ({ href: t.href!, label: t.name, icon: null })),
+  })),
   { href: "/studio/library", label: "Library", icon: <LuFolderOpen /> },
 ];
 

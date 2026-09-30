@@ -1,0 +1,35 @@
+import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { uploadAsset } from "@/lib/studio/heygen";
+import { saveFile } from "@/lib/studio/storage";
+import { fail, extFor, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
+
+export const runtime = "nodejs";
+
+// Creates a reusable photo avatar: the photo goes to HeyGen (its image key is
+// what Avatar IV uses) and a copy stays in our own storage for the preview.
+export async function POST(request: Request) {
+  const auth = await requireStudioUser();
+  if ("error" in auth) return auth.error;
+
+  const form = await request.formData();
+  const photo = uploadedFile(form, "photo");
+  const name = String(form.get("name") ?? "").trim();
+  if (!photo || !name) return fail("Add a name and a clear front-facing photo.");
+  if (!photo.type.startsWith("image/")) return fail("The avatar must be an image.");
+  if (tooBig(photo)) return fail("That photo is too large.");
+
+  const up = await uploadAsset(photo, photo.type);
+  if (!up.ok) return fail(up.error, 502);
+  if (!up.imageKey) return fail("HeyGen did not accept that photo. Try a clearer, front-facing image.", 502);
+
+  const id = randomUUID();
+  const ext = extFor(photo.type);
+  const fileKey = `${auth.userId}/avatars/${id}.${ext === "bin" ? "jpg" : ext}`;
+  await saveFile(fileKey, Buffer.from(await photo.arrayBuffer()));
+  await createAdminClient()
+    .from("studio_avatars")
+    .insert({ id, user_id: auth.userId, name, image_key: up.imageKey, preview_file_key: fileKey });
+  return NextResponse.json({ id });
+}
