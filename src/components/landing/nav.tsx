@@ -10,8 +10,8 @@ import { LuArrowUpRight, LuChevronDown, LuMail, LuMenu } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import { ZButton } from "@/components/landing/button";
 import { displayFont, serifFont } from "@/components/landing/fonts";
-import { CATEGORIES, servicesIn } from "@/lib/landing-services";
-import { CurrencyToggle, FromPrice } from "@/components/landing/currency";
+import { CATEGORIES, servicesIn, type ServiceCategory } from "@/lib/landing-services";
+import { CurrencyToggle } from "@/components/landing/currency";
 import { serviceHref } from "@/lib/service-pages";
 
 const LINKS = [
@@ -25,52 +25,86 @@ const LINKS = [
 const linkClass =
   "rounded-full px-4 py-2 text-[1.02rem] font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white";
 
+const CATEGORY_NOTES: Record<string, string> = {
+  music: "Release your music worldwide, or generate something new from a prompt.",
+  voice: "Generate and change voices, design sound, transcribe, clean and dub.",
+  video: "Avatars, translation, lip sync, short clips and video from a prompt.",
+  creator: "Find the network behind any YouTube channel.",
+};
+
+const CATEGORY_ANCHORS: Record<string, string> = {
+  music: "music",
+  voice: "voice",
+  video: "video",
+  creator: "creator-tools",
+};
+
 function MegaMenu({ onNavigate }: { onNavigate: () => void }) {
+  const [active, setActive] = React.useState<ServiceCategory>("music");
+  const current = CATEGORIES.find((c) => c.id === active) ?? CATEGORIES[0];
+  const items = servicesIn(active);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 8, scale: 0.99 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute top-full left-1/2 mt-3 w-[min(1120px,calc(100vw-2rem))] -translate-x-1/2"
+      className="absolute top-full left-1/2 mt-3 w-[min(940px,calc(100vw-2rem))] -translate-x-1/2"
     >
-      <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#0b0910]/95 p-3 text-white shadow-[0_40px_100px_-30px_rgb(0_0_0/0.8)] backdrop-blur-2xl">
-        <div className="grid gap-1 lg:grid-cols-4">
-          {CATEGORIES.map((c) => (
-            <div key={c.id} className="rounded-2xl p-4">
-              <p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-white/50">
-                <span className="zl-grad-bg size-1.5 rounded-full" />
-                {c.label}
-              </p>
-              <ul className="mt-3 flex flex-col">
-                {servicesIn(c.id).map((s) => (
-                  <li key={s.id}>
-                    <Link
-                      href={serviceHref(s.id)}
-                      onClick={onNavigate}
-                      className="group flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/10"
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-[0.95rem] font-medium leading-snug text-white/95 group-hover:text-white">
-                          {s.name}
-                        </span>
-                        <span className="mt-0.5 block text-xs text-white/45">
-                          <FromPrice service={s} />
-                        </span>
-                      </span>
-                      <LuArrowUpRight className="mt-1 size-4 shrink-0 -translate-x-1 text-white/0 transition-all duration-300 group-hover:translate-x-0 group-hover:text-[#ff5b8a]" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div className="mt-1 flex items-center justify-between gap-4 rounded-2xl bg-white/[0.06] px-5 py-3.5">
-          <p className="text-sm text-white/60">17 services across music, voice, video and creator tools.</p>
-          <Link href="/services" onClick={onNavigate} className="zl-link text-white">
+      <div className="grid overflow-hidden rounded-[26px] border border-white/10 bg-[#0b0910]/95 text-white shadow-[0_40px_100px_-30px_rgb(0_0_0/0.85)] backdrop-blur-2xl md:grid-cols-[260px_1fr]">
+        <div className="flex flex-col border-r border-white/10 bg-white/[0.03] p-3">
+          <ul className="flex flex-col gap-0.5">
+            {CATEGORIES.map((c) => {
+              const isActive = c.id === active;
+              return (
+                <li key={c.id}>
+                  <Link
+                    href={`/services#${CATEGORY_ANCHORS[c.id]}`}
+                    onClick={onNavigate}
+                    onMouseEnter={() => setActive(c.id)}
+                    onFocus={() => setActive(c.id)}
+                    className={cn(
+                      "relative flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-colors",
+                      isActive ? "bg-white/[0.07] text-white" : "text-white/60 hover:text-white"
+                    )}
+                  >
+                    {isActive && <span aria-hidden className="zl-grad-bg absolute top-1/2 left-0 h-5 w-0.5 -translate-y-1/2 rounded-full" />}
+                    <span className="font-medium">{c.label}</span>
+                    <span className="text-xs tabular-nums text-white/35">{servicesIn(c.id).length}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <Link
+            href="/services"
+            onClick={onNavigate}
+            className="zl-link mt-auto px-4 pt-6 pb-2 text-white"
+          >
             Browse all services
           </Link>
+        </div>
+
+        <div className="p-7">
+          <p className="text-sm text-white/50">{CATEGORY_NOTES[current.id]}</p>
+          <ul className="mt-5 grid gap-x-8 sm:grid-cols-2">
+            {items.map((s) => (
+              <li key={s.id} className="border-t border-white/[0.07]">
+                <Link
+                  href={serviceHref(s.id)}
+                  onClick={onNavigate}
+                  className="group flex items-start justify-between gap-3 py-3.5"
+                >
+                  <span className="min-w-0">
+                    <span className="block font-medium text-white/90 transition-colors group-hover:text-white">{s.name}</span>
+                    <span className="mt-0.5 line-clamp-1 block text-xs text-white/40">{s.blurb}</span>
+                  </span>
+                  <LuArrowUpRight className="mt-1 size-4 shrink-0 text-white/0 transition-all duration-300 group-hover:text-[#ff5b8a]" />
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </motion.div>
