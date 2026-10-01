@@ -1,107 +1,14 @@
-"use client";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { checkoutUrl } from "@/lib/site";
 
-import * as React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signUp } from "@/app/actions/auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LuLoaderCircle, LuTriangleAlert, LuArrowRight } from "react-icons/lu";
-import { SocialAuthRow } from "@/components/social-auth-row";
-import { PasswordInput } from "@/components/password-input";
-
-export default function RegisterPage() {
-  const router = useRouter();
-  const [pending, setPending] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setPending(true);
-    const formData = new FormData(e.currentTarget);
-    const result = await signUp(formData);
-    setPending(false);
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-    router.push("/pending");
-  }
-
-  return (
-    <div className="w-full max-w-sm">
-      <div className="mb-8 flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-bold">Create an account</h1>
-        <p className="text-[0.95rem] text-muted-foreground">
-          Registrations are reviewed by an admin before you can sign in.
-        </p>
-      </div>
-
-      <form onSubmit={onSubmit} className="flex flex-col gap-5">
-        {error && (
-          <Alert variant="destructive">
-            <LuTriangleAlert className="size-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="fullName">Full name</Label>
-          <Input
-            id="fullName"
-            name="fullName"
-            placeholder="Jane Doe"
-            required
-            className="h-12 text-base"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            required
-            autoComplete="email"
-            className="h-12 text-base"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Password</Label>
-          <PasswordInput
-            id="password"
-            name="password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-            className="h-12 text-base"
-          />
-          <p className="text-xs text-muted-foreground">At least 8 characters.</p>
-        </div>
-
-        <Button type="submit" size="lg" className="mt-2 w-full gap-2" disabled={pending}>
-          {pending ? (
-            <LuLoaderCircle className="size-4 animate-spin" />
-          ) : (
-            <LuArrowRight className="size-4" />
-          )}
-          Create account
-        </Button>
-      </form>
-
-      <div className="mt-5">
-        <SocialAuthRow />
-      </div>
-
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
-          Sign in
-        </Link>
-      </p>
-    </div>
-  );
+// Every account starts with a purchase now. Each dashboard's login sends "Register" here,
+// and this opens checkout on that dashboard's own service.
+export default async function RegisterPage() {
+  const host = ((await headers()).get("host") ?? "").split(":")[0];
+  let studioHost = "";
+  try {
+    studioHost = new URL(process.env.NEXT_PUBLIC_STUDIO_URL ?? "").hostname;
+  } catch {}
+  redirect(checkoutUrl(studioHost && host === studioHost ? "voice-generator" : "mcn-checker"));
 }

@@ -194,7 +194,7 @@ export default function ClientLoginPage() {
             <Reveal delay={0.35}>
               <p className="mt-8 text-sm text-white/50">
                 New here?{" "}
-                <Link href="/register" className="font-medium text-white underline decoration-[#ff3d86] underline-offset-4">
+                <Link href="/checkout" className="font-medium text-white underline decoration-[#ff3d86] underline-offset-4">
                   Create an account
                 </Link>
               </p>
