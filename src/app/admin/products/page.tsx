@@ -30,6 +30,10 @@ export default async function AdminProductsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="font-heading text-3xl font-semibold">Dashboards</h1>
+        <p className="mt-1 text-sm text-muted-foreground">The three dashboards and who can open them. For one customer in full, open them from Customers.</p>
+      </div>
       <div className="grid gap-4 md:grid-cols-3">
         {PRODUCTS.map((p) => {
           const url = productUrl(p);

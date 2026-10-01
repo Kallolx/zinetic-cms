@@ -13,6 +13,11 @@ export default async function AdminEnginesPage() {
   }));
 
   return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="font-heading text-3xl font-semibold">Engines</h1>
+        <p className="mt-1 text-sm text-muted-foreground">The providers behind each AI Studio tool, and how much of a plan an engine uses.</p>
+      </div>
     <Card>
       <CardHeader>
         <CardTitle>Engines and pricing</CardTitle>
@@ -25,5 +30,6 @@ export default async function AdminEnginesPage() {
         <EnginesManager services={services} />
       </CardContent>
     </Card>
+    </div>
   );
 }
