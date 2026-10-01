@@ -4,10 +4,10 @@ import { getOrder } from "@/lib/checkout";
 
 export const runtime = "nodejs";
 
-async function handle(request: Request, tranId: string) {
+async function handle(request: Request, tranId: string, raw: Record<string, unknown> = {}) {
   const order = tranId ? await getOrder(tranId) : null;
   if (order && order.status === "pending") {
-    await createAdminClient().from("checkout_orders").update({ status: "failed" }).eq("id", order.id);
+    await createAdminClient().from("checkout_orders").update({ status: "failed", raw_ipn: raw }).eq("id", order.id);
   }
   const site = order?.site_origin ?? (process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin).replace(/\/$/, "");
   // a purchase made inside the dashboard returns to that page, a new sign-up to checkout
@@ -20,7 +20,9 @@ async function handle(request: Request, tranId: string) {
 
 export async function POST(request: Request) {
   const form = await request.formData();
-  return handle(request, String(form.get("tran_id") ?? ""));
+  // what the gateway sends (error text, bank, card type) is saved on the order for the admin
+  console.log("sslcommerz fail", JSON.stringify(Object.fromEntries([...form.entries()].filter(([k]) => !/pass|card_no|card_issuer_country/i.test(k)))));
+  return handle(request, String(form.get("tran_id") ?? ""), Object.fromEntries(form.entries()));
 }
 
 export async function GET(request: Request) {

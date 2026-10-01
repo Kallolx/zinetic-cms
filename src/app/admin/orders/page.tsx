@@ -12,12 +12,19 @@ import { cn } from "@/lib/utils";
 
 type Rel = { full_name: string | null; email: string } | null;
 
+// SSLCommerz puts the reason in different fields depending on where it failed
+const reasonOf = (raw: unknown): string | undefined => {
+  const r = (raw ?? {}) as Record<string, unknown>;
+  const text = [r.error, r.failedreason, r.status, r.card_issuer, r.bank_tran_id].filter((x) => typeof x === "string" && x).join(" · ");
+  return text || undefined;
+};
+
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ range?: string; status?: string }> }) {
   const sp = await searchParams;
   const range = parseRange(sp.range);
   const db = createAdminClient();
   const [orders, topups] = await Promise.all([
-    db.from("checkout_orders").select("id, tran_id, user_id, email, service, plan, bdt_amount, status, created_at, paid_at, profiles:user_id(full_name)").order("created_at", { ascending: false }).limit(1500),
+    db.from("checkout_orders").select("id, tran_id, user_id, email, service, plan, bdt_amount, status, created_at, paid_at, raw_ipn, profiles:user_id(full_name)").order("created_at", { ascending: false }).limit(1500),
     db.from("payment_sessions").select("id, tran_id, user_id, amount, status, created_at, validated_at, profiles:user_id(full_name, email)").order("created_at", { ascending: false }).limit(1500),
   ]);
 
@@ -33,6 +40,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       bdt: Number(o.bdt_amount),
       status: (o.status === "paid" ? "paid" : o.status === "held" ? "held" : o.status === "pending" ? "unpaid" : "failed") as OrderRow["status"],
       ref: o.tran_id as string,
+      reason: reasonOf(o.raw_ipn),
     })),
     ...(topups.data ?? []).map((t) => {
       const p = t.profiles as unknown as Rel;

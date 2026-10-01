@@ -21,6 +21,8 @@ export type OrderRow = {
   bdt: number;
   status: "paid" | "held" | "unpaid" | "failed";
   ref: string;
+  /** why a payment did not go through, from SSLCommerz */
+  reason?: string;
 };
 
 const PAGE = 25;
@@ -122,6 +124,7 @@ export function OrdersTable({ rows, initialStatus }: { rows: OrderRow[]; initial
                   <TableCell className="text-right tabular-nums">৳{Math.round(r.bdt).toLocaleString("en-US")}</TableCell>
                   <TableCell>
                     <StatusBadge s={r.status} />
+                    {r.status === "failed" && r.reason && <span className="mt-1 block max-w-48 truncate text-xs text-muted-foreground" title={r.reason}>{r.reason}</span>}
                   </TableCell>
                   <TableCell className="font-mono text-xs text-muted-foreground">{r.ref}</TableCell>
                 </TableRow>
