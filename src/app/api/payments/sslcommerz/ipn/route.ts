@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
   const { data: session, error: sessionError } = await admin
     .from("payment_sessions")
-    .select("id, user_id, amount, usd_amount, status, wallet")
+    .select("id, user_id, amount, usd_amount, status")
     .eq("tran_id", tranId)
     .single();
 
@@ -63,32 +63,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, held: true });
   }
 
-  const usdCredit = Number(session.usd_amount ?? session.amount);
-  const note = `SSLCommerz top-up: ${formatCredits(usdCredit)} (${Number(session.amount).toFixed(2)} BDT paid, ${tranId})`;
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("wallet_balance")
+    .eq("id", session.user_id)
+    .single();
 
-  if (session.wallet === "studio") {
-    // the AI Studio wallet is credited atomically and kept apart from the Channel Checker wallet
-    await admin.rpc("studio_topup", { p_user: session.user_id, p_usd: usdCredit, p_note: note });
-  } else {
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("wallet_balance")
-      .eq("id", session.user_id)
-      .single();
-
-    if (!profile) {
-      return NextResponse.json({ error: "User not found." }, { status: 404 });
-    }
-
-    const newBalance = Number(profile.wallet_balance) + usdCredit;
-    await admin.from("profiles").update({ wallet_balance: newBalance }).eq("id", session.user_id);
-    await admin.from("wallet_transactions").insert({
-      user_id: session.user_id,
-      type: "topup",
-      amount: usdCredit,
-      note,
-    });
+  if (!profile) {
+    return NextResponse.json({ error: "User not found." }, { status: 404 });
   }
+
+  const usdCredit = Number(session.usd_amount ?? session.amount);
+  const newBalance = Number(profile.wallet_balance) + usdCredit;
+
+  await admin.from("profiles").update({ wallet_balance: newBalance }).eq("id", session.user_id);
+  await admin.from("wallet_transactions").insert({
+    user_id: session.user_id,
+    type: "topup",
+    amount: usdCredit,
+    note: `SSLCommerz top-up: ${formatCredits(usdCredit)} (${Number(session.amount).toFixed(2)} BDT paid, ${tranId})`,
+  });
   await admin
     .from("payment_sessions")
     .update({

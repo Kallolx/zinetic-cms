@@ -18,7 +18,7 @@ export default async function StudioLayout({ children }: { children: React.React
     <StudioShell
       userName={profile.full_name ?? ""}
       userEmail={user.email ?? ""}
-      balance={Number(profile.studio_balance ?? 0)}
+      balance={Number(profile.wallet_balance)}
       impersonating={isImpersonating}
     >
       {hasAccess ? children : <NoAccess product="AI Studio" />}

@@ -56,7 +56,7 @@ export default async function StudioHome() {
           <LuWallet className="size-6 text-white/70" />
           <div>
             <p className="text-xs text-white/50">Balance</p>
-            <p className="font-heading text-xl font-semibold">{formatCredits(Number(profile?.studio_balance ?? 0))}</p>
+            <p className="font-heading text-xl font-semibold">{formatCredits(Number(profile?.wallet_balance ?? 0))}</p>
           </div>
         </div>
         <Link href="/dashboard/support" className={`${PANEL} group col-span-1 md:col-span-2 transition-colors hover:bg-white/[0.07]`}>

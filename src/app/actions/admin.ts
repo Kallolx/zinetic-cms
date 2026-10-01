@@ -174,31 +174,11 @@ export async function stopImpersonating() {
   redirect("/admin");
 }
 
-export async function topUpWallet(userId: string, amount: number, note?: string, wallet: "checker" | "studio" = "checker") {
+export async function topUpWallet(userId: string, amount: number, note?: string) {
   const admin = await requireAdmin();
   if (!amount || amount <= 0) return { error: "Enter a valid amount." };
 
   const supabaseAdmin = createAdminClient();
-
-  if (wallet === "studio") {
-    const { error } = await supabaseAdmin.rpc("studio_topup", {
-      p_user: userId,
-      p_usd: amount,
-      p_note: note || "Manual AI Studio top-up by admin",
-    });
-    if (error) return { error: error.message };
-    await supabaseAdmin
-      .from("wallet_transactions")
-      .update({ created_by: admin.id })
-      .eq("user_id", userId)
-      .eq("wallet", "studio")
-      .is("created_by", null)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    revalidatePath("/admin");
-    revalidatePath("/admin/users");
-    return { error: null };
-  }
 
   const { data: profile, error: profileError } = await supabaseAdmin
     .from("profiles")

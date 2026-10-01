@@ -15,7 +15,6 @@ import {
   LuPanelLeftOpen,
   LuSearch,
   LuUserRoundX,
-  LuWallet,
   LuX,
 } from "react-icons/lu";
 import { signOut } from "@/app/actions/auth";
@@ -209,7 +208,6 @@ function Sidebar({ collapsed, onToggle, onNavigate, mobile = false }: { collapse
             <>
               <Item href="/studio" label="Home" icon={<LuHouse />} active={pathname === "/studio"} collapsed={rail} onNavigate={onNavigate} />
               <Item href="/studio/library" label="Library" icon={<LuFolderOpen />} active={pathname === "/studio/library"} collapsed={rail} onNavigate={onNavigate} />
-              <Item href="/studio/wallet" label="Wallet" icon={<LuWallet />} active={pathname === "/studio/wallet"} collapsed={rail} onNavigate={onNavigate} />
             </>
           )}
         </nav>
@@ -248,7 +246,7 @@ function Sidebar({ collapsed, onToggle, onNavigate, mobile = false }: { collapse
 function TopBar({ userName, userEmail, balance, impersonating }: { userName: string; userEmail: string; balance?: number; impersonating: boolean }) {
   const pathname = usePathname();
   const tool = TOOLS.find((t) => t.href === pathname);
-  const title = pathname === "/studio" ? "Home" : pathname === "/studio/library" ? "Library" : pathname === "/studio/wallet" ? "Wallet" : (tool?.name ?? "AI Studio");
+  const title = pathname === "/studio" ? "Home" : pathname === "/studio/library" ? "Library" : (tool?.name ?? "AI Studio");
   const label = userName || userEmail;
 
   return (
@@ -260,11 +258,11 @@ function TopBar({ userName, userEmail, balance, impersonating }: { userName: str
       </div>
       <div className="flex items-center gap-3">
         {typeof balance === "number" && (
-          <Link href="/studio/wallet" className="flex h-9 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-sm ring-1 ring-white/10 transition-colors hover:bg-white/10">
+          <span className="flex h-9 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-sm ring-1 ring-white/10">
             <span className="size-1.5 rounded-full bg-emerald-400" />
             <span className="text-white/60">Balance</span>
             <span className="font-medium">{formatCredits(balance)}</span>
-          </Link>
+          </span>
         )}
         <form action={impersonating ? stopImpersonating : signOut} className="flex items-center gap-2 rounded-full bg-white/[0.06] py-1 pr-1 pl-1 ring-1 ring-white/10">
           <span className="flex size-7 items-center justify-center rounded-full bg-white/15 text-xs font-semibold">{label.slice(0, 1).toUpperCase()}</span>
