@@ -320,3 +320,7 @@ export function formatPrice(tier: Tier) {
     tier.period === "year" ? "/year" : tier.period === "month" ? "/month" : tier.period === "avatar" ? "/avatar" : "";
   return { amount, suffix };
 }
+
+/** Services that are shown but cannot be bought yet (their dashboard is not built). */
+export const COMING_SOON = new Set(["distribution"]);
+export const isComingSoon = (serviceId: string) => COMING_SOON.has(serviceId);

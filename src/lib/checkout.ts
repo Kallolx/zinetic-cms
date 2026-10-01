@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { validateSslcommerzTransaction } from "@/lib/sslcommerz";
-import { SERVICES } from "@/lib/landing-services";
+import { SERVICES, isComingSoon } from "@/lib/landing-services";
 import { CHECK_PRICE, PRICING_PLANS } from "@/lib/pricing-plans";
 
 const RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 122);
@@ -20,6 +20,7 @@ export function productFor(serviceId: string): CheckoutProduct {
  * checks for a checker bundle (the discount is the bonus), otherwise what was paid.
  */
 export function quote(serviceId: string, planName: string) {
+  if (isComingSoon(serviceId)) return null;
   const service = SERVICES.find((s) => s.id === serviceId);
   const tier = service?.tiers.find((t) => t.name === planName);
   if (!service || !tier) return null;

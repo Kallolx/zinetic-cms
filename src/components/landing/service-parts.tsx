@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { LuArrowUpRight, LuCheck, LuPlus } from "react-icons/lu";
 import { AutoVideo, Reveal } from "@/components/landing/primitives";
-import { ZButton } from "@/components/landing/button";
-import type { Service } from "@/lib/landing-services";
+import { ComingSoonButton, ZButton } from "@/components/landing/button";
+import { isComingSoon, type Service } from "@/lib/landing-services";
 import { SERVICE_PAGES, serviceHref } from "@/lib/service-pages";
 import { FromPrice, PriceBlock } from "@/components/landing/currency";
 import { cn } from "@/lib/utils";
@@ -74,13 +74,15 @@ export function TierCards({ service }: { service: Service }) {
                 </ul>
               )}
               <div className="mt-auto pt-8">
-                <ZButton
+                {isComingSoon(service.id) ? <ComingSoonButton className="w-full" /> : (
+<ZButton
                   href={`/checkout?service=${service.id}&plan=${encodeURIComponent(tier.name)}`}
                   variant={featured ? "primary" : "solid"}
                   className="w-full"
                 >
                   {service.cta}
                 </ZButton>
+)}
               </div>
             </div>
           </Reveal>

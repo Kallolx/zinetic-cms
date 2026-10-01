@@ -5,11 +5,11 @@ import Image from "next/image";
 import { animate, motion, useInView, useReducedMotion } from "motion/react";
 import { LuCheck, LuSparkles } from "react-icons/lu";
 import { AutoVideo, Eyebrow, Reveal } from "@/components/landing/primitives";
-import { MEDIA, SERVICES } from "@/lib/landing-services";
+import { MEDIA, SERVICES, isComingSoon } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
 import { serviceHref } from "@/lib/service-pages";
 import { PriceBlock } from "@/components/landing/currency";
-import { ZButton } from "@/components/landing/button";
+import { ComingSoonButton, ZButton } from "@/components/landing/button";
 
 const distribution = SERVICES.find((s) => s.id === "distribution")!;
 const generator = SERVICES.find((s) => s.id === "music-generator")!;
@@ -161,13 +161,15 @@ export function MusicSection() {
                     </li>
                   ))}
                 </ul>
-                <ZButton
+                {isComingSoon("distribution") ? <ComingSoonButton className="mt-8 w-full" /> : (
+<ZButton
                   href={`/checkout?service=distribution&plan=${encodeURIComponent(tier.name)}`}
                   variant={featured ? "primary" : "solid"}
                   className="mt-8 w-full"
                 >
                   {distribution.cta}
                 </ZButton>
+)}
               </div>
             </Reveal>
           );

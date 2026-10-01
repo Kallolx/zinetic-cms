@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { LuArrowRight, LuCheck, LuEye, LuEyeOff, LuLoaderCircle, LuLock, LuX } from "react-icons/lu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FromPrice, PriceBlock, useCurrency } from "@/components/landing/currency";
-import { CATEGORIES, SERVICES, servicesIn, type ServiceCategory } from "@/lib/landing-services";
+import { CATEGORIES, SERVICES, isComingSoon, servicesIn, type ServiceCategory } from "@/lib/landing-services";
 import { USD_TO_BDT_RATE, formatBdt, formatMoney, formatUsd, periodSuffix } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +62,7 @@ export function CheckoutForm({
 
   const service = SERVICES.find((s) => s.id === serviceId) ?? SERVICES[0];
   const tier = service.tiers.find((t) => t.name === planName) ?? service.tiers[0];
+  const soon = isComingSoon(service.id);
   const amount = formatMoney(tier.price, currency);
   const suffix = periodSuffix(tier.period);
 
@@ -92,7 +93,7 @@ export function CheckoutForm({
   // the form only collects details, the order is placed from the payment window
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!agreed) return;
+    if (!agreed || soon) return;
     setError(null);
     setHost(e.currentTarget.closest<HTMLElement>(".zl") ?? document.body);
     const f = new FormData(e.currentTarget);
@@ -173,7 +174,7 @@ export function CheckoutForm({
                     >
                       {s.name}
                     </span>
-                    <FromPrice service={s} className="shrink-0 text-xs text-white/40" />
+                    {isComingSoon(s.id) ? <span className="shrink-0 text-xs text-white/40">Soon</span> : <FromPrice service={s} className="shrink-0 text-xs text-white/40" />}
                   </button>
                 </li>
               );
@@ -287,14 +288,24 @@ export function CheckoutForm({
           </label>
           <button
             type="submit"
-            disabled={!agreed}
+            disabled={!agreed || soon}
             className="zl-btn zl-btn-primary zl-btn-lg mt-7 w-full disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:w-auto sm:min-w-72"
           >
-            Continue to payment, {amount}
-            {suffix}
-            <LuArrowRight className="size-5" />
+            {soon ? (
+              "Coming soon"
+            ) : (
+              <>
+                Continue to payment, {amount}
+                {suffix}
+                <LuArrowRight className="size-5" />
+              </>
+            )}
           </button>
-          {!agreed && <p className="mt-3 text-xs text-white/45">Tick the box above to continue.</p>}
+          {soon ? (
+            <p className="mt-3 text-xs text-white/45">{service.name} is opening soon and cannot be bought yet. Pick another service to continue.</p>
+          ) : (
+            !agreed && <p className="mt-3 text-xs text-white/45">Tick the box above to continue.</p>
+          )}
         </section>
       </div>
 

@@ -71,3 +71,12 @@ export function ZLink({
     </Link>
   );
 }
+
+/** Stands in for a plan button when the service cannot be bought yet. */
+export function ComingSoonButton({ className }: { className?: string }) {
+  return (
+    <span aria-disabled="true" className={`zl-btn zl-btn-solid zl-btn-md cursor-not-allowed justify-center opacity-60 ${className ?? ""}`}>
+      Coming soon
+    </span>
+  );
+}

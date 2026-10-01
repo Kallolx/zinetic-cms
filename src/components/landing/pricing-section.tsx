@@ -4,10 +4,10 @@ import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { LuCheck, LuShieldCheck } from "react-icons/lu";
 import { Reveal, SectionHeading } from "@/components/landing/primitives";
-import { CATEGORIES, servicesIn, type ServiceCategory } from "@/lib/landing-services";
+import { CATEGORIES, isComingSoon, servicesIn, type ServiceCategory } from "@/lib/landing-services";
 import { cn } from "@/lib/utils";
 import { PriceBlock } from "@/components/landing/currency";
-import { ZButton } from "@/components/landing/button";
+import { ComingSoonButton, ZButton } from "@/components/landing/button";
 
 export function PricingSection() {
   const [category, setCategory] = React.useState<ServiceCategory>("music");
@@ -134,13 +134,15 @@ export function PricingSection() {
                       </ul>
                     )}
                     <div className="mt-auto pt-8">
-                      <ZButton
+                      {isComingSoon(service.id) ? <ComingSoonButton className="w-full" /> : (
+<ZButton
                         href={`/checkout?service=${service.id}&plan=${encodeURIComponent(tier.name)}`}
                         variant={featured ? "primary" : "solid"}
                         className="w-full"
                       >
                         {service.cta}
                       </ZButton>
+)}
                     </div>
                   </div>
                 );

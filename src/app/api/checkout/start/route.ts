@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createSslcommerzSession } from "@/lib/sslcommerz";
 import { quote } from "@/lib/checkout";
+import { isComingSoon } from "@/lib/landing-services";
 
 export const runtime = "nodejs";
 
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
   if (password.length < 8) return fail("Password must be at least 8 characters.");
   if (!body?.agreed) return fail("You must agree to the Terms, Privacy Policy and Refund Policy to continue.");
 
+  if (isComingSoon(body.service ?? "")) return fail("This service is coming soon and cannot be purchased yet.");
   const q = quote(body.service ?? "", body.plan ?? "");
   if (!q) return fail("That plan is not available.");
 
