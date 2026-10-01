@@ -1,15 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
-import { motion } from "motion/react";
-import { LuArrowRight, LuCheck, LuEye, LuEyeOff, LuLoaderCircle } from "react-icons/lu";
-import { signUp } from "@/app/actions/auth";
+import { AnimatePresence, motion } from "motion/react";
+import { LuArrowRight, LuCheck, LuEye, LuEyeOff, LuLoaderCircle, LuLock, LuX } from "react-icons/lu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ZButton } from "@/components/landing/button";
 import { FromPrice, PriceBlock, useCurrency } from "@/components/landing/currency";
 import { CATEGORIES, SERVICES, servicesIn, type ServiceCategory } from "@/lib/landing-services";
-import { USD_TO_BDT_RATE, formatMoney, periodSuffix } from "@/lib/currency";
+import { USD_TO_BDT_RATE, formatBdt, formatMoney, formatUsd, periodSuffix } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
 function billing(period: "year" | "month" | "avatar" | null | undefined) {
@@ -35,7 +34,17 @@ function StepHeading({ n, title, hint }: { n: string; title: string; hint?: stri
   );
 }
 
-export function CheckoutForm({ initialService, initialPlan }: { initialService: string; initialPlan: string }) {
+type Draft = { fullName: string; email: string; password: string };
+
+export function CheckoutForm({
+  initialService,
+  initialPlan,
+  notice,
+}: {
+  initialService: string;
+  initialPlan: string;
+  notice?: string | null;
+}) {
   const startService = SERVICES.find((s) => s.id === initialService) ?? SERVICES[0];
   const [serviceId, setServiceId] = React.useState(startService.id);
   const [planName, setPlanName] = React.useState(
@@ -44,9 +53,11 @@ export function CheckoutForm({ initialService, initialPlan }: { initialService: 
   const [category, setCategory] = React.useState<ServiceCategory>(startService.category);
   const [agreed, setAgreed] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
-  const [pending, setPending] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [doneEmail, setDoneEmail] = React.useState<string | null>(null);
+  const [draft, setDraft] = React.useState<Draft | null>(null);
+  // the payment window is drawn on the page root: an animated ancestor would otherwise confine "fixed" to the form
+  const [host, setHost] = React.useState<HTMLElement | null>(null);
+  const [paying, setPaying] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(notice ?? null);
   const { currency } = useCurrency();
 
   const service = SERVICES.find((s) => s.id === serviceId) ?? SERVICES[0];
@@ -78,44 +89,39 @@ export function CheckoutForm({ initialService, initialPlan }: { initialService: 
     syncUrl(serviceId, name);
   }
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  // the form only collects details, the order is placed from the payment window
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!agreed) return;
     setError(null);
-    setPending(true);
-    const formData = new FormData(e.currentTarget);
-    const email = String(formData.get("email") ?? "");
-    const result = await signUp(formData);
-    setPending(false);
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-    setDoneEmail(email);
+    setHost(e.currentTarget.closest<HTMLElement>(".zl") ?? document.body);
+    const f = new FormData(e.currentTarget);
+    setDraft({ fullName: String(f.get("fullName") ?? ""), email: String(f.get("email") ?? ""), password: String(f.get("password") ?? "") });
   }
 
-  if (doneEmail) {
-    return (
-      <div className="mx-auto max-w-3xl py-10 text-center sm:py-20">
-        <span className="zl-grad-bg mx-auto flex size-14 items-center justify-center rounded-full text-white">
-          <LuCheck className="size-7" />
-        </span>
-        <h2 className="zl-display mt-8 text-5xl font-bold sm:text-7xl">
-          Order <span className="zl-serif zl-grad-text">received.</span>
-        </h2>
-        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/65">
-          Your account for <strong className="text-white">{doneEmail}</strong> is created with the{" "}
-          <strong className="text-white">{service.name}</strong> {tier.name} plan ({amount}
-          {suffix}). An admin will review and approve it, and then you can sign in.
-        </p>
-        <div className="mt-10 flex flex-wrap justify-center gap-3">
-          <ZButton href="/client-login">Go to client login</ZButton>
-          <ZButton href="/" variant="glass" arrow={false}>
-            Back to home
-          </ZButton>
-        </div>
-      </div>
-    );
+  async function pay() {
+    if (!draft) return;
+    setPaying(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/checkout/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...draft, service: service.id, plan: tier.name, agreed }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { gatewayPageUrl?: string; error?: string };
+      if (!res.ok || !json.gatewayPageUrl) {
+        setError(json.error ?? "Could not start the payment.");
+        setDraft(null);
+        setPaying(false);
+        return;
+      }
+      window.location.assign(json.gatewayPageUrl);
+    } catch {
+      setError("Could not reach the server. Check your connection and try again.");
+      setDraft(null);
+      setPaying(false);
+    }
   }
 
   const cols = service.tiers.length >= 4 ? "lg:grid-cols-5" : service.tiers.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2";
@@ -221,7 +227,7 @@ export function CheckoutForm({ initialService, initialPlan }: { initialService: 
         </section>
 
         <section className="mt-16 border-t border-white/10 pt-14">
-          <StepHeading n="2" title="Create your account" hint="An admin approves it before you can sign in." />
+          <StepHeading n="2" title="Create your account" hint="Your account is activated the moment your payment goes through." />
           <div className="mt-10 grid gap-9 sm:grid-cols-2">
             {error && (
               <p className="rounded-sm border-l-2 border-[#ff3d86] bg-[#ff3d86]/10 px-4 py-3 text-sm text-[#ffb3c6] sm:col-span-2">{error}</p>
@@ -260,7 +266,7 @@ export function CheckoutForm({ initialService, initialPlan }: { initialService: 
         </section>
 
         <section className="mt-16 border-t border-white/10 pt-14">
-          <StepHeading n="3" title="Place your order" />
+          <StepHeading n="3" title="Review and pay" />
           <label className="mt-8 flex cursor-pointer items-start gap-3.5 leading-relaxed">
             <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-1" aria-required />
             <span className="text-[0.95rem] text-white/60">
@@ -281,15 +287,14 @@ export function CheckoutForm({ initialService, initialPlan }: { initialService: 
           </label>
           <button
             type="submit"
-            disabled={!agreed || pending}
+            disabled={!agreed}
             className="zl-btn zl-btn-primary zl-btn-lg mt-7 w-full disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:w-auto sm:min-w-72"
           >
-            {pending ? <LuLoaderCircle className="size-5 animate-spin" /> : null}
-            Place order, {amount}
+            Continue to payment, {amount}
             {suffix}
-            {!pending && <LuArrowRight className="size-5" />}
+            <LuArrowRight className="size-5" />
           </button>
-          {!agreed && <p className="mt-3 text-xs text-white/45">Tick the box above to place your order.</p>}
+          {!agreed && <p className="mt-3 text-xs text-white/45">Tick the box above to continue.</p>}
         </section>
       </div>
 
@@ -337,6 +342,93 @@ export function CheckoutForm({ initialService, initialPlan }: { initialService: 
           </p>
         </div>
       </aside>
+      {host && createPortal(
+      <AnimatePresence>
+        {draft && (
+          <motion.div
+            key="pay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Payment"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[80] flex items-end justify-center bg-black/75 p-4 backdrop-blur-sm sm:items-center"
+            onClick={() => !paying && setDraft(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0f0d13] p-7 text-white shadow-[0_40px_120px_-30px_rgb(0_0_0/0.9)] sm:p-8"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className={fieldLabel}>Secure payment</p>
+                  <h3 className="zl-display mt-2 text-2xl font-semibold">Confirm your order</h3>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  disabled={paying}
+                  onClick={() => setDraft(null)}
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+                >
+                  <LuX className="size-5" />
+                </button>
+              </div>
+
+              <dl className="mt-7 divide-y divide-white/10 border-y border-white/10 text-sm">
+                <div className="flex justify-between gap-4 py-3">
+                  <dt className="text-white/50">Service</dt>
+                  <dd className="text-right font-medium">{service.name}</dd>
+                </div>
+                <div className="flex justify-between gap-4 py-3">
+                  <dt className="text-white/50">Plan</dt>
+                  <dd className="text-right font-medium">
+                    {tier.name}
+                    <span className="block text-xs font-normal text-white/45">{tier.quota}</span>
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 py-3">
+                  <dt className="text-white/50">Account</dt>
+                  <dd className="min-w-0 truncate text-right font-medium">{draft.email}</dd>
+                </div>
+              </dl>
+
+              <div className="mt-6 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs text-white/50">You pay today</p>
+                  <p className="zl-display mt-1 text-4xl font-bold">{formatBdt(tier.price)}</p>
+                </div>
+                <p className="pb-1 text-sm text-white/50">
+                  {formatUsd(tier.price)}
+                  {suffix} · $1 = ৳{USD_TO_BDT_RATE}
+                </p>
+              </div>
+
+              {error && <p className="mt-5 rounded-sm border-l-2 border-[#ff3d86] bg-[#ff3d86]/10 px-4 py-3 text-sm text-[#ffb3c6]">{error}</p>}
+
+              <button
+                type="button"
+                onClick={pay}
+                disabled={paying}
+                className="zl-btn zl-btn-primary zl-btn-lg mt-7 w-full disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {paying ? <LuLoaderCircle className="size-5 animate-spin" /> : <LuLock className="size-5" />}
+                {paying ? "Opening secure payment" : `Pay ${formatBdt(tier.price)}`}
+              </button>
+              <p className="mt-4 text-center text-xs leading-relaxed text-white/45">
+                You will pay on SSLCommerz with a card, bKash, Nagad, Rocket or internet banking. Your account is activated and you are signed in the moment the payment is confirmed.
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>,
+        host
+      )}
     </form>
   );
 }

@@ -10,9 +10,9 @@ export const metadata = {
 export default async function CheckoutPage({
   searchParams,
 }: {
-  searchParams: Promise<{ service?: string; plan?: string }>;
+  searchParams: Promise<{ service?: string; plan?: string; payment?: string }>;
 }) {
-  const { service, plan } = await searchParams;
+  const { service, plan, payment } = await searchParams;
   const initialService = SERVICES.find((s) => s.id === service)?.id ?? SERVICES[0].id;
 
   return (
@@ -29,7 +29,17 @@ export default async function CheckoutPage({
       />
       <section className="px-5 pb-24 sm:pb-32">
         <div className="mx-auto max-w-6xl">
-          <CheckoutForm initialService={initialService} initialPlan={plan ?? ""} />
+          <CheckoutForm
+            initialService={initialService}
+            initialPlan={plan ?? ""}
+            notice={
+              payment === "failed"
+                ? "The payment did not go through, so you were not charged. You can try again."
+                : payment === "cancelled"
+                  ? "You cancelled the payment. Nothing was charged, you can continue whenever you are ready."
+                  : null
+            }
+          />
         </div>
       </section>
     </>

@@ -15,6 +15,8 @@ export type CreateSessionInput = {
   customerName: string;
   customerEmail: string;
   productName?: string;
+  /** where SSLCommerz sends the customer and its server notification; defaults to the wallet top-up routes */
+  urls?: { success: string; fail: string; cancel: string; ipn: string };
 };
 
 export type CreateSessionResult =
@@ -43,10 +45,10 @@ export async function createSslcommerzSession(
     total_amount: input.amount.toFixed(2),
     currency: "BDT",
     tran_id: input.tranId,
-    success_url: `${appUrl}/api/payments/sslcommerz/success`,
-    fail_url: `${appUrl}/api/payments/sslcommerz/fail`,
-    cancel_url: `${appUrl}/api/payments/sslcommerz/cancel`,
-    ipn_url: `${appUrl}/api/payments/sslcommerz/ipn`,
+    success_url: input.urls?.success ?? `${appUrl}/api/payments/sslcommerz/success`,
+    fail_url: input.urls?.fail ?? `${appUrl}/api/payments/sslcommerz/fail`,
+    cancel_url: input.urls?.cancel ?? `${appUrl}/api/payments/sslcommerz/cancel`,
+    ipn_url: input.urls?.ipn ?? `${appUrl}/api/payments/sslcommerz/ipn`,
     shipping_method: "NO",
     product_name: input.productName ?? "Wallet top-up",
     product_category: "Digital Service",
