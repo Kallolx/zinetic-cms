@@ -20,6 +20,7 @@ export async function POST(request: Request) {
   const result = await finalizeOrder(tranId, valId, Object.fromEntries(form.entries()));
   if (!result.ok) {
     if (result.held) return back(site, "/checkout/success?state=held");
+    if (order.return_path && order.return_path !== "/checkout") return back(site, `${order.return_path}?payment=failed`);
     return back(site, `/checkout?service=${encodeURIComponent(order.service)}&plan=${encodeURIComponent(order.plan)}&payment=failed`);
   }
 

@@ -4,7 +4,7 @@ import path from "path";
 import { transcribe } from "@/lib/studio/elevenlabs";
 import { cut, duration, extractAudio, hasVideo, workDir } from "@/lib/studio/ffmpeg";
 import { fillerRanges, invert, merge, pauseRanges, span } from "@/lib/studio/editing";
-import { authorize, begin, fail, failGeneration, finishWithFile, mb, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
+import { authorize, begin, fail, failGeneration, finishWithFile, mb, minutesOf, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     if (!(await hasVideo(input))) return fail("That file has no video. Use Audio cleaner for audio files.");
     const total = await duration(input);
 
-    const z = await authorize(auth.userId, "filler-remover", String(form.get("engine") ?? ""), { seconds: total, fileMb: mb(video) }, "Filler word remover");
+    const z = await authorize(auth.userId, "filler-remover", String(form.get("engine") ?? ""), { seconds: total, fileMb: mb(video) }, "Filler word remover", minutesOf(total));
     if ("error" in z) return z.error;
 
     const g = await begin(auth.userId, "filler-remover", z.authz.engine.provider, video.name, { filename: video.name, removeFillers, gap }, undefined, z.authz);

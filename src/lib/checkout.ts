@@ -2,6 +2,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { validateSslcommerzTransaction } from "@/lib/sslcommerz";
 import { SERVICES, isComingSoon } from "@/lib/landing-services";
 import { CHECK_PRICE, PRICING_PLANS } from "@/lib/pricing-plans";
+import { grantEntitlement } from "@/lib/studio/entitlements";
+import { studioService } from "@/lib/studio/services";
+import { TOOLS } from "@/lib/studio/tools";
 
 const RATE = Number(process.env.NEXT_PUBLIC_USD_TO_BDT_RATE ?? 122);
 
@@ -49,6 +52,7 @@ type Order = {
   bdt_amount: number;
   status: string;
   site_origin: string | null;
+  return_path: string | null;
   finalized_at: string | null;
 };
 
@@ -102,11 +106,17 @@ export async function finalizeOrder(tranId: string, valId: string, raw: Record<s
 
   await admin.from("profiles").update({ status: "approved", reviewed_at: new Date().toISOString() }).eq("id", order.user_id);
   await admin.from("user_products").upsert({ user_id: order.user_id, product: order.product }, { onConflict: "user_id,product" });
-  await admin.rpc("wallet_topup", {
-    p_user: order.user_id,
-    p_usd: Number(order.usd_credit),
-    p_note: `Plan purchase: ${order.plan} (${order.service})`,
-  });
+  if (order.product === "studio") {
+    // AI Studio sells the service itself: record exactly what was bought, it is deducted as it is used
+    await grantEntitlement({ userId: order.user_id, service: order.service, plan: order.plan, source: "purchase", orderId: order.id });
+  } else {
+    // the Channel Checker keeps its credit wallet
+    await admin.rpc("wallet_topup", {
+      p_user: order.user_id,
+      p_usd: Number(order.usd_credit),
+      p_note: `Plan purchase: ${order.plan} (${order.service})`,
+    });
+  }
   await admin.from("checkout_orders").update({ finalized_at: new Date().toISOString() }).eq("id", order.id);
 
   return { ok: true, order: { ...order, status: "paid" } };
@@ -126,7 +136,11 @@ async function waitForFinalized(tranId: string): Promise<FinalizeResult> {
 export function destinationFor(order: Order): { origin: string; path: string } | null {
   const strip = (u?: string) => (u ?? "").replace(/\/$/, "");
   if (order.product === "cms") return { origin: strip(process.env.NEXT_PUBLIC_APP_URL), path: "/dashboard" };
-  if (order.product === "studio") return { origin: strip(process.env.NEXT_PUBLIC_STUDIO_URL), path: "/studio" };
+  if (order.product === "studio") {
+    // straight to the tool they bought
+    const tool = TOOLS.find((t) => t.id === studioService(order.service)?.tool);
+    return { origin: strip(process.env.NEXT_PUBLIC_STUDIO_URL), path: `${tool?.href ?? "/studio"}?payment=success` };
+  }
   return null;
 }
 

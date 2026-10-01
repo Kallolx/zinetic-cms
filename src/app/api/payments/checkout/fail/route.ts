@@ -10,6 +10,10 @@ async function handle(request: Request, tranId: string) {
     await createAdminClient().from("checkout_orders").update({ status: "failed" }).eq("id", order.id);
   }
   const site = order?.site_origin ?? (process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin).replace(/\/$/, "");
+  // a purchase made inside the dashboard returns to that page, a new sign-up to checkout
+  if (order?.return_path && order.return_path !== "/checkout") {
+    return NextResponse.redirect(`${site}${order.return_path}?payment=failed`, { status: 303 });
+  }
   const pick = order ? `?service=${encodeURIComponent(order.service)}&plan=${encodeURIComponent(order.plan)}&payment=failed` : "?payment=failed";
   return NextResponse.redirect(`${site}/checkout${pick}`, { status: 303 });
 }

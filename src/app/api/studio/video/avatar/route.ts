@@ -32,14 +32,14 @@ export async function POST(request: Request) {
     imageKey = data.image_key;
   }
 
-  const z = await authorize(auth.userId, "avatar-video", b.engine, { chars: script.length }, "Avatar video");
+  const z = await authorize(auth.userId, "avatar-video", b.engine, { chars: script.length }, "Avatar video", Math.max(0.1, Math.ceil((script.length / 800) * 100) / 100));
   if ("error" in z) return z.error;
 
   const job = imageKey
     ? await generatePhotoVideo({ imageKey, voiceId: b.voiceId, script })
     : await generateAvatarVideo({ avatarId: b.avatarId!, voiceId: b.voiceId, script, ratio: b.ratio ?? "16:9" });
   if (!job.ok) {
-    await refundAuthz(z.authz, "Avatar video");
+    await refundAuthz(z.authz);
     return fail(job.error, 502);
   }
 

@@ -20,12 +20,12 @@ export async function POST(request: Request) {
   if (!photo.type.startsWith("image/")) return fail("The avatar must be an image.");
   if (tooBig(photo)) return fail("That photo is too large.");
 
-  const z = await authorize(auth.userId, "avatar-creator", String(form.get("engine") ?? ""), { fileMb: mb(photo) }, "Avatar creator");
+  const z = await authorize(auth.userId, "avatar-creator", String(form.get("engine") ?? ""), { fileMb: mb(photo) }, "Avatar creator", 1);
   if ("error" in z) return z.error;
 
   const up = await uploadAsset(photo, photo.type);
   if (!up.ok || !up.imageKey) {
-    await refundAuthz(z.authz, "Avatar creator");
+    await refundAuthz(z.authz);
     return fail(up.ok ? "That photo was not accepted. Try a clearer, front-facing image." : up.error, 502);
   }
 

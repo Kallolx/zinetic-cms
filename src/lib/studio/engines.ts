@@ -1,6 +1,5 @@
 import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { CHECK_PRICE } from "@/lib/pricing-plans";
 import type { CostUnit } from "@/lib/studio/engine-catalog";
 
 export type Engine = {
@@ -76,14 +75,6 @@ export async function resolveEngine(service: string, key?: string | null): Promi
 
 export type Usage = { chars?: number; seconds?: number; fileMb?: number };
 
-/** Credits this run will cost, rounded up to a thousandth. */
-export function costFor(engine: Engine, usage: Usage): number {
-  let units = 1;
-  if (engine.cost_unit === "minute") units = Math.max(1, Math.ceil((usage.seconds ?? 60) / 60));
-  if (engine.cost_unit === "1k_chars") units = Math.max(1, Math.ceil((usage.chars ?? 1000) / 1000));
-  return Math.round(engine.credit_cost * units * 1000) / 1000;
-}
-
 export function limitError(engine: Engine, usage: Usage): string | null {
   if (engine.max_chars && usage.chars && usage.chars > engine.max_chars) return `This engine accepts up to ${engine.max_chars.toLocaleString()} characters.`;
   if (engine.max_duration_seconds && usage.seconds && usage.seconds > engine.max_duration_seconds) {
@@ -91,19 +82,4 @@ export function limitError(engine: Engine, usage: Usage): string | null {
   }
   if (engine.max_file_mb && usage.fileMb && usage.fileMb > engine.max_file_mb) return `This engine accepts files up to ${engine.max_file_mb} MB.`;
   return null;
-}
-
-const usdOf = (credits: number) => Math.round(credits * CHECK_PRICE * 100) / 100;
-
-/** Debits the wallet atomically. Returns the new balance in USD, or null if it cannot cover it. */
-export async function charge(userId: string, credits: number, note: string): Promise<{ ok: true; balance: number } | { ok: false }> {
-  if (credits <= 0) return { ok: true, balance: NaN };
-  const { data, error } = await createAdminClient().rpc("studio_charge", { p_user: userId, p_usd: usdOf(credits), p_note: note });
-  if (error || data === null || data === undefined) return { ok: false };
-  return { ok: true, balance: Number(data) };
-}
-
-export async function refund(userId: string, credits: number, note: string) {
-  if (credits <= 0) return;
-  await createAdminClient().rpc("studio_refund", { p_user: userId, p_usd: usdOf(credits), p_note: note });
 }

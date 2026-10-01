@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { voiceChanger } from "@/lib/studio/elevenlabs";
-import { authorize, begin, fail, failGeneration, finishWithFile, mb, mediaSeconds, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
+import { authorize, begin, fail, failGeneration, finishWithFile, mb, mediaSeconds, minutesOf, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -15,7 +15,8 @@ export async function POST(request: Request) {
   if (!file || !voiceId) return fail("Upload a recording and pick the voice to change it into.");
   if (tooBig(file)) return fail("That file is too large.");
 
-  const z = await authorize(auth.userId, "voice-changer", String(form.get("engine") ?? ""), { seconds: await mediaSeconds(file), fileMb: mb(file) }, "Voice changer");
+  const seconds = await mediaSeconds(file);
+  const z = await authorize(auth.userId, "voice-changer", String(form.get("engine") ?? ""), { seconds, fileMb: mb(file) }, "Voice changer", minutesOf(seconds));
   if ("error" in z) return z.error;
 
   const g = await begin(auth.userId, "voice-changer", z.authz.engine.provider, file.name, { voiceId, filename: file.name }, undefined, z.authz);

@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   if (!prompt) return fail("Describe the song you want.");
   const seconds = Math.min(300, Math.max(10, Number(b?.seconds) || 30));
 
-  const z = await authorize(auth.userId, "music", b?.engine, { chars: prompt.length, seconds }, "Music generator");
+  const z = await authorize(auth.userId, "music", b?.engine, { chars: prompt.length, seconds }, "Music generator", 1);
   if ("error" in z) return z.error;
 
   const g = await begin(auth.userId, "music", z.authz.engine.provider, prompt.slice(0, 80), { prompt, seconds }, undefined, z.authz);

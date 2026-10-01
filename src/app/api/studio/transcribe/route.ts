@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { transcribe } from "@/lib/studio/elevenlabs";
-import { authorize, begin, fail, failGeneration, finishWithResult, mb, mediaSeconds, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
+import { authorize, begin, fail, failGeneration, finishWithResult, mb, mediaSeconds, minutesOf, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -15,7 +15,8 @@ export async function POST(request: Request) {
   if (tooBig(file)) return fail("That file is too large.");
   const language = String(form.get("language") ?? "") || undefined;
 
-  const z = await authorize(auth.userId, "transcribe", String(form.get("engine") ?? ""), { seconds: await mediaSeconds(file), fileMb: mb(file) }, "Speech to text");
+  const seconds = await mediaSeconds(file);
+  const z = await authorize(auth.userId, "transcribe", String(form.get("engine") ?? ""), { seconds, fileMb: mb(file) }, "Speech to text", minutesOf(seconds));
   if ("error" in z) return z.error;
   // speaker labels are an engine feature: off when the engine does not list it
   const diarize = form.get("diarize") !== "false" && z.authz.engine.features.includes("speakers");

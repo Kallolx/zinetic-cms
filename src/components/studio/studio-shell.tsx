@@ -14,6 +14,8 @@ import {
   LuPanelLeftClose,
   LuPanelLeftOpen,
   LuSearch,
+  LuLock,
+  LuReceipt,
   LuUserRoundX,
   LuX,
 } from "react-icons/lu";
@@ -21,7 +23,6 @@ import { signOut } from "@/app/actions/auth";
 import { stopImpersonating } from "@/app/actions/admin";
 import { cn } from "@/lib/utils";
 import { GROUPS, TOOLS, type StudioTool } from "@/lib/studio/tools";
-import { formatCredits } from "@/lib/credits";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 /* ------------------------------------------------ remembered on/off choices */
@@ -67,9 +68,11 @@ type ItemProps = {
   active: boolean;
   collapsed: boolean;
   onNavigate: () => void;
+  /** the menu stays open, this only marks that the customer has not bought it */
+  locked?: boolean;
 };
 
-function Item({ href, label, icon, active, collapsed, onNavigate }: ItemProps) {
+function Item({ href, label, icon, active, collapsed, onNavigate, locked }: ItemProps) {
   const link = (
     <Link
       href={href}
@@ -84,14 +87,16 @@ function Item({ href, label, icon, active, collapsed, onNavigate }: ItemProps) {
     >
       {active && !collapsed && <span aria-hidden className="absolute top-1/2 -left-3 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-white" />}
       <span className={cn("transition-colors", active ? "text-white" : "text-white/45 group-hover:text-white/85")}>{icon}</span>
-      {!collapsed && <span className="truncate">{label}</span>}
+      {!collapsed && <span className="flex-1 truncate">{label}</span>}
+      {!collapsed && locked && <LuLock className="!size-3.5 text-white/35" />}
+      {collapsed && locked && <LuLock className="absolute right-1 bottom-1 !size-3 text-white/45" />}
     </Link>
   );
   if (!collapsed) return link;
   return (
     <Tooltip>
       <TooltipTrigger render={link} />
-      <TooltipContent side="right">{label}</TooltipContent>
+      <TooltipContent side="right">{locked ? `${label} (locked)` : label}</TooltipContent>
     </Tooltip>
   );
 }
@@ -118,7 +123,7 @@ function SoonItem({ tool, collapsed }: { tool: StudioTool; collapsed: boolean })
   );
 }
 
-function Group({ id, label, tools, collapsed, query, pathname, onNavigate }: { id: string; label: string; tools: StudioTool[]; collapsed: boolean; query: string; pathname: string; onNavigate: () => void }) {
+function Group({ id, label, tools, collapsed, query, pathname, onNavigate, open: openTools }: { id: string; label: string; tools: StudioTool[]; collapsed: boolean; query: string; pathname: string; onNavigate: () => void; open: Record<string, boolean> }) {
   const [closed, setClosed] = useFlag(`studio-group-${id}-closed`);
   if (tools.length === 0) return null;
   // while searching, every group with a match stays open
@@ -144,7 +149,7 @@ function Group({ id, label, tools, collapsed, query, pathname, onNavigate }: { i
         tools.map((t) => {
           const Icon = t.icon;
           return t.href ? (
-            <Item key={t.id} href={t.href} label={t.name} icon={<Icon />} active={pathname === t.href} collapsed={collapsed} onNavigate={onNavigate} />
+            <Item key={t.id} href={t.href} label={t.name} icon={<Icon />} active={pathname === t.href} collapsed={collapsed} onNavigate={onNavigate} locked={openTools[t.id] === false} />
           ) : (
             <SoonItem key={t.id} tool={t} collapsed={collapsed} />
           );
@@ -153,7 +158,7 @@ function Group({ id, label, tools, collapsed, query, pathname, onNavigate }: { i
   );
 }
 
-function Sidebar({ collapsed, onToggle, onNavigate, mobile = false }: { collapsed: boolean; onToggle: () => void; onNavigate: () => void; mobile?: boolean }) {
+function Sidebar({ collapsed, onToggle, onNavigate, mobile = false, open }: { collapsed: boolean; onToggle: () => void; onNavigate: () => void; mobile?: boolean; open: Record<string, boolean> }) {
   const pathname = usePathname();
   const [query, setQuery] = React.useState("");
   const needle = query.trim().toLowerCase();
@@ -208,13 +213,14 @@ function Sidebar({ collapsed, onToggle, onNavigate, mobile = false }: { collapse
             <>
               <Item href="/studio" label="Home" icon={<LuHouse />} active={pathname === "/studio"} collapsed={rail} onNavigate={onNavigate} />
               <Item href="/studio/library" label="Library" icon={<LuFolderOpen />} active={pathname === "/studio/library"} collapsed={rail} onNavigate={onNavigate} />
+              <Item href="/studio/plans" label="My plans" icon={<LuReceipt />} active={pathname === "/studio/plans"} collapsed={rail} onNavigate={onNavigate} />
             </>
           )}
         </nav>
 
         <div className="mt-4 flex flex-col gap-3">
           {GROUPS.map((g) => (
-            <Group key={g.id} id={g.id} label={g.label} tools={TOOLS.filter((t) => t.group === g.id && match(t))} collapsed={rail} query={needle} pathname={pathname} onNavigate={onNavigate} />
+            <Group key={g.id} id={g.id} label={g.label} tools={TOOLS.filter((t) => t.group === g.id && match(t))} collapsed={rail} query={needle} pathname={pathname} onNavigate={onNavigate} open={open} />
           ))}
           {needle && !TOOLS.some(match) && <p className="px-3 py-4 text-sm text-white/40">No tools match “{query}”.</p>}
         </div>
@@ -243,7 +249,7 @@ function Sidebar({ collapsed, onToggle, onNavigate, mobile = false }: { collapse
 
 /* ----------------------------------------------------------------- top bar */
 
-function TopBar({ userName, userEmail, balance, impersonating }: { userName: string; userEmail: string; balance?: number; impersonating: boolean }) {
+function TopBar({ userName, userEmail, activePlans, impersonating }: { userName: string; userEmail: string; activePlans: number; impersonating: boolean }) {
   const pathname = usePathname();
   const tool = TOOLS.find((t) => t.href === pathname);
   const title = pathname === "/studio" ? "Home" : pathname === "/studio/library" ? "Library" : (tool?.name ?? "AI Studio");
@@ -257,13 +263,11 @@ function TopBar({ userName, userEmail, balance, impersonating }: { userName: str
         <span className="font-medium">{title}</span>
       </div>
       <div className="flex items-center gap-3">
-        {typeof balance === "number" && (
-          <span className="flex h-9 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-sm ring-1 ring-white/10">
-            <span className="size-1.5 rounded-full bg-emerald-400" />
-            <span className="text-white/60">Balance</span>
-            <span className="font-medium">{formatCredits(balance)}</span>
-          </span>
-        )}
+        <Link href="/studio/plans" className="flex h-9 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-sm ring-1 ring-white/10 transition-colors hover:bg-white/10">
+          <span className={activePlans > 0 ? "size-1.5 rounded-full bg-emerald-400" : "size-1.5 rounded-full bg-white/30"} />
+          <span className="text-white/60">My plans</span>
+          <span className="font-medium">{activePlans} active</span>
+        </Link>
         <form action={impersonating ? stopImpersonating : signOut} className="flex items-center gap-2 rounded-full bg-white/[0.06] py-1 pr-1 pl-1 ring-1 ring-white/10">
           <span className="flex size-7 items-center justify-center rounded-full bg-white/15 text-xs font-semibold">{label.slice(0, 1).toUpperCase()}</span>
           <span className="hidden max-w-40 truncate text-sm xl:block">{label}</span>
@@ -287,13 +291,16 @@ export function StudioShell({
   children,
   userName,
   userEmail,
-  balance,
+  open: openTools,
+  activePlans,
   impersonating = false,
 }: {
   children: React.ReactNode;
   userName: string;
   userEmail: string;
-  balance?: number;
+  /** which tools the customer can use right now (false = locked) */
+  open: Record<string, boolean>;
+  activePlans: number;
   impersonating?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
@@ -320,7 +327,7 @@ export function StudioShell({
           collapsed ? "w-[4.5rem]" : "w-72"
         )}
       >
-        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} onNavigate={close} />
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} onNavigate={close} open={openTools} />
       </aside>
 
       <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-white/10 bg-[#0b0a0f]/90 px-4 backdrop-blur lg:hidden">
@@ -345,13 +352,13 @@ export function StudioShell({
             <button type="button" aria-label="Close" onClick={close} className="absolute top-3.5 right-3 z-10 flex size-9 cursor-pointer items-center justify-center rounded-lg hover:bg-white/10">
               <LuX className="size-5" />
             </button>
-            <Sidebar collapsed={false} onToggle={close} onNavigate={close} mobile />
+            <Sidebar collapsed={false} onToggle={close} onNavigate={close} mobile open={openTools} />
           </div>
         </div>
       )}
 
       <main className={cn("transition-[padding] duration-200", collapsed ? "lg:pl-[4.5rem]" : "lg:pl-72")}>
-        <TopBar userName={userName} userEmail={userEmail} balance={balance} impersonating={impersonating} />
+        <TopBar userName={userName} userEmail={userEmail} activePlans={activePlans} impersonating={impersonating} />
         {impersonating && (
           <p className="bg-amber-500/15 px-4 py-2 text-center text-xs text-amber-200">You are viewing this dashboard as a customer.</p>
         )}

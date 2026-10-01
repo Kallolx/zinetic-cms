@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const voiceId = body?.voiceId?.trim() ?? "";
   if (!text || !voiceId) return fail("Enter some text and pick a voice.");
 
-  const z = await authorize(auth.userId, "voice", body?.engine, { chars: text.length }, "Voice generator");
+  const z = await authorize(auth.userId, "voice", body?.engine, { chars: text.length }, "Voice generator", text.length);
   if ("error" in z) return z.error;
 
   const g = await begin(auth.userId, "voice", z.authz.engine.provider, text.slice(0, 80), { text, voiceId }, undefined, z.authz);

@@ -5,9 +5,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { LuChevronDown, LuPlus, LuTrash2 } from "react-icons/lu";
 import { deleteEngine, saveEngine, setEngineEnabled, type EngineInput } from "@/app/actions/admin";
-import { COST_UNITS, PROVIDERS, providerSupports } from "@/lib/studio/engine-catalog";
+import { PROVIDERS, providerSupports } from "@/lib/studio/engine-catalog";
 import type { Engine } from "@/lib/studio/engines";
-import { CHECK_PRICE } from "@/lib/pricing-plans";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,18 +116,10 @@ function EngineForm({ initial, onDone }: { initial: EngineInput; onDone: () => v
       <Field label="Short description" className="sm:col-span-2">
         <Input value={v.description} onChange={(e) => set("description", e.target.value)} placeholder="Shown under the engine name" />
       </Field>
-      <Field label="Credit cost" hint={`1 credit = $${CHECK_PRICE}. This is about $${(v.credit_cost * CHECK_PRICE).toFixed(2)}.`}>
+      <Field label="Usage multiplier" hint="1 = the normal amount comes off the customer plan, 2 = twice as much. Use it when one engine costs you more.">
         <Input type="number" min={0} step="0.001" value={v.credit_cost} onChange={(e) => set("credit_cost", Number(e.target.value))} />
       </Field>
-      <Field label="Counted">
-        <select className={selectClass} value={v.cost_unit} onChange={(e) => set("cost_unit", e.target.value)}>
-          {COST_UNITS.map((u) => (
-            <option key={u.value} value={u.value}>
-              {u.label}
-            </option>
-          ))}
-        </select>
-      </Field>
+
 
       <Field label="Longest media (minutes)" hint="Empty means no limit.">
         <Input
@@ -182,7 +173,6 @@ function EngineRow({ e }: { e: Engine }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [on, setOn] = React.useState(e.enabled);
-  const unit = COST_UNITS.find((u) => u.value === e.cost_unit)?.label ?? e.cost_unit;
 
   async function toggle(next: boolean) {
     setOn(next);
@@ -213,7 +203,7 @@ function EngineRow({ e }: { e: Engine }) {
           </p>
         </div>
         <p className="text-sm tabular-nums">
-          {e.credit_cost} <span className="text-xs text-muted-foreground">credits {unit}</span>
+          {e.credit_cost}x <span className="text-xs text-muted-foreground">usage</span>
         </p>
         <Switch checked={on} onCheckedChange={toggle} aria-label={`${e.label} enabled`} />
         <div className="flex items-center gap-1">

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { startTranslation } from "@/lib/studio/translate";
-import { authorize, begin, fail, mb, mediaSeconds, refundAuthz, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
+import { authorize, begin, fail, mb, mediaSeconds, minutesOf, refundAuthz, requireStudioUser, tooBig, uploadedFile } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -15,14 +15,15 @@ export async function POST(request: Request) {
   if (!file || !language) return fail("Upload a file and choose a language.");
   if (tooBig(file)) return fail("That file is too large.");
 
-  const z = await authorize(auth.userId, "dubbing", String(form.get("engine") ?? ""), { seconds: await mediaSeconds(file), fileMb: mb(file) }, "Dubbing");
+  const seconds = await mediaSeconds(file);
+  const z = await authorize(auth.userId, "dubbing", String(form.get("engine") ?? ""), { seconds, fileMb: mb(file) }, "Dubbing", minutesOf(seconds));
   if ("error" in z) return z.error;
 
   // lip sync only applies when the engine offers it
   const lipsync = form.get("lipsync") !== "false" && z.authz.engine.features.includes("lipsync");
   const job = await startTranslation({ provider: z.authz.engine.provider, file, language, lipsync });
   if (!job.ok) {
-    await refundAuthz(z.authz, "Dubbing");
+    await refundAuthz(z.authz);
     return fail(job.error, 502);
   }
 

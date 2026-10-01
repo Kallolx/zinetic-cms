@@ -4,7 +4,9 @@ import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { getMyProducts } from "@/lib/products-server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { saveFile } from "@/lib/studio/storage";
-import { charge, costFor, limitError, refund, resolveEngine, type Engine, type Usage } from "@/lib/studio/engines";
+import { limitError, resolveEngine, type Engine, type Usage } from "@/lib/studio/engines";
+import { consume, restore, summarize, entitlementRows, toolStatus } from "@/lib/studio/entitlements";
+import { formatUnits, servicesForTool, serviceName } from "@/lib/studio/services";
 import { providerSupports } from "@/lib/studio/engine-catalog";
 import { duration, workDir } from "@/lib/studio/ffmpeg";
 import { promises as fs } from "fs";
@@ -79,7 +81,8 @@ export async function begin(
       input,
       provider_job_id: providerJobId ?? null,
       engine_key: authz?.engine.key ?? null,
-      credits: authz?.credits ?? 0,
+      service: authz?.service ?? null,
+      units: authz?.units ?? 0,
     });
   return { id, userId, kind, provider, title };
 }
@@ -97,44 +100,72 @@ export async function finishWithResult(g: Generation, result: unknown) {
   await createAdminClient().from("studio_generations").update({ status: "done", result }).eq("id", g.id);
 }
 
-/** Marks a run failed and gives the customer their credits back (once). */
+/** Marks a run failed and gives the customer back what it took from their plan (once). */
 export async function failGeneration(g: { id: string }, error: string) {
   const db = createAdminClient();
   await db.from("studio_generations").update({ status: "failed", error }).eq("id", g.id);
-  const { data } = await db.from("studio_generations").select("user_id, credits, refunded, title").eq("id", g.id).single();
-  if (data && Number(data.credits) > 0 && !data.refunded) {
+  const { data } = await db.from("studio_generations").select("user_id, service, units, refunded").eq("id", g.id).single();
+  if (data && data.service && Number(data.units) > 0 && !data.refunded) {
     const { data: claimed } = await db.from("studio_generations").update({ refunded: true }).eq("id", g.id).eq("refunded", false).select("id");
-    if (claimed && claimed.length > 0) await refund(data.user_id, Number(data.credits), `AI Studio refund: ${data.title ?? g.id}`);
+    if (claimed && claimed.length > 0) await restore(data.user_id, data.service, Number(data.units));
   }
 }
 
-export type Authz = { engine: Engine; credits: number; userId: string };
+export type Authz = { engine: Engine; units: number; service: string; userId: string };
+
+const round = (n: number) => Math.round(n * 1000) / 1000;
+
+/** Minutes of media, for plans counted in minutes. A little is always counted, never zero. */
+export const minutesOf = (seconds?: number) => Math.max(0.1, Math.ceil(((seconds ?? 60) / 60) * 100) / 100);
 
 /**
- * Picks the engine, checks its limits and takes the credits up front. Call this
+ * Picks the engine, checks its limits and takes `amount` (characters, minutes or
+ * generations, as the service counts them) from what the customer bought. Call this
  * before talking to the provider. If the provider then fails, call failGeneration
- * (or refundAuthz when no row exists yet) so the customer is not charged.
+ * (or refundAuthz when no row exists yet) so the customer gets it back.
+ * `service` names which plan to draw from when a tool has more than one.
  */
 export async function authorize(
   userId: string,
-  service: string,
+  toolId: string,
   engineKey: string | null | undefined,
   usage: Usage,
-  label: string
+  label: string,
+  amount: number,
+  service?: string | ((engine: Engine) => string)
 ): Promise<{ error: NextResponse } | { authz: Authz }> {
-  const r = await resolveEngine(service, engineKey);
+  const r = await resolveEngine(toolId, engineKey);
   if ("error" in r) return { error: fail(r.error) };
-  if (!providerSupports(r.engine.provider, service)) return { error: fail("This engine is not set up correctly. Please contact support.", 500) };
+  if (!providerSupports(r.engine.provider, toolId)) return { error: fail("This engine is not set up correctly. Please contact support.", 500) };
   const limit = limitError(r.engine, usage);
   if (limit) return { error: fail(limit) };
-  const credits = costFor(r.engine, usage);
-  const paid = await charge(userId, credits, `AI Studio: ${label}`);
-  if (!paid.ok) return { error: fail(`Not enough balance. This costs ${credits} credits.`, 402) };
-  return { authz: { engine: r.engine, credits, userId } };
+
+  const serviceId = typeof service === "function" ? service(r.engine) : (service ?? servicesForTool(toolId)[0]?.id);
+  if (!serviceId) return { error: fail("This tool cannot be used yet.", 500) };
+
+  // the engine's multiplier lets a costlier engine use more of the plan
+  const units = round(amount * (Number(r.engine.credit_cost) || 1));
+  if (!(await consume(userId, serviceId, units))) {
+    const status = summarize(await entitlementRows(userId))[serviceId];
+    if (!status) return { error: fail(`You have not bought ${serviceName(serviceId)} yet. Open it from the menu to get a plan.`, 403) };
+    return {
+      error: fail(
+        status.active
+          ? `This needs ${formatUnits(units, status.unit)} and you have ${formatUnits(status.remaining, status.unit)} left on ${serviceName(serviceId)}. Add more from the menu.`
+          : `Your ${serviceName(serviceId)} plan has run out or expired. Add more from the menu to keep going.`,
+        402
+      ),
+    };
+  }
+  return { authz: { engine: r.engine, units, service: serviceId, userId } };
 }
 
-export const refundAuthz = (a: Authz, label: string) => refund(a.userId, a.credits, `AI Studio refund: ${label}`);
+export const refundAuthz = (a: Authz) => restore(a.userId, a.service, a.units);
 
+/** True when this customer can use the tool at all right now. */
+export async function toolOpen(userId: string, toolId: string) {
+  return toolStatus(toolId, summarize(await entitlementRows(userId)));
+}
 /** Length of an uploaded audio or video file in seconds, or undefined if it cannot be read. */
 export async function mediaSeconds(file: File): Promise<number | undefined> {
   const work = await workDir();

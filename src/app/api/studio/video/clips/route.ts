@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { transcribe } from "@/lib/studio/elevenlabs";
 import { cut, duration, extractAudio, hasVideo, workDir } from "@/lib/studio/ffmpeg";
 import { pickClips } from "@/lib/studio/editing";
-import { authorize, begin, fail, failGeneration, finishWithFile, mb, refundAuthz, requireStudioUser, tooBig, uploadedFile, type Authz } from "@/lib/studio/run";
+import { authorize, begin, fail, failGeneration, finishWithFile, mb, minutesOf, refundAuthz, requireStudioUser, tooBig, uploadedFile, type Authz } from "@/lib/studio/run";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     if (!(await hasVideo(input))) return fail("That file has no video.");
     const total = await duration(input);
 
-    const z = await authorize(auth.userId, "short-clips", String(form.get("engine") ?? ""), { seconds: total, fileMb: mb(video) }, "Short clip generator");
+    const z = await authorize(auth.userId, "short-clips", String(form.get("engine") ?? ""), { seconds: total, fileMb: mb(video) }, "Short clip generator", minutesOf(total));
     if ("error" in z) return z.error;
     authz = z.authz;
 
@@ -61,11 +61,11 @@ export async function POST(request: Request) {
     if (ids.length === 0) throw new Error("Could not cut the clips.");
 
     // one charge for the whole batch, recorded on the first clip
-    await createAdminClient().from("studio_generations").update({ engine_key: z.authz.engine.key, credits: z.authz.credits }).eq("id", ids[0]);
+    await createAdminClient().from("studio_generations").update({ engine_key: z.authz.engine.key, service: z.authz.service, units: z.authz.units }).eq("id", ids[0]);
     authz = null;
     return NextResponse.json({ id: ids[0], ids });
   } catch (e) {
-    if (authz) await refundAuthz(authz, "Short clip generator");
+    if (authz) await refundAuthz(authz);
     return fail(e instanceof Error ? e.message : "Something went wrong.", 502);
   } finally {
     await work.done();

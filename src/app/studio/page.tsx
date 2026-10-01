@@ -1,17 +1,31 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { LuArrowRight, LuFolderOpen, LuLifeBuoy, LuWallet } from "react-icons/lu";
+import { LuArrowRight, LuFolderOpen, LuLifeBuoy, LuReceipt } from "react-icons/lu";
 import { getDashboardSession } from "@/lib/supabase/dashboard-session";
 import { createClient } from "@/lib/supabase/server";
 import { GROUPS, TOOLS } from "@/lib/studio/tools";
 import { allArt } from "@/lib/studio/art";
-import { formatCredits } from "@/lib/credits";
+import { entitlementRows, summarize } from "@/lib/studio/entitlements";
 import { HomeHero } from "@/components/studio/home-hero";
 import { BentoTile } from "@/components/studio/media";
 import { GRID, LAYOUT } from "@/lib/studio/bento";
 import { WaveArt } from "@/components/studio/audio-player";
 
 const PANEL = "relative flex h-full flex-col justify-between overflow-hidden rounded-[1.75rem] bg-white/[0.04] p-6 ring-1 ring-white/10";
+
+// What the customer has bought, streamed in after the rest of Home.
+async function PlansTile({ userId }: { userId: string }) {
+  const active = Object.values(summarize(await entitlementRows(userId))).filter((x) => x.active).length;
+  return (
+    <Link href="/studio/plans" className={`${PANEL} group col-span-1 md:col-span-2 transition-colors hover:bg-white/[0.07]`}>
+      <LuReceipt className="size-6 text-white/70" />
+      <div>
+        <p className="text-xs text-white/50">My plans</p>
+        <p className="font-heading text-xl font-semibold">{active} active</p>
+      </div>
+    </Link>
+  );
+}
 
 // Only this tile needs the database, so it streams in after the rest of Home is on screen.
 async function LibraryTile({ userId }: { userId: string }) {
@@ -52,13 +66,9 @@ export default async function StudioHome() {
           <LibraryTile userId={user!.id} />
         </Suspense>
 
-        <div className={`${PANEL} col-span-1 md:col-span-2`}>
-          <LuWallet className="size-6 text-white/70" />
-          <div>
-            <p className="text-xs text-white/50">Balance</p>
-            <p className="font-heading text-xl font-semibold">{formatCredits(Number(profile?.wallet_balance ?? 0))}</p>
-          </div>
-        </div>
+        <Suspense fallback={<div className={`${PANEL} col-span-1 md:col-span-2`} />}>
+          <PlansTile userId={user!.id} />
+        </Suspense>
         <Link href="/dashboard/support" className={`${PANEL} group col-span-1 md:col-span-2 transition-colors hover:bg-white/[0.07]`}>
           <LuLifeBuoy className="size-6 text-white/70" />
           <div>

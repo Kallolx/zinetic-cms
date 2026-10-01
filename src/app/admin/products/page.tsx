@@ -3,17 +3,19 @@ import { LuArrowUpRight, LuClock } from "react-icons/lu";
 import { createClient } from "@/lib/supabase/server";
 import { PRODUCTS, productUrl, type ProductId } from "@/lib/products";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { EntitlementRow } from "@/lib/studio/entitlements";
 import { ProductsTable } from "@/components/admin/products-table";
 
 export default async function AdminProductsPage() {
   const supabase = await createClient();
-  const [{ data: users }, { data: grants }] = await Promise.all([
+  const [{ data: users }, { data: grants }, { data: ents }] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, full_name, email, status")
       .eq("role", "user")
       .order("created_at", { ascending: false }),
     supabase.from("user_products").select("user_id, product"),
+    supabase.from("studio_entitlements").select("*").order("created_at", { ascending: false }),
   ]);
 
   const access: Record<string, ProductId[]> = {};
@@ -22,6 +24,9 @@ export default async function AdminProductsPage() {
     (access[g.user_id] ??= []).push(g.product as ProductId);
     counts[g.product] = (counts[g.product] ?? 0) + 1;
   }
+
+  const entitlements: Record<string, EntitlementRow[]> = {};
+  for (const e of ents ?? []) (entitlements[e.user_id] ??= []).push({ ...e, quota: Number(e.quota), used: Number(e.used) });
 
   return (
     <div className="flex flex-col gap-6">
@@ -72,7 +77,7 @@ export default async function AdminProductsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProductsTable users={users ?? []} access={access} />
+          <ProductsTable users={users ?? []} access={access} entitlements={entitlements} />
         </CardContent>
       </Card>
     </div>

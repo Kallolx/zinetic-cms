@@ -61,9 +61,8 @@ export function useEngine() {
 }
 
 export function costLabel(e: PublicEngine) {
-  const unit = e.cost_unit === "minute" ? " / min" : e.cost_unit === "1k_chars" ? " / 1,000 characters" : "";
-  if (e.credit_cost === 0) return "Free";
-  return `${e.credit_cost} ${e.credit_cost === 1 ? "credit" : "credits"}${unit}`;
+  const m = Number(e.credit_cost) || 1;
+  return m === 1 ? "Standard usage" : `${m}x usage`;
 }
 
 /* ------------------------------------------------------------------- layout */

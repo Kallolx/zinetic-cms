@@ -12,12 +12,12 @@ export async function POST(request: Request) {
   const prompt = b?.prompt?.trim() ?? "";
   if (!prompt) return fail("Describe the video you want.");
 
-  const z = await authorize(auth.userId, "prompt-video", b?.engine, { chars: prompt.length }, "Prompt to video");
+  const z = await authorize(auth.userId, "prompt-video", b?.engine, { chars: prompt.length }, "Prompt to video", 1);
   if ("error" in z) return z.error;
 
   const job = await generateFromPrompt(prompt);
   if (!job.ok) {
-    await refundAuthz(z.authz, "Prompt to video");
+    await refundAuthz(z.authz);
     return fail(job.error, 502);
   }
   const g = await begin(auth.userId, "prompt-video", z.authz.engine.provider, prompt.slice(0, 80), { prompt }, job.videoId, z.authz);

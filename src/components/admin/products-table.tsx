@@ -5,13 +5,15 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { setUserProduct } from "@/app/actions/admin";
 import { PRODUCTS, type ProductId } from "@/lib/products";
+import { ServiceAccessDialog } from "@/components/admin/service-access-dialog";
+import type { EntitlementRow } from "@/lib/studio/entitlements";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type U = { id: string; full_name: string | null; email: string; status: string };
 
-export function ProductsTable({ users, access }: { users: U[]; access: Record<string, ProductId[]> }) {
+export function ProductsTable({ users, access, entitlements }: { users: U[]; access: Record<string, ProductId[]>; entitlements: Record<string, EntitlementRow[]> }) {
   const router = useRouter();
   const [query, setQuery] = React.useState("");
   const [pending, startTransition] = React.useTransition();
@@ -66,12 +68,17 @@ export function ProductsTable({ users, access }: { users: U[]; access: Record<st
               </TableCell>
               {PRODUCTS.map((p) => (
                 <TableCell key={p.id} className="text-center">
+                  <div className="flex flex-col items-center gap-2">
                   <Switch
                     checked={(granted[u.id] ?? []).includes(p.id)}
                     disabled={pending}
                     onCheckedChange={(v) => toggle(u.id, p.id, v)}
                     aria-label={`${p.name} for ${u.email}`}
                   />
+                  {p.id === "studio" && (granted[u.id] ?? []).includes("studio") && (
+                    <ServiceAccessDialog userId={u.id} label={u.full_name || u.email} rows={entitlements[u.id] ?? []} />
+                  )}
+                  </div>
                 </TableCell>
               ))}
             </TableRow>

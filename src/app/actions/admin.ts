@@ -305,3 +305,29 @@ export async function deleteEngine(id: string) {
   revalidatePath("/studio", "layout");
   return { error: null };
 }
+
+/** Gives a customer access to one AI Studio service without a purchase, with an amount and an optional expiry. */
+export async function grantServiceAccess(userId: string, service: string, amount: number, days: number | null, note?: string) {
+  await requireAdmin();
+  const { grantEntitlement } = await import("@/lib/studio/entitlements");
+  const res = await grantEntitlement({
+    userId,
+    service,
+    plan: "Granted by admin",
+    source: "admin",
+    amount,
+    days: days && days > 0 ? days : null,
+    note: note || undefined,
+  });
+  if (res.error) return { error: res.error };
+  revalidatePath("/admin/products");
+  return { error: null };
+}
+
+export async function revokeEntitlement(id: string) {
+  await requireAdmin();
+  const { error } = await createAdminClient().from("studio_entitlements").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/products");
+  return { error: null };
+}
