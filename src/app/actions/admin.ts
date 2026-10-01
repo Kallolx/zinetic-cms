@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { IMPERSONATE_COOKIE } from "@/lib/supabase/dashboard-session";
 import { COST_UNITS, providerSupports } from "@/lib/studio/engine-catalog";
+import { audit, labelFor } from "@/lib/admin/audit";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -49,6 +50,7 @@ export async function reviewUser(
       .upsert({ user_id: userId, product: "cms", granted_by: admin.id }, { onConflict: "user_id,product", ignoreDuplicates: true });
   }
 
+  await audit({ id: admin.id }, decision === "approved" ? "approve" : "reject", { id: userId, label: await labelFor(userId) });
   revalidatePath("/admin");
   revalidatePath("/admin/users");
   return { error: null };
@@ -84,6 +86,7 @@ export async function blockUser(userId: string, reason?: string) {
   // or refresh-token renewal, not just our own app-level check
   await supabaseAdmin.auth.admin.updateUserById(userId, { ban_duration: "876000h" });
 
+  await audit({ id: admin.id }, "block", { id: userId, label: await labelFor(userId) }, { reason: reason ?? null });
   revalidatePath("/admin");
   revalidatePath("/admin/users");
   return { error: null };
@@ -107,6 +110,7 @@ export async function unblockUser(userId: string) {
 
   await supabaseAdmin.auth.admin.updateUserById(userId, { ban_duration: "none" });
 
+  await audit({ id: (await requireAdmin()).id }, "unblock", { id: userId, label: await labelFor(userId) });
   revalidatePath("/admin");
   revalidatePath("/admin/users");
   return { error: null };
@@ -126,10 +130,12 @@ export async function deleteUser(userId: string) {
 
   if (target?.role === "admin") return { error: "Admins can't delete other admins." };
 
+  const deletedLabel = await labelFor(userId);
   // deletes the auth user; profiles/wallet_transactions/mcn_checks cascade via FK
   const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
   if (error) return { error: error.message };
 
+  await audit({ id: admin.id }, "delete", { id: null, label: deletedLabel });
   revalidatePath("/admin");
   revalidatePath("/admin/users");
   return { error: null };
@@ -205,6 +211,7 @@ export async function topUpWallet(userId: string, amount: number, note?: string)
     created_by: admin.id,
   });
 
+  await audit({ id: admin.id }, "checker_credits_add", { id: userId, label: await labelFor(userId) }, { usd: amount, note: note ?? null });
   revalidatePath("/admin");
   revalidatePath("/admin/users");
   return { error: null };
@@ -222,6 +229,7 @@ export async function setUserProduct(userId: string, product: string, enabled: b
     : await supabaseAdmin.from("user_products").delete().eq("user_id", userId).eq("product", product);
 
   if (error) return { error: error.message };
+  await audit({ id: admin.id }, enabled ? "dashboard_on" : "dashboard_off", { id: userId, label: await labelFor(userId) }, { product });
   revalidatePath("/admin/products");
   return { error: null };
 }
@@ -320,6 +328,7 @@ export async function grantServiceAccess(userId: string, service: string, amount
     note: note || undefined,
   });
   if (res.error) return { error: res.error };
+  await audit({ id: (await requireAdmin()).id }, "grant_service", { id: userId, label: await labelFor(userId) }, { service, amount, days });
   revalidatePath("/admin/products");
   return { error: null };
 }
@@ -328,6 +337,7 @@ export async function revokeEntitlement(id: string) {
   await requireAdmin();
   const { error } = await createAdminClient().from("studio_entitlements").delete().eq("id", id);
   if (error) return { error: error.message };
+  await audit({ id: (await requireAdmin()).id }, "revoke_service", null, { entitlement: id });
   revalidatePath("/admin/products");
   return { error: null };
 }

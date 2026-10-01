@@ -14,6 +14,7 @@ export type Profile = {
   blocked_at: string | null;
   blocked_reason: string | null;
   blocked_by: string | null;
+  admin_note?: string | null;
 };
 
 export type WalletTxType = "topup" | "check_charge" | "studio_charge" | "refund" | "adjustment";

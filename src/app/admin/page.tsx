@@ -1,242 +1,283 @@
-import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  LuAudioLines,
+  LuCircleCheck,
+  LuClock,
+  LuDisc3,
+  LuHistory,
+  LuReceipt,
+  LuShieldCheck,
+  LuTriangleAlert,
+  LuUserPlus,
+  LuUsers,
+} from "react-icons/lu";
+import { getSessionProfile } from "@/lib/supabase/session";
+import { fmtBdt, fmtNum, loadOverview, parseRange, pct } from "@/lib/admin/stats";
+import { productUrl, getProduct } from "@/lib/products";
+import { TOOLS } from "@/lib/studio/tools";
+import { serviceName } from "@/lib/studio/services";
 import { Badge } from "@/components/ui/badge";
-import { LuUsers, LuClock, LuHistory, LuTrendingUp, LuArrowRight } from "react-icons/lu";
-import { UsersTable } from "@/components/admin/users-table";
-import { formatSignedCredits } from "@/lib/credits";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, HBars } from "@/components/admin-panel/charts";
+import { StatCard } from "@/components/admin-panel/stat-card";
+import { QuickReview } from "@/components/admin-panel/quick-review";
+import { cn } from "@/lib/utils";
 
-function StatusDot({ status }: { status: string }) {
-  const color =
-    status === "success"
-      ? "bg-emerald-500"
-      : status === "not_found"
-        ? "bg-muted-foreground"
-        : "bg-destructive";
-  return <span className={`size-1.5 rounded-full ${color}`} />;
-}
+const ago = (iso: string) => {
+  const s = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.round(s / 60)}m ago`;
+  if (s < 86400) return `${Math.round(s / 3600)}h ago`;
+  return `${Math.round(s / 86400)}d ago`;
+};
 
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
+const PRODUCT_LABEL: Record<string, string> = { cms: "Channel Checker", studio: "AI Studio", distribution: "Music Distribution", topup: "Checker top-ups" };
+const ACTION_LABEL: Record<string, string> = {
+  approve: "approved",
+  reject: "rejected",
+  block: "blocked",
+  unblock: "unblocked",
+  delete: "deleted",
+  bulk_approve: "approved several customers",
+  bulk_reject: "rejected several customers",
+  checker_credits_add: "added Checker credits for",
+  checker_credits_remove: "removed Checker credits from",
+  grant_service: "granted a Studio service to",
+  revoke_service: "removed a Studio service",
+  dashboard_on: "opened a dashboard for",
+  dashboard_off: "closed a dashboard for",
+  note: "wrote a note on",
+};
 
-export default async function AdminOverviewPage() {
-  const supabase = await createClient();
-  // eslint-disable-next-line react-hooks/purity -- server component, evaluated fresh per request
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+export default async function AdminOverviewPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
+  const range = parseRange((await searchParams).range);
+  const [{ profile }, o] = await Promise.all([getSessionProfile(), loadOverview(range)]);
 
-  const [
-    { count: totalUsers },
-    { count: pendingUsers },
-    { count: totalChecks },
-    { count: checksThisWeek },
-    { data: pending },
-    { data: costRows },
-    { data: recentChecks },
-    { data: recentTopups },
-  ] = await Promise.all([
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "user"),
-    supabase
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "pending"),
-    supabase.from("mcn_checks").select("id", { count: "exact", head: true }),
-    supabase
-      .from("mcn_checks")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", sevenDaysAgo),
-    supabase
-      .from("profiles")
-      .select("*")
-      .eq("status", "pending")
-      .order("created_at", { ascending: true })
-      .limit(5),
-    supabase.from("mcn_checks").select("cost").neq("status", "error"),
-    supabase
-      .from("mcn_checks")
-      .select("id, channel_name, channel_input, avatar_url, network, status, created_at, profiles:user_id(full_name, email)")
-      .order("created_at", { ascending: false })
-      .limit(6),
-    supabase
-      .from("wallet_transactions")
-      .select("id, amount, note, created_at, profiles:user_id(full_name, email)")
-      .eq("type", "topup")
-      .order("created_at", { ascending: false })
-      .limit(5),
-  ]);
+  const toolName = (kind: string) => TOOLS.find((t) => t.id === kind || (kind === "sfx" && t.id === "sound-effects"))?.name ?? kind;
+  const failRate = o.studio.runs ? (o.studio.failed / o.studio.runs) * 100 : 0;
+  const attention = o.pending.length + (o.held > 0 ? 1 : 0) + (o.studio.failed24 > 0 ? 1 : 0);
+  const productRows = Object.entries(o.byProduct).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: PRODUCT_LABEL[k] ?? k, value: v }));
 
-  const totalRevenue = (costRows ?? []).reduce((sum, r) => sum + Number(r.cost), 0);
+  type Activity = { at: string; icon: React.ReactNode; text: React.ReactNode; href?: string };
+  const feed: Activity[] = [
+    ...o.recent.orders.map((r) => ({
+      at: r.paid_at as string,
+      icon: <LuReceipt />,
+      href: r.user_id ? `/admin/customers/${r.user_id}` : undefined,
+      text: (
+        <>
+          <b className="font-medium">{r.email}</b> bought {serviceName(r.service as string)} {r.plan} for {fmtBdt(Number(r.bdt_amount))}
+        </>
+      ),
+    })),
+    ...o.recent.signups.map((r) => ({
+      at: r.created_at as string,
+      icon: <LuUserPlus />,
+      href: `/admin/customers/${r.id}`,
+      text: (
+        <>
+          <b className="font-medium">{r.full_name || r.email}</b> signed up
+        </>
+      ),
+    })),
+    ...o.recent.audit.map((r) => ({
+      at: r.created_at as string,
+      icon: <LuHistory />,
+      href: r.target_user ? `/admin/customers/${r.target_user}` : "/admin/audit",
+      text: (
+        <>
+          {r.admin_email ? <b className="font-medium">{(r.admin_email as string).split("@")[0]}</b> : "An admin"} {ACTION_LABEL[r.action as string] ?? r.action} {r.target_label ? <b className="font-medium">{r.target_label}</b> : null}
+        </>
+      ),
+    })),
+  ]
+    .sort((a, b) => (a.at < b.at ? 1 : -1))
+    .slice(0, 9);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <SummaryCard icon={LuUsers} label="Total users" value={String(totalUsers ?? 0)} />
-        <SummaryCard icon={LuClock} label="Pending approval" value={String(pendingUsers ?? 0)} />
-        <SummaryCard
-          icon={LuHistory}
-          label="Checks run"
-          value={String(totalChecks ?? 0)}
-          hint={`+${checksThisWeek ?? 0} this week`}
-        />
-        <SummaryCard
-          icon={LuTrendingUp}
-          label="Revenue collected"
-          value={`$${totalRevenue.toFixed(2)}`}
-        />
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-3xl font-semibold">Overview</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}. Here is how the three dashboards are doing.
+          </p>
+        </div>
+        <div className="flex rounded-lg border bg-muted/40 p-1 text-sm">
+          {[7, 30, 90].map((d) => (
+            <Link key={d} href={d === 30 ? "/admin" : `/admin?range=${d}`} className={cn("rounded-md px-3 py-1.5 transition-colors", d === range ? "bg-background font-medium shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+              {d} days
+            </Link>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_1fr]">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard label="Revenue" value={fmtBdt(o.revenue)} delta={pct(o.revenue, o.revenuePrev)} sub={`${o.ordersPaid} payments`} spark={o.revenueSeries.map((p) => p.value)} icon={<LuReceipt />} href="/admin/orders" />
+        <StatCard label="New customers" value={fmtNum(o.newCustomers)} delta={pct(o.newCustomers, o.newCustomersPrev)} sub={`last ${range} days`} spark={o.newSeries.map((p) => p.value)} icon={<LuUsers />} href="/admin/customers" />
+        <StatCard
+          label="Waiting for approval"
+          value={fmtNum(o.pending.length >= 6 ? 6 : o.pending.length) + (o.pending.length >= 6 ? "+" : "")}
+          sub={o.pending.length ? "Review them now" : "Nobody waiting"}
+          icon={<LuClock />}
+          href="/admin/customers?status=pending"
+          tone={o.pending.length ? "attention" : "default"}
+        />
+        <StatCard label="AI Studio plans in use" value={fmtNum(o.studio.activePlans)} sub={`${o.studio.customers} customers`} icon={<LuAudioLines />} href="/admin/studio" />
+        <StatCard label="Studio runs" value={fmtNum(o.studio.runs)} delta={pct(o.studio.runs, o.studio.runsPrev)} sub={`${o.studio.failed} failed (${Math.round(failRate)}%)`} spark={o.studio.series.map((p) => p.value)} icon={<LuAudioLines />} href="/admin/studio" />
+        <StatCard label="Channel checks" value={fmtNum(o.checker.checks)} delta={pct(o.checker.checks, o.checker.checksPrev)} sub={`last ${range} days`} spark={o.checker.series.map((p) => p.value)} icon={<LuShieldCheck />} href="/admin/checks" />
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Recent checks</CardTitle>
-            <Link
-              href="/admin/checks"
-              className="flex items-center gap-1 text-sm text-primary underline underline-offset-4"
-            >
-              View all <LuArrowRight className="size-3.5" />
-            </Link>
+          <CardHeader>
+            <CardTitle className="text-base">Revenue</CardTitle>
+            <CardDescription>Paid through SSLCommerz in BDT, each day of the last {range} days.</CardDescription>
           </CardHeader>
-          <CardContent>
-            {!recentChecks || recentChecks.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">No checks yet.</p>
-            ) : (
-              <div className="flex flex-col divide-y">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {(recentChecks as any[]).map((c) => (
-                  <Link
-                    key={c.id}
-                    href={`/admin/checks/${c.id}`}
-                    className="flex items-center gap-3 py-3 first:pt-0 last:pb-0 hover:bg-accent/50 rounded-md px-2 -mx-2 transition-colors"
-                  >
-                    {c.avatar_url ? (
-                      <Image
-                        src={c.avatar_url}
-                        alt=""
-                        width={32}
-                        height={32}
-                        unoptimized
-                        className="size-8 shrink-0 rounded-full border object-cover"
-                      />
-                    ) : (
-                      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                        {initials(c.channel_name ?? c.channel_input)}
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {c.channel_name ?? c.channel_input}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {c.profiles?.full_name ?? c.profiles?.email} &middot;{" "}
-                        {c.network ?? "N/A"}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-                      <StatusDot status={c.status} />
-                      {new Date(c.created_at).toLocaleDateString()}
-                    </div>
-                  </Link>
-                ))}
+          <CardContent className="flex flex-col gap-6">
+            <BarChart data={o.revenueSeries} format={fmtBdt} height={220} />
+            {productRows.length > 0 && (
+              <div className="border-t pt-5">
+                <p className="mb-3 text-sm font-medium">Where it came from</p>
+                <HBars items={productRows} format={fmtBdt} />
               </div>
             )}
           </CardContent>
         </Card>
 
+        <Card className={cn(attention > 0 && "border-amber-500/40")}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              {attention > 0 ? <LuTriangleAlert className="size-4 text-amber-500" /> : <LuCircleCheck className="size-4 text-emerald-500" />}
+              {attention > 0 ? "Needs your attention" : "All clear"}
+            </CardTitle>
+            <CardDescription>{attention > 0 ? "Things waiting on an admin." : "Nothing is waiting on you."}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            {o.pending.map((p) => (
+              <div key={p.id} className="flex items-center justify-between gap-3">
+                <Link href={`/admin/customers/${p.id}`} className="min-w-0">
+                  <p className="truncate text-sm font-medium">{p.full_name || p.email}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {p.email} · {ago(p.created_at as string)}
+                  </p>
+                </Link>
+                <QuickReview userId={p.id} name={p.full_name || p.email} />
+              </div>
+            ))}
+            {o.held > 0 && (
+              <Link href="/admin/orders?status=held" className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2.5 text-sm hover:bg-muted/60">
+                <span>{o.held} payment{o.held === 1 ? "" : "s"} held for review</span>
+                <Badge variant="secondary">Open</Badge>
+              </Link>
+            )}
+            {o.studio.failed24 > 0 && (
+              <Link href="/admin/studio?status=failed" className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2.5 text-sm hover:bg-muted/60">
+                <span>{o.studio.failed24} Studio run{o.studio.failed24 === 1 ? "" : "s"} failed in the last day</span>
+                <Badge variant="secondary">Open</Badge>
+              </Link>
+            )}
+            {attention === 0 && <p className="py-4 text-center text-sm text-muted-foreground">No sign-ups waiting, no held payments and no failing runs.</p>}
+            {o.blocked > 0 && <p className="text-xs text-muted-foreground">{o.blocked} blocked customer{o.blocked === 1 ? "" : "s"}.</p>}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        {(
+          [
+            { id: "cms" as const, icon: <LuShieldCheck />, status: "Live", lines: [`${fmtNum(o.checker.checks)} checks`, `${fmtBdt(o.byProduct.cms ?? 0)} + ${fmtBdt(o.byProduct.topup ?? 0)} top-ups`], manage: "/admin/checks", manageLabel: "View checks" },
+            { id: "studio" as const, icon: <LuAudioLines />, status: "Live", lines: [`${fmtNum(o.studio.runs)} runs, ${o.studio.failed} failed`, `${o.studio.customers} customers on ${o.studio.activePlans} plans`, `${fmtBdt(o.byProduct.studio ?? 0)} revenue`], manage: "/admin/studio", manageLabel: "View usage" },
+            { id: "distribution" as const, icon: <LuDisc3 />, status: "Building", lines: ["Plans are on hold until the dashboard opens"], manage: "/admin/distribution", manageLabel: "See status" },
+          ]
+        ).map((d) => {
+          const p = getProduct(d.id);
+          const url = productUrl(p);
+          return (
+            <Card key={d.id}>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <span className="text-muted-foreground [&_svg]:size-4.5">{d.icon}</span>
+                    {p.name}
+                  </CardTitle>
+                  <Badge variant={d.status === "Live" ? "default" : "outline"}>{d.status}</Badge>
+                </div>
+                <CardDescription>{p.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
+                  {d.lines.map((l) => (
+                    <li key={l}>{l}</li>
+                  ))}
+                </ul>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" render={<Link href={d.manage} />}>
+                    {d.manageLabel}
+                  </Button>
+                  {url && (
+                    <Button variant="ghost" size="sm" render={<a href={url} target="_blank" rel="noreferrer" />}>
+                      Open dashboard
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-2">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Recent top-ups</CardTitle>
-            <Link
-              href="/admin/topup"
-              className="flex items-center gap-1 text-sm text-primary underline underline-offset-4"
-            >
-              View all <LuArrowRight className="size-3.5" />
-            </Link>
+          <CardHeader>
+            <CardTitle className="text-base">Most used Studio tools</CardTitle>
+            <CardDescription>Runs in the last {range} days.</CardDescription>
           </CardHeader>
           <CardContent>
-            {!recentTopups || recentTopups.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">No top-ups yet.</p>
+            {o.studio.byTool.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">No runs yet.</p>
             ) : (
-              <div className="flex flex-col divide-y">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {(recentTopups as any[]).map((t) => (
-                  <div key={t.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
-                        {t.profiles?.full_name ?? t.profiles?.email}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t.note?.startsWith("SSLCommerz top-up") ? "via SSLCommerz" : "by admin"}
-                        {" · "}
-                        {new Date(t.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Badge className="shrink-0 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400">
-                      {formatSignedCredits(Number(t.amount))}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+              <HBars items={o.studio.byTool.slice(0, 8).map((t) => ({ label: toolName(t.label), value: t.value }))} />
             )}
           </CardContent>
         </Card>
-      </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardDescription className="flex items-center gap-1.5">
-              <LuClock className="size-4" /> Awaiting your review
-            </CardDescription>
-          </div>
-          <Link
-            href="/admin/approvals"
-            className="text-sm text-primary underline underline-offset-4"
-          >
-            Go to Approvals →
-          </Link>
-        </CardHeader>
-        <CardContent>
-          {!pending || pending.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              No pending registrations. All caught up.
-            </p>
-          ) : (
-            <UsersTable users={pending} compact />
-          )}
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Latest activity</CardTitle>
+            <CardDescription>Sign-ups, purchases and what admins did.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {feed.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">Nothing yet.</p>
+            ) : (
+              <ul className="flex flex-col gap-3.5">
+                {feed.map((a, i) => {
+                  const row = (
+                    <>
+                      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border bg-muted/40 text-muted-foreground [&_svg]:size-4">{a.icon}</span>
+                      <span className="min-w-0 flex-1 text-sm leading-snug">{a.text}</span>
+                      <span className="shrink-0 text-xs text-muted-foreground">{ago(a.at)}</span>
+                    </>
+                  );
+                  return (
+                    <li key={i}>
+                      {a.href ? (
+                        <Link href={a.href} className="flex items-start gap-3 rounded-lg transition-opacity hover:opacity-80">
+                          {row}
+                        </Link>
+                      ) : (
+                        <div className="flex items-start gap-3">{row}</div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </section>
     </div>
-  );
-}
-
-function SummaryCard({
-  icon: Icon,
-  label,
-  value,
-  hint,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  hint?: string;
-}) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardDescription>{label}</CardDescription>
-        <Icon className="size-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <p className="font-heading text-2xl font-bold">{value}</p>
-        {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-      </CardContent>
-    </Card>
   );
 }
