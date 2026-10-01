@@ -129,7 +129,7 @@ export async function authorize(
   if (limit) return { error: fail(limit) };
   const credits = costFor(r.engine, usage);
   const paid = await charge(userId, credits, `AI Studio: ${label}`);
-  if (!paid.ok) return { error: fail(`Not enough balance. This costs ${credits} credits.`, 402) };
+  if (!paid.ok) return { error: fail(`Not enough AI Studio balance. This costs ${credits} credits, add credits in Wallet.`, 402) };
   return { authz: { engine: r.engine, credits, userId } };
 }
 

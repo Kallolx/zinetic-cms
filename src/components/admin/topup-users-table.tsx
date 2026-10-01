@@ -53,7 +53,8 @@ export function TopUpUsersTable({ users }: { users: Profile[] }) {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead className="text-right">Wallet balance</TableHead>
+                <TableHead className="text-right">Checker wallet</TableHead>
+                <TableHead className="text-right">Studio wallet</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -65,6 +66,7 @@ export function TopUpUsersTable({ users }: { users: Profile[] }) {
                   <TableCell className="text-right font-medium">
                     {formatCredits(Number(u.wallet_balance))}
                   </TableCell>
+                  <TableCell className="text-right font-medium">{formatCredits(Number(u.studio_balance ?? 0))}</TableCell>
                   <TableCell className="text-right">
                     <TopUpDialog user={u} />
                   </TableCell>

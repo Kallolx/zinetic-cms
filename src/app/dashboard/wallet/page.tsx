@@ -28,6 +28,7 @@ export default async function WalletPage({
     .from("wallet_transactions")
     .select("*")
     .eq("user_id", user.id)
+    .eq("wallet", "checker")
     .order("created_at", { ascending: false })
     .limit(100);
 

@@ -7,7 +7,10 @@ export type Profile = {
   full_name: string | null;
   role: UserRole;
   status: UserStatus;
+  /** Channel Checker wallet, in USD */
   wallet_balance: number;
+  /** AI Studio wallet, in USD */
+  studio_balance: number;
   created_at: string;
   reviewed_at: string | null;
   reviewed_by: string | null;
@@ -20,6 +23,7 @@ export type WalletTxType = "topup" | "check_charge" | "studio_charge" | "refund"
 
 export type WalletTransaction = {
   id: string;
+  wallet?: "checker" | "studio";
   user_id: string;
   type: WalletTxType;
   amount: number;

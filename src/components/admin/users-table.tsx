@@ -76,6 +76,7 @@ export function TopUpDialog({ user }: { user: Profile }) {
   const [credits, setCredits] = React.useState("1");
   const [planId, setPlanId] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
+  const [wallet, setWallet] = React.useState<"checker" | "studio">("checker");
 
   function selectPlan(plan: PricingPlan) {
     setPlanId(plan.id);
@@ -90,19 +91,19 @@ export function TopUpDialog({ user }: { user: Profile }) {
       return;
     }
     const usdValue = creditsToUsd(creditsValue);
-    const plan = planId ? getPlanById(planId) : undefined;
+    const plan = wallet === "checker" && planId ? getPlanById(planId) : undefined;
     const note = plan
       ? `${plan.label} plan (${plan.checks} Credits) granted by admin`
       : undefined;
     setPending(true);
-    const result = await topUpWallet(user.id, usdValue, note);
+    const result = await topUpWallet(user.id, usdValue, note, wallet);
     setPending(false);
     if (result.error) {
       toast.error(result.error);
       return;
     }
     toast.success(
-      `Added ${formatCredits(usdValue)} to ${user.full_name ?? user.email}'s wallet.`
+      `Added ${formatCredits(usdValue)} to ${user.full_name ?? user.email}'s ${wallet === "studio" ? "AI Studio" : "Channel Checker"} wallet.`
     );
     setOpen(false);
     setPlanId(null);
@@ -133,11 +134,30 @@ export function TopUpDialog({ user }: { user: Profile }) {
           <DialogHeader>
             <DialogTitle>Top up wallet</DialogTitle>
             <DialogDescription>
-              Credit {user.full_name ?? user.email}&apos;s wallet balance (current:{" "}
-              {formatCredits(Number(user.wallet_balance))}).
+              Credit {user.full_name ?? user.email}&apos;s {wallet === "studio" ? "AI Studio" : "Channel Checker"} wallet (current:{" "}
+              {formatCredits(Number(wallet === "studio" ? (user.studio_balance ?? 0) : user.wallet_balance))}).
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-4">
+            <div className="flex flex-col gap-1.5">
+              <Label>Wallet</Label>
+              <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+                {(["checker", "studio"] as const).map((w) => (
+                  <button
+                    key={w}
+                    type="button"
+                    onClick={() => {
+                      setWallet(w);
+                      setPlanId(null);
+                    }}
+                    className={`cursor-pointer rounded-md px-3 py-1.5 text-sm transition-colors ${wallet === w ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}
+                  >
+                    {w === "checker" ? "Channel Checker" : "AI Studio"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {wallet === "checker" && (
             <div className="flex flex-col gap-1.5">
               <Label>Grant a plan (optional)</Label>
               <div className="flex flex-wrap gap-1.5">
@@ -156,6 +176,7 @@ export function TopUpDialog({ user }: { user: Profile }) {
                 ))}
               </div>
             </div>
+            )}
             <div className="flex flex-col gap-2">
               <Label htmlFor="credits">Credits</Label>
               <Input

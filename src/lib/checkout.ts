@@ -102,7 +102,8 @@ export async function finalizeOrder(tranId: string, valId: string, raw: Record<s
 
   await admin.from("profiles").update({ status: "approved", reviewed_at: new Date().toISOString() }).eq("id", order.user_id);
   await admin.from("user_products").upsert({ user_id: order.user_id, product: order.product }, { onConflict: "user_id,product" });
-  await admin.rpc("wallet_topup", {
+  // each product has its own wallet: Studio plans fill the Studio wallet, Checker bundles the checker wallet
+  await admin.rpc(order.product === "studio" ? "studio_topup" : "wallet_topup", {
     p_user: order.user_id,
     p_usd: Number(order.usd_credit),
     p_note: `Plan purchase: ${order.plan} (${order.service})`,
