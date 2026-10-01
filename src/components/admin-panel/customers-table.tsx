@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { DeleteCustomerDialog } from "@/components/admin-panel/delete-customer";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { cn } from "@/lib/utils";
@@ -163,7 +164,7 @@ export function CustomersTable({ rows }: { rows: CustomerRow[] }) {
                 <TableHead className="text-right">Studio</TableHead>
                 <TableHead className="text-right">Paid</TableHead>
                 <TableHead className="hidden 2xl:table-cell">Joined</TableHead>
-                <TableHead className="w-36 text-right" />
+                <TableHead className="w-44 text-right" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -196,20 +197,23 @@ export function CustomersTable({ rows }: { rows: CustomerRow[] }) {
                   <TableCell className="text-right tabular-nums">{r.spent > 0 ? `৳${Math.round(r.spent).toLocaleString("en-US")}` : "-"}</TableCell>
                   <TableCell className="hidden text-sm text-muted-foreground 2xl:table-cell">{when(r.joined)}</TableCell>
                   <TableCell className="text-right">
+                    <div className="inline-flex items-center gap-1.5">
                     {r.status === "pending" ? (
-                      <div className="inline-flex gap-1.5">
+                      <>
                         <Button size="sm" onClick={() => one(r.id, r.name || r.email, "approved")} disabled={pending}>
                           Approve
                         </Button>
                         <Button size="icon-sm" variant="ghost" onClick={() => one(r.id, r.name || r.email, "rejected")} disabled={pending} aria-label="Reject">
                           <LuX />
                         </Button>
-                      </div>
+                      </>
                     ) : (
                       <Button size="sm" variant="outline" render={<Link href={`/admin/customers/${r.id}`} />}>
                         Manage
                       </Button>
                     )}
+                    <DeleteCustomerDialog id={r.id} name={r.name || r.email} email={r.email} variant="icon" />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

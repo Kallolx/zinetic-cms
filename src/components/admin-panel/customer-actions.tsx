@@ -3,10 +3,11 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { LuBan, LuCheck, LuLoaderCircle, LuTrash2, LuX } from "react-icons/lu";
-import { blockUser, deleteUser, reviewUser, unblockUser } from "@/app/actions/admin";
+import { LuBan, LuCheck, LuLoaderCircle, LuX } from "react-icons/lu";
+import { blockUser, reviewUser, unblockUser } from "@/app/actions/admin";
 import { setAdminNote } from "@/app/actions/admin-panel";
 import { ImpersonateButton } from "@/components/admin/users-table";
+import { DeleteCustomerDialog } from "@/components/admin-panel/delete-customer";
 import type { Profile } from "@/lib/types";
 import {
   AlertDialog,
@@ -87,6 +88,7 @@ export function CustomerActions({ user }: { user: Profile }) {
           </AlertDialog>
         )
       )}
+      <DeleteCustomerDialog id={user.id} name={name} email={user.email} redirectTo="/admin/customers" />
     </div>
   );
 }
@@ -96,7 +98,6 @@ export function CustomerNotes({ user }: { user: Profile }) {
   const router = useRouter();
   const [note, setNote] = React.useState(user.admin_note ?? "");
   const [saving, startTransition] = React.useTransition();
-  const [deleting, setDeleting] = React.useState(false);
   const dirty = note.trim() !== (user.admin_note ?? "").trim();
 
   function save() {
@@ -106,15 +107,6 @@ export function CustomerNotes({ user }: { user: Profile }) {
       toast.success("Note saved");
       router.refresh();
     });
-  }
-
-  async function remove() {
-    setDeleting(true);
-    const res = await deleteUser(user.id);
-    setDeleting(false);
-    if (res.error) return void toast.error(res.error);
-    toast.success("Customer deleted");
-    router.push("/admin/customers");
   }
 
   return (
@@ -140,27 +132,7 @@ export function CustomerNotes({ user }: { user: Profile }) {
           <CardDescription>Deleting removes the account, their wallet history and their checks for good. This cannot be undone.</CardDescription>
         </CardHeader>
         <CardContent>
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button variant="destructive">
-                  <LuTrash2 /> Delete this customer
-                </Button>
-              }
-            />
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete {user.full_name || user.email}?</AlertDialogTitle>
-                <AlertDialogDescription>Everything about this customer is removed permanently. Their payments stay in your SSLCommerz records.</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Keep</AlertDialogCancel>
-                <AlertDialogAction onClick={remove} disabled={deleting}>
-                  Delete for good
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <DeleteCustomerDialog id={user.id} name={user.full_name || user.email} email={user.email} redirectTo="/admin/customers" />
         </CardContent>
       </Card>
     </div>

@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { IMPERSONATE_COOKIE } from "@/lib/supabase/dashboard-session";
 import { COST_UNITS, providerSupports } from "@/lib/studio/engine-catalog";
 import { audit, labelFor } from "@/lib/admin/audit";
+import { deleteUserFiles } from "@/lib/studio/storage";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -134,6 +135,8 @@ export async function deleteUser(userId: string) {
   // deletes the auth user; profiles/wallet_transactions/mcn_checks cascade via FK
   const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
   if (error) return { error: error.message };
+  // everything they generated in AI Studio goes too
+  await deleteUserFiles(userId);
 
   await audit({ id: admin.id }, "delete", { id: null, label: deletedLabel });
   revalidatePath("/admin");

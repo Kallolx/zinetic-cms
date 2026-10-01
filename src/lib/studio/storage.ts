@@ -28,3 +28,10 @@ export async function readFile(key: string) {
 export async function deleteFile(key: string) {
   await fs.rm(resolveKey(key), { force: true });
 }
+
+/** Removes every file a customer made (their whole folder). Used when an account is deleted. */
+export async function deleteUserFiles(userId: string) {
+  try {
+    await fs.rm(resolveKey(userId), { recursive: true, force: true });
+  } catch {}
+}
